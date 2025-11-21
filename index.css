@@ -1,0 +1,274 @@
+
+
+@import url('https://rsms.me/inter/inter.css');
+
+html { 
+    font-family: 'Inter', sans-serif; 
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color-scheme: dark;
+}
+
+@supports (font-variation-settings: normal) {
+  html { font-family: 'Inter var', sans-serif; }
+}
+
+/* Custom scrollbar for a cleaner look in dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #171717; /* neutral-900 */
+}
+::-webkit-scrollbar-thumb {
+  background: #404040; /* neutral-700 */
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #525252; /* neutral-600 */
+}
+
+details[open] summary .details-open\\:rotate-180 {
+    transform: rotate(180deg);
+}
+
+/* Loading dots animation for authentication screen */
+.loading-dots span {
+  animation: blink 1.4s infinite both;
+  display: inline-block;
+}
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes blink {
+  0% {
+    opacity: 0.2;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-content-transition {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Report-specific styles */
+.report-content-area {
+    background-color: #ffffff;
+    color: #000000;
+    font-family: Arial, sans-serif;
+}
+.report-content-area h1, .report-content-area h2, .report-content-area h3, .report-content-area h4 {
+    color: #000000;
+}
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+}
+.report-table th, .report-table td {
+    border: 1px solid #cccccc;
+    padding: 8px;
+    text-align: left;
+}
+.report-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+.report-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* New styles for R41 */
+.report-paper {
+    background-color: #ffffff;
+    color: #000000;
+    padding: 2rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 9pt;
+}
+.report-paper .summary-box {
+    border: 1px dashed #666;
+    padding: 0;
+    height: 100%;
+}
+.report-paper .summary-box table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.report-paper .summary-box th, .report-paper .summary-box td {
+    padding: 4px 8px;
+    border: none;
+}
+.report-paper .summary-box thead th {
+    background-color: #e0e0e0;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+}
+.report-paper .summary-box tfoot th, .report-paper .summary-box tfoot td {
+    border-top: 1px solid #ccc;
+    font-weight: bold;
+}
+.report-paper .section-header {
+    background-color: #e0e0e0;
+    font-weight: bold;
+    padding: 6px;
+    border: 1px solid #999;
+}
+.report-paper .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    border-left: 1px solid #999;
+    border-right: 1px solid #999;
+    border-bottom: 1px solid #999;
+}
+.report-paper .data-table th, .report-paper .data-table td {
+    padding: 5px 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+.report-paper .data-table th {
+    background-color: #f2f2f2;
+}
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  color: white;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  animation: toast-in 0.3s ease-out forwards;
+  min-width: 250px;
+}
+
+.toast.success { background-color: #15803d; } /* green-700 */
+.toast.error { background-color: #b91c1c; } /* red-700 */
+.toast.info { background-color: #1d4ed8; } /* blue-700 */
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide app UI */
+  #root > div > aside,
+  #root > div > main > header,
+  .report-controls,
+  .report-filter-bar,
+  form.bg-neutral-900 {
+    display: none !important;
+  }
+  
+  /* Make report content fill the page */
+  #root > div > main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  
+  #root > div > main > div {
+     padding: 1rem !important;
+  }
+  
+  .report-paper {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-size: 8pt;
+  }
+
+  .report-content-area {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    color: #000000 !important;
+    background-color: #ffffff !important;
+  }
+  
+  .printable-header {
+      display: block !important;
+      color: #000000 !important;
+  }
+  
+  .report-table, .report-paper .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+  }
+  
+  .report-table th,
+  .report-table td,
+  .report-paper .data-table th,
+  .report-paper .data-table td {
+    border: 1px solid #cccccc !important;
+    padding: 4px;
+    text-align: left;
+    color: #000000 !important;
+  }
+  
+  .report-table th, .report-paper .data-table th, .report-paper .section-header {
+    background-color: #e0e0e0 !important;
+    font-weight: bold;
+  }
+   .report-table tr:nth-child(even) {
+    background-color: #f9f9f9 !important;
+  }
+  
+  .report-paper .summary-box {
+    border: 1px dashed #666 !important;
+  }
+
+  /* Remove dark theme specifics for printing */
+  .bg-white { background-color: #ffffff !important; }
+  .text-black { color: #000000 !important; }
+}
