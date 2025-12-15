@@ -192,3 +192,15 @@ Antes de ejecutar cualquier comando npm/vite/git:
 - *Se aplica una soluciÃ³n*
 - *Se aprende algo nuevo*
 - *Se completa una tarea del roadmap*
+
+### Error #004 - VS Code Workspace en Google Drive
+**Fecha**: 2024-12-14
+**Error**: Todos los terminales se abren en Google Drive aunque se intente cambiar de directorio
+**Causa**: VS Code tiene el workspace abierto desde H:\My Drive\MY APPS\micondowebapp
+**Solución**: 
+1. Cerrar VS Code completamente
+2. Abrir PowerShell/CMD
+3. Ejecutar: `cd C:\dev\micondo && code .`
+4. Esto abre VS Code con el workspace correcto
+**Aprendizaje**: El workspace de VS Code determina el directorio por defecto de TODOS los terminales. Siempre abrir VS Code desde el directorio local correcto.
+
