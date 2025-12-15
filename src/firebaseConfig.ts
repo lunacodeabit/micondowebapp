@@ -6,18 +6,18 @@ import { getAuth } from "firebase/auth";
 
 // =================================================================
 // CONFIGURACIÓN DE FIREBASE
-// ... (tus comentarios de configuración aquí) ...
+// Uses environment variables for security. Create a .env.local file
+// based on .env.example with your actual Firebase credentials.
 // =================================================================
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration from environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyAOkom-E8eIuAmOWTF7ssk7OYamIVmiMbo",
-  authDomain: "micondoweb.firebaseapp.com",
-  projectId: "micondoweb",
-  storageBucket: "micondoweb.firebasestorage.app",
-  messagingSenderId: "156705749853",
-  appId: "1:156705749853:web:967ec6fb8a487c229486b4",
-  measurementId: "G-R5LT78N8CN"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAOkom-E8eIuAmOWTF7ssk7OYamIVmiMbo",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "micondoweb.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "micondoweb",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "micondoweb.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "156705749853",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:156705749853:web:967ec6fb8a487c229486b4"
 };
 
 // Initialize Firebase

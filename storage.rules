@@ -1,0 +1,86 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ===========================================
+    // HELPER FUNCTIONS
+    // ===========================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check file size (max 10MB)
+    function isValidFileSize() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+    
+    // Check if it's an image file
+    function isImageFile() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    // Check if it's a document file (PDF, DOC, etc.)
+    function isDocumentFile() {
+      return request.resource.contentType.matches('application/pdf') ||
+             request.resource.contentType.matches('application/msword') ||
+             request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.*') ||
+             request.resource.contentType.matches('text/.*');
+    }
+
+    // ===========================================
+    // COMPANY LOGOS
+    // ===========================================
+    match /company_logos/{fileName} {
+      // Anyone authenticated can read logos
+      allow read: if isAuthenticated();
+      
+      // Only authenticated users can upload (SuperAdmin in practice)
+      allow write: if isAuthenticated() && isImageFile() && isValidFileSize();
+    }
+
+    // ===========================================
+    // CONDO FILES (Documents, Images, etc.)
+    // ===========================================
+    match /condo_files/{condoId}/{allPaths=**} {
+      // Authenticated users can read condo files
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can write files (company admin in practice)
+      allow write: if isAuthenticated() && 
+        (isImageFile() || isDocumentFile()) && 
+        isValidFileSize();
+    }
+
+    // ===========================================
+    // INCIDENT ATTACHMENTS
+    // ===========================================
+    match /incidents/{condoId}/{incidentId}/{fileName} {
+      // Authenticated users can read
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can upload attachments
+      allow write: if isAuthenticated() && isValidFileSize();
+    }
+
+    // ===========================================
+    // PAYMENT PROOF UPLOADS
+    // ===========================================
+    match /payment_proofs/{condoId}/{unitId}/{fileName} {
+      // Authenticated users can read
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can upload payment proof
+      allow write: if isAuthenticated() && 
+        (isImageFile() || request.resource.contentType == 'application/pdf') && 
+        isValidFileSize();
+    }
+
+    // ===========================================
+    // DEFAULT DENY
+    // ===========================================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

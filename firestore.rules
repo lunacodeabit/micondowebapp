@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===========================================
+    // HELPER FUNCTIONS
+    // ===========================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is the super admin (use custom claim in production)
+    // TODO: Replace with custom claim check: request.auth.token.superAdmin == true
+    function isSuperAdmin() {
+      return request.auth != null && request.auth.uid == 'YOUR_SUPER_ADMIN_UID_HERE';
+    }
+    
+    // Check if user is an admin of a specific company
+    function isCompanyAdmin(companyId) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/companies/$(companyId)) &&
+        get(/databases/$(database)/documents/companies/$(companyId)).data.adminUserEmail == request.auth.token.email;
+    }
+    
+    // Check if company is active (Activo or Gracia)
+    function isCompanyActive(companyId) {
+      let company = get(/databases/$(database)/documents/companies/$(companyId));
+      return company.data.status == 'Activo' || company.data.status == 'Gracia';
+    }
+
+    // ===========================================
+    // COMPANIES COLLECTION
+    // Only SuperAdmin can write, authenticated users can read their own company
+    // ===========================================
+    match /companies/{companyId} {
+      // SuperAdmin can read all companies
+      allow read: if isSuperAdmin();
+      
+      // Company admin can read their own company
+      allow read: if isAuthenticated() && 
+        resource.data.adminUserEmail == request.auth.token.email;
+      
+      // Only SuperAdmin can create/update/delete companies
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // ===========================================
+    // CONDOS COLLECTION
+    // Admins can read/write condos belonging to their company
+    // Residents can read their assigned condo
+    // ===========================================
+    match /condos/{condoId} {
+      // SuperAdmin can do everything
+      allow read, write: if isSuperAdmin();
+      
+      // Company admin can read/write condos in their company
+      allow read, write: if isAuthenticated() && 
+        isCompanyAdmin(resource.data.companyId) && 
+        isCompanyActive(resource.data.companyId);
+      
+      // For create, check the incoming data's companyId
+      allow create: if isAuthenticated() && 
+        isCompanyAdmin(request.resource.data.companyId) && 
+        isCompanyActive(request.resource.data.companyId);
+      
+      // Residents can read (their condo access is controlled by app logic)
+      // They search by authUid in units array
+      allow read: if isAuthenticated();
+    }
+
+    // ===========================================
+    // DEFAULT DENY
+    // Any collection not explicitly matched is denied
+    // ===========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

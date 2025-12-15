@@ -1,12 +1,12 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+﻿import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'; 
-import { db } from '../firebaseConfig'; 
-import type { Company, Condo } from '../types'; 
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+import type { Company, Condo } from '../types';
 
-// 2. CONSTANTE DE SUPER ADMIN
-const SUPER_ADMIN_UID = "2s683OVMkpZlNdklNZ3RNjHXOt32"; 
+// Super Admin UID from environment variable (secure - not hardcoded)
+const SUPER_ADMIN_UID = import.meta.env.VITE_SUPER_ADMIN_UID || '';
 
 export type UserRole = 'superadmin' | 'admin' | 'resident' | null;
 
@@ -15,12 +15,14 @@ interface AuthContextType {
     loading: boolean;
     login: (email: string, pass: string) => Promise<any>;
     logout: () => Promise<void>;
-    
-    isSuperAdmin: boolean; 
+
+    isSuperAdmin: boolean;
     userRole: UserRole;
     companyIsActive: boolean;
-    
+
     residentData: { condoId: string, unitId: number } | null;
+    // NEW: Company ID for admin users (used when creating condos)
+    adminCompanyId: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,11 +42,13 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
     const [loading, setLoading] = useState(true);
-    
+
     const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     const [userRole, setUserRole] = useState<UserRole>(null);
     const [companyIsActive, setCompanyIsActive] = useState(false);
     const [residentData, setResidentData] = useState<{ condoId: string, unitId: number } | null>(null);
+    // NEW: Store the company ID for admin users
+    const [adminCompanyId, setAdminCompanyId] = useState<string | null>(null);
 
     const login = (email: string, pass: string) => {
         return signInWithEmailAndPassword(auth, email, pass);
@@ -56,83 +60,87 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // FUNCIÓN DE VERIFICACIÓN DE ROL Y PERMISOS
     const checkUserRoleAndStatus = async (user: FirebaseUser) => {
-        console.log("🕵️ INICIANDO RASTREO DE USUARIO...");
-        
-        // 1. ¿ES SUPER ADMIN?
+        console.log(" INICIANDO RASTREO DE USUARIO...");
+
+        // 1. ES SUPER ADMIN?
         if (user.uid === SUPER_ADMIN_UID) {
             setIsSuperAdmin(true);
             setUserRole('superadmin');
-            setCompanyIsActive(true); 
-            return; 
+            setCompanyIsActive(true);
+            setAdminCompanyId(null); // SuperAdmin doesn't belong to a specific company
+            return;
         }
 
-        // 2. ¿ES ADMIN DE COMPAÑÍA?
+        // 2. ES ADMIN DE COMPAÑÍA?
         const companiesRef = collection(db, "companies");
         const adminQuery = query(companiesRef, where("adminUserEmail", "==", user.email));
         const adminSnapshot = await getDocs(adminQuery);
 
         if (!adminSnapshot.empty) {
-            const companyDoc = adminSnapshot.docs[0]; 
+            const companyDoc = adminSnapshot.docs[0];
             const companyData = companyDoc.data() as Company;
             setUserRole('admin');
             const isActive = companyData.status === 'Activo' || companyData.status === 'Gracia';
             setCompanyIsActive(isActive);
-            return; 
+            // NEW: Store the company ID for this admin
+            setAdminCompanyId(companyDoc.id);
+            console.log(" Admin de compañía ID:", companyDoc.id);
+            return;
         }
 
-        // 3. ¿ES RESIDENTE?
+        // 3. ES RESIDENTE?
         const condosRef = collection(db, "condos");
-        const condosSnapshot = await getDocs(condosRef); 
-        
+        const condosSnapshot = await getDocs(condosRef);
+
         let foundResident = false;
         for (const condoDoc of condosSnapshot.docs) {
             const condoData = condoDoc.data() as Condo;
             const units = (condoData.units as unknown as any[]) || [];
-            
+
             const foundUnit = units.find((unit: any) => unit.authUid === user.uid);
-            
+
             if (foundUnit) {
-                console.log("🎉 ¡ENCONTRADO! Unidad:", foundUnit.number || foundUnit.id);
+                console.log(" ENCONTRADO! Unidad:", foundUnit.number || foundUnit.id);
                 setUserRole('resident');
                 foundResident = true;
-                
+
                 setResidentData({ condoId: condoDoc.id, unitId: foundUnit.id });
 
                 // --- DEBUGGING PROFUNDO DE COMPAÑÍA ---
                 const companyIdToCheck = condoData.companyId;
-                console.log(`🏢 Condominio vinculado a CompanyID: '${companyIdToCheck}'`);
+                console.log(" Condominio vinculado a CompanyID:", companyIdToCheck);
 
                 if (!companyIdToCheck) {
-                    console.error("⚠️ El condominio no tiene companyId vinculado.");
-                    setCompanyIsActive(false); 
+                    console.error(" El condominio no tiene companyId vinculado.");
+                    setCompanyIsActive(false);
                     break;
                 }
 
                 const companyRef = doc(db, "companies", companyIdToCheck);
                 const companyDocSnapshot = await getDoc(companyRef);
-                
+
                 if (companyDocSnapshot.exists()) {
                     const companyData = companyDocSnapshot.data() as Company;
-                    
+
                     // IMPRIMIMOS CON COMILLAS PARA VER ESPACIOS OCULTOS
-                    console.log(`📄 Status encontrado en DB: '${companyData.status}'`); 
+                    console.log(" Status encontrado en DB:", companyData.status);
 
                     const isActive = companyData.status === 'Activo' || companyData.status === 'Gracia';
-                    console.log(`   > ¿Es válido (Activo/Gracia)?: ${isActive}`);
-                    
+                    console.log("   > Es válido (Activo/Gracia)?:", isActive);
+
                     setCompanyIsActive(isActive);
                 } else {
-                    console.error("❌ La compañía con ese ID NO existe en Firestore.");
-                    setCompanyIsActive(false); 
+                    console.error(" La compañía con ese ID NO existe en Firestore.");
+                    setCompanyIsActive(false);
                 }
                 // -------------------------------------
-                break; 
+                break;
             }
         }
-        
+
         // 4. SI NO ES NADA
         if (!foundResident) {
-             console.error("❌ ERROR: Usuario logueado pero no asignado a unidad.");
+             console.error(" ERROR: Usuario logueado pero no asignado a unidad.");
              setUserRole(null);
              setCompanyIsActive(false);
         }
@@ -144,28 +152,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUserRole(null);
             setCompanyIsActive(false);
             setResidentData(null);
+            setAdminCompanyId(null); // Reset on auth state change
 
             if (user) {
                 setCurrentUser(user);
-                await checkUserRoleAndStatus(user); 
+                await checkUserRoleAndStatus(user);
             } else {
                 setCurrentUser(null);
             }
-            setLoading(false); 
+            setLoading(false);
         });
 
         return unsubscribe;
-    }, []); 
+    }, []);
 
     const value = {
         currentUser,
         loading,
         login,
         logout,
-        isSuperAdmin, 
+        isSuperAdmin,
         companyIsActive,
         userRole,
         residentData,
+        adminCompanyId, // NEW: Expose company ID
     };
 
     return (
