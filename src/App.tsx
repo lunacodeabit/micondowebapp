@@ -36,7 +36,8 @@ const AppContent = () => {
         companyIsActive, 
         userRole,
         residentData,
-        logout: authLogout 
+        logout: authLogout,
+        isDevAuthenticated
     } = useAuth();
     
     const { condos, selectedCondo, selectCondo, addCondo, isLoading: condoLoading } = useCondo();
@@ -86,14 +87,13 @@ const AppContent = () => {
         return <SuperAdminDashboard />;
     }
     
-    // B. PANTALLA DE BLOQUEO
-    if (currentUser && !companyIsActive) {
-        // handleLogout(); // Mantenemos comentado para depuración si es necesario
+    // B. PANTALLA DE BLOQUEO (solo si hay usuario real y no es dev mode)
+    if (currentUser && !isDevAuthenticated && !companyIsActive) {
         return <DeactivatedScreen />;
     }
 
-    // C. PANTALLA DE LOGIN
-    if (!currentUser) {
+    // C. PANTALLA DE LOGIN (si no hay usuario real Y no estamos autenticados en dev mode)
+    if (!currentUser && !isDevAuthenticated) {
         return (
             <LoginSelector 
                 condos={condos} 
@@ -105,6 +105,22 @@ const AppContent = () => {
     
     // Vista Residente
     if (userRole === 'resident') {
+        // DEV MODE: Mostrar mensaje informativo si no hay datos
+        if (isDevAuthenticated && (!residentData || !residentData.condoId)) {
+            return (
+                <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-8 text-white">
+                    <Icon name="info" className="w-16 h-16 text-yellow-500 mb-4" />
+                    <h1 className="text-3xl font-bold mb-2">Modo Desarrollo - Sin Datos</h1>
+                    <p className="text-neutral-400 text-center mb-4">
+                        No hay condominios con unidades en la base de datos para simular un residente.
+                    </p>
+                    <button onClick={handleLogout} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
+                        Volver al Login
+                    </button>
+                </div>
+            );
+        }
+        
         // Esperamos a que residentData esté listo
         if (residentData && residentData.condoId) {
             
@@ -121,6 +137,22 @@ const AppContent = () => {
             if (resident) {
                 return <ResidentPortal resident={resident} condo={selectedCondo} onLogout={handleLogout} />;
             } else {
+                // DEV MODE: Mostrar qué unidades hay disponibles
+                if (isDevAuthenticated) {
+                    return (
+                        <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-8 text-white">
+                            <Icon name="info" className="w-16 h-16 text-yellow-500 mb-4" />
+                            <h1 className="text-3xl font-bold mb-2">Modo Desarrollo - Unidad No Encontrada</h1>
+                            <p className="text-neutral-400 text-center mb-4">
+                                Buscando unitId: {residentData.unitId}<br/>
+                                Unidades disponibles: {units.map((u: any) => u.id).join(', ') || 'ninguna'}
+                            </p>
+                            <button onClick={handleLogout} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
+                                Volver al Login
+                            </button>
+                        </div>
+                    );
+                }
                 console.error("Unidad no encontrada en el condominio seleccionado.");
             }
         }
@@ -131,6 +163,23 @@ const AppContent = () => {
     
     // Vista Admin de Compañía
     if (userRole === 'admin') {
+        // DEV MODE: Mostrar mensaje informativo si no hay condos
+        if (isDevAuthenticated && condos.length === 0 && !condoLoading) {
+            return (
+                <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-8 text-white">
+                    <Icon name="info" className="w-16 h-16 text-yellow-500 mb-4" />
+                    <h1 className="text-3xl font-bold mb-2">Modo Desarrollo - Sin Condominios</h1>
+                    <p className="text-neutral-400 text-center mb-4">
+                        No hay condominios asignados a esta compañía.<br/>
+                        Primero crea un condominio desde SuperAdmin.
+                    </p>
+                    <button onClick={handleLogout} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
+                        Volver al Login
+                    </button>
+                </div>
+            );
+        }
+        
         if (selectedCondo) {
             return (
                 <CondoAdminPanel

@@ -71,6 +71,33 @@ service cloud.firestore {
     }
 
     // ===========================================
+    // SAAS PAYMENTS COLLECTION
+    // Only SuperAdmin can manage subscription payments
+    // ===========================================
+    match /saas_payments/{paymentId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    // ===========================================
+    // SAAS ANNOUNCEMENTS COLLECTION
+    // SuperAdmin can write, all authenticated admins can read
+    // ===========================================
+    match /saas_announcements/{announcementId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
+    // ===========================================
+    // SAAS MESSAGES COLLECTION
+    // SuperAdmin can read/write all, Company admins can read/write their own
+    // ===========================================
+    match /saas_messages/{messageId} {
+      allow read, write: if isSuperAdmin();
+      allow read, write: if isAuthenticated() && 
+        resource.data.companyId == request.auth.token.email;
+    }
+
+    // ===========================================
     // DEFAULT DENY
     // Any collection not explicitly matched is denied
     // ===========================================
