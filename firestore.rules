@@ -14,7 +14,7 @@ service cloud.firestore {
     // Check if user is the super admin (use custom claim in production)
     // TODO: Replace with custom claim check: request.auth.token.superAdmin == true
     function isSuperAdmin() {
-      return request.auth != null && request.auth.uid == 'YOUR_SUPER_ADMIN_UID_HERE';
+      return request.auth != null && request.auth.uid == '2s683OVMkpZlNdklNZ3RNjHXOt32';
     }
     
     // Check if user is an admin of a specific company
