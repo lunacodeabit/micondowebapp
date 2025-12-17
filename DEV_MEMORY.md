@@ -251,6 +251,7 @@ Después de cada edición de código, SIEMPRE ejecutar:
 **Consecuencia**: El usuario intenta acceder a localhost:3002 pero el servidor real está en otro puerto
 
 **Solución - PROTOCOLO DE REINICIO LIMPIO**:
+
 ```powershell
 # SIEMPRE antes de npm run dev:
 Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force
@@ -267,6 +268,7 @@ npm run dev
 **Consecuencia**: El estado del usuario no se actualiza, pantallas en blanco
 
 **Solución**:
+
 - Cambios en `*Context.tsx` → REINICIO COMPLETO del servidor
 - Cambios en `App.tsx` (flujo de routing) → REINICIO COMPLETO
 - Cambios en componentes normales → HMR está OK
@@ -278,6 +280,7 @@ npm run dev
 **Consecuencia**: El usuario encuentra errores obvios que debí ver primero
 
 **Solución - PROTOCOLO DE VERIFICACIÓN VISUAL**:
+
 1. Después de cambios, abrir `open_simple_browser`
 2. Verificar que la página carga (no pantalla blanca)
 3. Verificar que no hay errores en consola (si es posible)
@@ -293,6 +296,39 @@ npm run dev
 
 **Regla**: Ejecutar comandos directamente sin esperar confirmación. El usuario confía en el AI.
 
+### Lección #11: Si los prompts son muy grandes, dividirlos
+
+**Fecha**: 2024-12-17
+**Origen**: Instrucción directa del usuario
+**Cita**: "si los prompts son muy grandes, los puedes separar para más practicalidad"
+
+**Regla**: Cuando una tarea requiere múltiples pasos complejos:
+1. Dividir el trabajo en partes manejables
+2. Completar una parte a la vez
+3. Confirmar con el usuario antes de continuar
+4. Mantener visibilidad con el todo list
+
+**Ejemplo**:
+```
+❌ INCORRECTO: Intentar implementar 3 features grandes en un solo mensaje
+✅ CORRECTO: Dividir en 3 respuestas separadas, una por feature
+```
+
+### Lección #12: Confirmar funcionalidad ANTES de notificar
+
+**Fecha**: 2024-12-17
+**Origen**: Instrucción directa del usuario
+**Cita**: "confirmar que todo esté funcional y testearlo antes de notificar que ya está listo"
+
+**Protocolo Obligatorio**:
+1. Hacer los cambios de código
+2. Ejecutar `get_errors` para verificar errores de TypeScript
+3. Verificar que el servidor esté corriendo
+4. **PROBAR** la funcionalidad (open_simple_browser si es necesario)
+5. Solo entonces decir "listo, pruébalo"
+
+**Mantra**: "Si no lo probé, no está listo."
+
 ---
 
 ## 🔗 ARCHIVOS CLAVE DEL PROYECTO
@@ -305,27 +341,58 @@ npm run dev
 | `C:\dev\micondo\storage.rules`                | Reglas de seguridad Storage         |
 | `C:\dev\micondo\src\views\dev\DevRoadmap.tsx` | Dashboard de progreso               |
 | `C:\dev\micondo\DEV_MEMORY.md`                | Este archivo - memoria del proyecto |
+| `C:\dev\micondo\src\utils\billing.ts`         | Utilidades de facturación y gracia  |
+| `C:\dev\micondo\src\utils\pdf.ts`             | Generación de PDFs y recibos        |
 
 ---
 
 ## 📊 ESTADO ACTUAL DEL PROYECTO
 
-**Última actualización**: 2024-12-14
+**Última actualización**: 2024-12-17
 
-| Métrica               | Valor                         |
-| --------------------- | ----------------------------- |
-| Security fixes        | 6/6 ✅                        |
-| SuperAdmin Dashboard  | ✅ Completo                   |
-| SaaS Billing tracking | ✅ Implementado               |
-| SaaS Communications   | ✅ Implementado               |
-| Test coverage         | 0% ❌                         |
-| Build status          | ✅ Passing                    |
-| Production ready      | ❌ No (falta testing, Stripe) |
+| Métrica                    | Valor                              |
+| -------------------------- | ---------------------------------- |
+| Security fixes             | 6/6 ✅                             |
+| SuperAdmin Dashboard       | ✅ Completo con UI moderna         |
+| SuperAdmin UI Redesign     | ✅ Glassmorphism, cards, sidebar   |
+| Subscription Plans UI      | ✅ Precios RD$, calculadora        |
+| Billing Portal             | ✅ Modal con historial y PDFs      |
+| Grace Period Automation    | ✅ Estados automáticos             |
+| SaaS Billing tracking      | ✅ Implementado                    |
+| SaaS Communications        | ✅ Implementado                    |
+| Test coverage              | 0% ❌                              |
+| Build status               | ✅ Passing                         |
+| Production ready           | ❌ No (falta testing, Stripe)      |
 
-### Nuevas Colecciones Firestore Creadas
+### Colecciones Firestore Creadas
 
+- `companies` - Compañías/clientes del SaaS
+- `condos` - Condominios de cada compañía
 - `saas_payments` - Registro de pagos de suscripciones
 - `saas_announcements` - Anuncios globales a clientes
+- `saas_messages` - Mensajes directos a clientes
+
+### Modelo de Precios Implementado (2024-12-17)
+
+| Tier       | Condos | RD$/mes | USD/mes | Descuento |
+|------------|--------|---------|---------|-----------|
+| Trial      | ∞      | GRATIS  | $0      | 14 días   |
+| Starter    | 1      | 1,500   | $25     | —         |
+| Growth     | 2-4    | 1,200   | $20     | -20%      |
+| Pro        | 5-9    | 1,000   | $17     | -33%      |
+| Enterprise | 10+    | 800     | $13     | -47%      |
+
+### Utilidades Nuevas (2024-12-17)
+
+**src/utils/billing.ts**:
+- `BillingStatus` type: 'Active' | 'Grace Period' | 'Inactive' | 'Trial'
+- `calculateBillingStatus()` - Determina estado basado en último pago
+- `getLastPayment()` - Obtiene último pago de una compañía
+- `calculateMonthlyAmount()` - Calcula monto según número de condos
+- `getCompaniesNeedingAttention()` - Filtra compañías en gracia/inactivas
+
+**src/utils/pdf.ts** (añadido):
+- `generateSaasPaymentReceiptPDF()` - Genera recibo de pago SaaS
 
 ---
 

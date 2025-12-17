@@ -22,17 +22,28 @@ type CondoContextType = {
 const CondoContext = createContext<CondoContextType | undefined>(undefined);
 
 // --- Componente Proveedor (Provider) ---
+// DEV MODE: No intentar conectar a Firebase en localhost
+const DEV_MODE = window.location.hostname === 'localhost';
+
 export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [condos, setCondos] = useState<Condo[]>([]);
     const [selectedCondo, setSelectedCondo] = useState<Condo | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     
     // Get the admin's company ID from AuthContext
-    const { adminCompanyId, userRole, isSuperAdmin } = useAuth();
+    const { adminCompanyId, userRole, isSuperAdmin, isDevAuthenticated } = useAuth();
 
     // --- LÓGICA DE FIRESTORE: FUNCIÓN ASÍNCRONA PARA LEER DATOS ---
     // Now filters condos by companyId for admins (multi-tenant isolation)
     const fetchCondos = useCallback(async () => {
+        // En modo desarrollo con autenticación simulada, no intentar Firebase
+        if (DEV_MODE && isDevAuthenticated) {
+            console.log('🔧 DEV MODE: Saltando carga de Firebase, usando datos vacíos');
+            setCondos([]);
+            setIsLoading(false);
+            return;
+        }
+        
         setIsLoading(true);
         try {
             const condosCollectionRef = collection(db, "condos");
@@ -90,7 +101,7 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         } finally {
             setIsLoading(false);
         }
-    }, [adminCompanyId, isSuperAdmin]);
+    }, [adminCompanyId, isSuperAdmin, isDevAuthenticated]);
 
     // 4. useEffect: Cargar datos al iniciar (re-fetch when company changes)
     useEffect(() => {

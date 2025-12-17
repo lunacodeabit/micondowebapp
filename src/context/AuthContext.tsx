@@ -27,11 +27,13 @@ import type { Company, Condo } from "../types";
 const SUPER_ADMIN_UID = import.meta.env.VITE_SUPER_ADMIN_UID || "";
 
 // DEV MODE: Permite acceso rápido sin autenticación real
-const DEV_MODE = import.meta.env.DEV; // true en desarrollo, false en producción
+// En localhost siempre mostramos los botones de desarrollo
+const DEV_MODE = import.meta.env.DEV || window.location.hostname === 'localhost';
 
 // DEV CREDENTIALS (solo para testing rápido)
 const DEV_SUPERADMIN_EMAIL = import.meta.env.VITE_DEV_SUPERADMIN_EMAIL || "";
-const DEV_SUPERADMIN_PASSWORD = import.meta.env.VITE_DEV_SUPERADMIN_PASSWORD || "";
+const DEV_SUPERADMIN_PASSWORD =
+  import.meta.env.VITE_DEV_SUPERADMIN_PASSWORD || "";
 
 export type UserRole = "superadmin" | "admin" | "resident" | null;
 
@@ -100,48 +102,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return signOut(auth);
   };
 
-  // DEV MODE: Función para login rápido CON autenticación real
-  // Usa las credenciales del .env para hacer login de verdad
-  const devLogin = async (role: UserRole) => {
+  // DEV MODE: Función para login rápido SIN autenticación real
+  // Simula el login para desarrollo rápido
+  const devLogin = (role: UserRole) => {
     if (!DEV_MODE) return;
 
-    console.log(`🔧 DEV MODE: Accediendo como ${role}`);
+    console.log(`🔧 DEV MODE: Accediendo como ${role} (sin Firebase Auth)`);
     setLoading(true);
 
-    try {
-      if (role === "superadmin") {
-        // Login real con credenciales de SuperAdmin
-        if (DEV_SUPERADMIN_EMAIL && DEV_SUPERADMIN_PASSWORD) {
-          await signInWithEmailAndPassword(auth, DEV_SUPERADMIN_EMAIL, DEV_SUPERADMIN_PASSWORD);
-          // El onAuthStateChanged se encargará de setear el estado
-        } else {
-          console.error("DEV: Credenciales de SuperAdmin no configuradas en .env");
-          setLoading(false);
-        }
-      } else if (role === "admin") {
-        // Por ahora, usar las mismas credenciales de superadmin para probar
-        // TODO: Añadir credenciales específicas de admin en .env
-        if (DEV_SUPERADMIN_EMAIL && DEV_SUPERADMIN_PASSWORD) {
-          // Primero hacemos login como superadmin para poder leer companies
-          await signInWithEmailAndPassword(auth, DEV_SUPERADMIN_EMAIL, DEV_SUPERADMIN_PASSWORD);
-        } else {
-          console.error("DEV: Credenciales no configuradas en .env");
-          setLoading(false);
-        }
-      } else if (role === "resident") {
-        // Por ahora, usar las mismas credenciales de superadmin
-        // TODO: Añadir credenciales específicas de residente en .env
-        if (DEV_SUPERADMIN_EMAIL && DEV_SUPERADMIN_PASSWORD) {
-          await signInWithEmailAndPassword(auth, DEV_SUPERADMIN_EMAIL, DEV_SUPERADMIN_PASSWORD);
-        } else {
-          console.error("DEV: Credenciales no configuradas en .env");
-          setLoading(false);
-        }
-      }
-    } catch (error: any) {
-      console.error("Error en devLogin:", error.message);
-      setLoading(false);
+    // Simular login según el rol seleccionado
+    if (role === "superadmin") {
+      setIsSuperAdmin(true);
+      setUserRole("superadmin");
+      setCompanyIsActive(true);
+      setAdminCompanyId(null);
+      setResidentData(null);
+    } else if (role === "admin") {
+      setIsSuperAdmin(false);
+      setUserRole("admin");
+      setCompanyIsActive(true);
+      setAdminCompanyId("dev-company-id"); // ID simulado para desarrollo
+      setResidentData(null);
+    } else if (role === "resident") {
+      setIsSuperAdmin(false);
+      setUserRole("resident");
+      setCompanyIsActive(true);
+      setAdminCompanyId(null);
+      setResidentData({ condoId: "dev-condo-id", unitId: 101 }); // Datos simulados
     }
+
+    setIsDevAuthenticated(true);
+    setLoading(false);
   };
 
   // FUNCIÓN DE VERIFICACIÓN DE ROL Y PERMISOS
@@ -238,12 +229,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    // EN DEV MODE: Si ya estamos autenticados con devLogin, no esperar Firebase
+    if (DEV_MODE && isDevAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      // Si estamos en dev mode y ya autenticados, ignorar Firebase
+      if (DEV_MODE && isDevAuthenticated) {
+        setLoading(false);
+        return;
+      }
+
       setIsSuperAdmin(false);
       setUserRole(null);
       setCompanyIsActive(false);
       setResidentData(null);
-      setAdminCompanyId(null); // Reset on auth state change
+      setAdminCompanyId(null);
 
       if (user) {
         setCurrentUser(user);
@@ -255,7 +258,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
 
     return unsubscribe;
-  }, []);
+  }, [isDevAuthenticated]);
 
   const value = {
     currentUser,

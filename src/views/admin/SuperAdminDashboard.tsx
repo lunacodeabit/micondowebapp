@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import type { Company, Condo } from "../../types";
@@ -11,6 +11,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import { SuperAdminSidebar } from "./layout/SuperAdminSidebar";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../firebaseConfig";
 import { Modal } from "../../components/ui/Modal";
@@ -18,6 +19,12 @@ import { Spinner } from "../../components/ui/Spinner";
 import { Icon } from "../../components/ui/Icon";
 import { getLocalDateString } from "../../utils/date";
 import { DevRoadmap } from "../dev/DevRoadmap";
+import {
+  calculateBillingStatus,
+  getLastPayment,
+  type PaymentRecord,
+  type BillingInfo,
+} from "../../utils/billing";
 
 type CompanyFormProps = {
   isOpen: boolean;
@@ -493,6 +500,362 @@ const ViewClientsModal = ({
 };
 
 // =============================================
+// COMPONENTE: Billing Detail Modal (Portal de Facturación)
+// =============================================
+import { generateSaasPaymentReceiptPDF } from "../../utils/pdf";
+
+type BillingDetailModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  company: Company | null;
+  payments: PaymentRecord[];
+  onPaymentRegistered: () => void;
+};
+
+const BillingDetailModal = ({
+  isOpen,
+  onClose,
+  company,
+  payments,
+  onPaymentRegistered,
+}: BillingDetailModalProps) => {
+  const { addToast } = useToast();
+  const [isPaymentFormOpen, setIsPaymentFormOpen] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({
+    amount: "",
+    method: "Transferencia",
+    reference: "",
+    notes: "",
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  if (!company) return null;
+
+  const companyPayments = payments
+    .filter((p) => p.companyId === company.id)
+    .sort(
+      (a, b) =>
+        new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
+    );
+
+  const lastPayment = companyPayments.length > 0 ? companyPayments[0] : null;
+  const isTrial = company.plan === "Trial" || !company.plan;
+  const billing = calculateBillingStatus(
+    company.billingStartDate,
+    company.gracePeriodDays,
+    lastPayment,
+    isTrial
+  );
+
+  const totalPaid = companyPayments.reduce((acc, p) => acc + p.amount, 0);
+
+  const handleSubmitPayment = async () => {
+    if (!paymentForm.amount) {
+      addToast("Ingrese el monto del pago", "error");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const today = new Date();
+      const nextMonth = new Date(today);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+      const paymentData = {
+        companyId: company.id,
+        companyName: company.name,
+        amount: parseFloat(paymentForm.amount),
+        paymentDate: today.toISOString().split("T")[0],
+        periodStart: today.toISOString().split("T")[0],
+        periodEnd: nextMonth.toISOString().split("T")[0],
+        method: paymentForm.method,
+        reference: paymentForm.reference,
+        notes: paymentForm.notes,
+        createdAt: today.toISOString(),
+      };
+
+      await addDoc(collection(db, "saas_payments"), paymentData);
+      addToast(`Pago de RD$${paymentForm.amount} registrado`, "success");
+      setIsPaymentFormOpen(false);
+      setPaymentForm({ amount: "", method: "Transferencia", reference: "", notes: "" });
+      onPaymentRegistered();
+    } catch (error) {
+      console.error("Error:", error);
+      addToast("Error al registrar el pago", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={`Facturación: ${company.name}`} size="4xl">
+      <div className="p-6 space-y-6">
+        {/* Estado de Cuenta */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Estado Actual */}
+          <div
+            className={`rounded-xl p-4 border ${
+              billing.status === "active"
+                ? "bg-green-500/10 border-green-500/30"
+                : billing.status === "grace"
+                ? "bg-yellow-500/10 border-yellow-500/30"
+                : billing.status === "trial"
+                ? "bg-blue-500/10 border-blue-500/30"
+                : "bg-red-500/10 border-red-500/30"
+            }`}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Icon
+                name={
+                  billing.status === "active"
+                    ? "check-circle"
+                    : billing.status === "grace"
+                    ? "clock"
+                    : billing.status === "trial"
+                    ? "gift"
+                    : "alert-circle"
+                }
+                className={`w-5 h-5 ${
+                  billing.status === "active"
+                    ? "text-green-400"
+                    : billing.status === "grace"
+                    ? "text-yellow-400"
+                    : billing.status === "trial"
+                    ? "text-blue-400"
+                    : "text-red-400"
+                }`}
+              />
+              <span className="text-sm text-neutral-400">Estado</span>
+            </div>
+            <p
+              className={`text-lg font-bold ${
+                billing.status === "active"
+                  ? "text-green-400"
+                  : billing.status === "grace"
+                  ? "text-yellow-400"
+                  : billing.status === "trial"
+                  ? "text-blue-400"
+                  : "text-red-400"
+              }`}
+            >
+              {billing.statusLabel}
+            </p>
+          </div>
+
+          {/* Próximo Vencimiento */}
+          <div className="bg-neutral-800 rounded-xl p-4 border border-neutral-700">
+            <div className="flex items-center gap-2 mb-2">
+              <Icon name="calendar" className="w-5 h-5 text-neutral-400" />
+              <span className="text-sm text-neutral-400">Próximo Vencimiento</span>
+            </div>
+            <p className="text-lg font-bold text-white">
+              {billing.nextDueDate.toLocaleDateString("es-DO", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </p>
+            {billing.daysUntilDue > 0 && (
+              <p className="text-xs text-neutral-500">
+                en {billing.daysUntilDue} días
+              </p>
+            )}
+          </div>
+
+          {/* Total Pagado */}
+          <div className="bg-neutral-800 rounded-xl p-4 border border-neutral-700">
+            <div className="flex items-center gap-2 mb-2">
+              <Icon name="dollar-sign" className="w-5 h-5 text-green-400" />
+              <span className="text-sm text-neutral-400">Total Pagado</span>
+            </div>
+            <p className="text-lg font-bold text-white">
+              RD$ {totalPaid.toLocaleString()}
+            </p>
+            <p className="text-xs text-neutral-500">
+              {companyPayments.length} pagos registrados
+            </p>
+          </div>
+        </div>
+
+        {/* Información del Plan */}
+        <div className="bg-neutral-800/50 rounded-xl p-4 border border-neutral-700 flex justify-between items-center">
+          <div>
+            <p className="text-sm text-neutral-400">Plan Actual</p>
+            <p className="text-lg font-bold text-white">{company.plan || "Pro"}</p>
+            <p className="text-xs text-neutral-500">
+              Período de gracia: {company.gracePeriodDays} días
+            </p>
+          </div>
+          <button
+            onClick={() => setIsPaymentFormOpen(!isPaymentFormOpen)}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium flex items-center gap-2 transition-colors"
+          >
+            <Icon name="plus" className="w-4 h-4" />
+            Registrar Pago
+          </button>
+        </div>
+
+        {/* Formulario de Pago */}
+        {isPaymentFormOpen && (
+          <div className="bg-neutral-900 rounded-xl p-4 border border-green-500/30 space-y-4">
+            <h4 className="font-semibold text-white flex items-center gap-2">
+              <Icon name="credit-card" className="w-4 h-4 text-green-400" />
+              Nuevo Pago
+            </h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-neutral-400 mb-1">Monto (RD$) *</label>
+                <input
+                  type="number"
+                  value={paymentForm.amount}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
+                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white"
+                  placeholder="1500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-neutral-400 mb-1">Método</label>
+                <select
+                  value={paymentForm.method}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, method: e.target.value })}
+                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white"
+                >
+                  <option>Transferencia</option>
+                  <option>Efectivo</option>
+                  <option>Cheque</option>
+                  <option>Tarjeta</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-neutral-400 mb-1">Referencia</label>
+                <input
+                  type="text"
+                  value={paymentForm.reference}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, reference: e.target.value })}
+                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white"
+                  placeholder="REF-001"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-neutral-400 mb-1">Notas</label>
+                <input
+                  type="text"
+                  value={paymentForm.notes}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white"
+                  placeholder="Pago mensual diciembre"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setIsPaymentFormOpen(false)}
+                className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSubmitPayment}
+                disabled={isSaving}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-medium flex items-center gap-2"
+              >
+                {isSaving ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Icon name="check" className="w-4 h-4" />
+                )}
+                Guardar Pago
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Historial de Pagos */}
+        <div>
+          <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+            <Icon name="history" className="w-4 h-4 text-neutral-400" />
+            Historial de Pagos
+          </h4>
+          {companyPayments.length === 0 ? (
+            <div className="text-center py-8 text-neutral-500">
+              <Icon name="inbox" className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p>No hay pagos registrados</p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {companyPayments.map((payment, index) => (
+                <div
+                  key={payment.id}
+                  className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50 hover:border-neutral-600 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                      <Icon name="check" className="w-5 h-5 text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">
+                        RD$ {payment.amount.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-neutral-500">
+                        {payment.method} • {payment.reference || "Sin ref."}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className="text-sm text-neutral-300">
+                        {new Date(payment.paymentDate).toLocaleDateString("es-DO", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                      <p className="text-xs text-neutral-500">
+                        Período: {payment.periodStart} - {payment.periodEnd}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        generateSaasPaymentReceiptPDF({
+                          receiptNumber: `REC-${payment.id.slice(-6).toUpperCase()}`,
+                          companyName: company.name,
+                          companyRnc: company.rnc,
+                          amount: payment.amount,
+                          paymentDate: payment.paymentDate,
+                          periodStart: payment.periodStart,
+                          periodEnd: payment.periodEnd,
+                          method: payment.method,
+                          reference: payment.reference,
+                        });
+                        addToast("Recibo generado", "success");
+                      }}
+                      className="p-2 hover:bg-neutral-700 rounded-lg transition-colors"
+                      title="Descargar Recibo"
+                    >
+                      <Icon name="download" className="w-4 h-4 text-neutral-400 hover:text-white" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Botones */}
+        <div className="flex justify-end gap-2 pt-4 border-t border-neutral-800">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+// =============================================
 // COMPONENTE: TAB DE FACTURACIÓN
 // =============================================
 type BillingTabProps = {
@@ -602,95 +965,160 @@ const BillingTab = ({ companies }: BillingTabProps) => {
   );
 
   return (
-    <div>
-      {/* Resumen de Facturación */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-neutral-800 p-4 rounded-lg">
-          <div className="text-sm text-neutral-400">Recaudado Este Mes</div>
-          <div className="text-2xl font-bold text-green-400">
+    <div className="space-y-6">
+      {/* Métricas de Facturación - Estilo moderno */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Recaudado Este Mes - Card destacada */}
+        <div className="bg-gradient-to-br from-emerald-600/20 to-green-600/10 border border-emerald-500/30 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+              <Icon name="trending-up" className="w-6 h-6 text-emerald-400" />
+            </div>
+            <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              Este Mes
+            </span>
+          </div>
+          <p className="text-neutral-400 text-sm mb-1">Recaudado</p>
+          <p className="text-3xl font-bold text-white">
             ${totalThisMonth.toLocaleString()}
-          </div>
+          </p>
+          <p className="text-xs text-neutral-500 mt-2">
+            {thisMonthPayments.length} pagos recibidos
+          </p>
         </div>
-        <div className="bg-neutral-800 p-4 rounded-lg">
-          <div className="text-sm text-neutral-400">Pagos Este Mes</div>
-          <div className="text-2xl font-bold text-blue-400">
-            {thisMonthPayments.length}
+
+        {/* Promedio por Cliente */}
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 hover:border-neutral-700 transition-colors">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+              <Icon name="calculator" className="w-6 h-6 text-blue-400" />
+            </div>
           </div>
+          <p className="text-neutral-400 text-sm mb-1">Promedio por Pago</p>
+          <p className="text-3xl font-bold text-white">
+            $
+            {thisMonthPayments.length > 0
+              ? Math.round(
+                  totalThisMonth / thisMonthPayments.length
+                ).toLocaleString()
+              : "0"}
+          </p>
+          <p className="text-xs text-neutral-500 mt-2">
+            Ticket promedio mensual
+          </p>
         </div>
-        <div className="bg-neutral-800 p-4 rounded-lg">
-          <div className="text-sm text-neutral-400">Total Histórico</div>
-          <div className="text-2xl font-bold text-white">
+
+        {/* Total Histórico */}
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 hover:border-neutral-700 transition-colors">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+              <Icon name="wallet" className="w-6 h-6 text-purple-400" />
+            </div>
+          </div>
+          <p className="text-neutral-400 text-sm mb-1">Total Histórico</p>
+          <p className="text-3xl font-bold text-white">
             ${totalAllTime.toLocaleString()}
-          </div>
+          </p>
+          <p className="text-xs text-neutral-500 mt-2">
+            {payments.length} pagos totales
+          </p>
         </div>
       </div>
 
-      {/* Botón Registrar Pago */}
-      <div className="flex justify-end mb-4">
+      {/* Botón Registrar Pago - Mejorado */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-white">Historial de Pagos</h3>
         <button
           onClick={() => setIsPaymentModalOpen(true)}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"
+          className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/20"
         >
           <Icon name="plus" size={18} />
           Registrar Pago
         </button>
       </div>
 
-      {/* Historial de Pagos */}
-      <div className="bg-neutral-900 rounded-lg overflow-hidden">
+      {/* Historial de Pagos - Tabla mejorada */}
+      <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl overflow-hidden">
         <table className="min-w-full">
-          <thead className="bg-neutral-800">
+          <thead className="bg-neutral-800/50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
                 Fecha
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
                 Compañía
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
                 Monto
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
                 Método
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase">
+              <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
                 Referencia
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-800">
+          <tbody className="divide-y divide-neutral-800/50">
             {loading && (
               <tr>
-                <td colSpan={5} className="text-center py-8">
-                  <Spinner className="w-6 h-6 mx-auto" />
+                <td colSpan={5} className="text-center py-12">
+                  <Spinner className="w-8 h-8 mx-auto" />
+                  <p className="text-neutral-500 mt-2">Cargando pagos...</p>
                 </td>
               </tr>
             )}
             {!loading && payments.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center py-8 text-neutral-400">
-                  No hay pagos registrados.
+                <td colSpan={5} className="text-center py-12">
+                  <div className="w-16 h-16 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
+                    <Icon
+                      name="credit-card"
+                      className="w-8 h-8 text-neutral-600"
+                    />
+                  </div>
+                  <p className="text-neutral-400 font-medium">
+                    No hay pagos registrados
+                  </p>
+                  <p className="text-neutral-500 text-sm mt-1">
+                    Los pagos aparecerán aquí
+                  </p>
                 </td>
               </tr>
             )}
             {!loading &&
               payments.length > 0 &&
               payments.map((payment: any) => (
-                <tr key={payment.id} className="hover:bg-neutral-800/50">
+                <tr
+                  key={payment.id}
+                  className="hover:bg-neutral-800/30 transition-colors"
+                >
                   <td className="px-6 py-4 text-sm text-neutral-300">
                     {payment.paymentDate}
                   </td>
-                  <td className="px-6 py-4 text-sm text-white font-medium">
-                    {payment.companyName}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center">
+                        <Icon
+                          name="building-2"
+                          className="w-4 h-4 text-blue-400"
+                        />
+                      </div>
+                      <span className="text-sm text-white font-medium">
+                        {payment.companyName}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-green-400 font-bold">
-                    ${payment.amount?.toLocaleString()}
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1 rounded-lg">
+                      ${payment.amount?.toLocaleString()}
+                    </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-neutral-300">
                     {payment.method}
                   </td>
-                  <td className="px-6 py-4 text-sm text-neutral-400">
-                    {payment.reference || "-"}
+                  <td className="px-6 py-4 text-sm text-neutral-500">
+                    {payment.reference || "—"}
                   </td>
                 </tr>
               ))}
@@ -926,55 +1354,89 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
   };
 
   return (
-    <div>
-      {/* Resumen */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-neutral-800 p-4 rounded-lg">
-          <div className="text-sm text-neutral-400">Anuncios Activos</div>
-          <div className="text-2xl font-bold text-green-400">
+    <div className="space-y-6">
+      {/* Métricas de Comunicaciones - Estilo moderno */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Anuncios Activos - Card destacada */}
+        <div className="bg-gradient-to-br from-indigo-600/20 to-purple-600/10 border border-indigo-500/30 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+              <Icon name="megaphone" className="w-6 h-6 text-indigo-400" />
+            </div>
+            <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
+              Activos
+            </span>
+          </div>
+          <p className="text-neutral-400 text-sm mb-1">Anuncios Activos</p>
+          <p className="text-3xl font-bold text-white">
             {announcements.filter((a: any) => a.isActive).length}
-          </div>
+          </p>
+          <p className="text-xs text-neutral-500 mt-2">
+            Visibles para clientes
+          </p>
         </div>
-        <div className="bg-neutral-800 p-4 rounded-lg">
-          <div className="text-sm text-neutral-400">Total Anuncios</div>
-          <div className="text-2xl font-bold text-blue-400">
+
+        {/* Total Anuncios */}
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 hover:border-neutral-700 transition-colors">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+              <Icon name="file-text" className="w-6 h-6 text-blue-400" />
+            </div>
+          </div>
+          <p className="text-neutral-400 text-sm mb-1">Total Anuncios</p>
+          <p className="text-3xl font-bold text-white">
             {announcements.length}
-          </div>
+          </p>
+          <p className="text-xs text-neutral-500 mt-2">Histórico completo</p>
         </div>
-        <div className="bg-neutral-800 p-4 rounded-lg">
-          <div className="text-sm text-neutral-400">Clientes Alcanzados</div>
-          <div className="text-2xl font-bold text-purple-400">
-            {companies.length}
+
+        {/* Alcance */}
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 hover:border-neutral-700 transition-colors">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+              <Icon name="users" className="w-6 h-6 text-purple-400" />
+            </div>
           </div>
+          <p className="text-neutral-400 text-sm mb-1">Clientes Alcanzados</p>
+          <p className="text-3xl font-bold text-white">{companies.length}</p>
+          <p className="text-xs text-neutral-500 mt-2">Compañías activas</p>
         </div>
       </div>
 
-      {/* Botón Nuevo Anuncio */}
-      <div className="flex justify-end mb-4">
+      {/* Header + Botón Nuevo Anuncio */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-white">
+          Anuncios Publicados
+        </h3>
         <button
           onClick={() => setIsAnnouncementModalOpen(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg"
+          className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/20"
         >
           <Icon name="megaphone" size={18} />
           Nuevo Anuncio
         </button>
       </div>
 
-      {/* Lista de Anuncios */}
+      {/* Lista de Anuncios - Mejorada */}
       <div className="space-y-4">
         {loading && (
-          <div className="text-center py-8">
-            <Spinner className="w-6 h-6 mx-auto" />
+          <div className="text-center py-12 bg-neutral-900/50 border border-neutral-800 rounded-2xl">
+            <Spinner className="w-8 h-8 mx-auto" />
+            <p className="text-neutral-500 mt-2">Cargando anuncios...</p>
           </div>
         )}
 
         {!loading && announcements.length === 0 && (
-          <div className="text-center py-8 text-neutral-400 bg-neutral-900 rounded-lg">
-            <Icon
-              name="megaphone"
-              className="w-12 h-12 mx-auto mb-2 opacity-50"
-            />
-            <p>No hay anuncios publicados.</p>
+          <div className="text-center py-12 bg-neutral-900/50 border border-neutral-800 rounded-2xl">
+            <div className="w-16 h-16 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
+              <Icon name="megaphone" className="w-8 h-8 text-neutral-600" />
+            </div>
+            <p className="text-neutral-400 font-medium">
+              No hay anuncios publicados
+            </p>
+            <p className="text-neutral-500 text-sm mt-1">
+              Crea tu primer anuncio para comunicarte con tus clientes
+            </p>
           </div>
         )}
 
@@ -985,22 +1447,36 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
             return (
               <div
                 key={announcement.id}
-                className={`bg-neutral-900 p-4 rounded-lg border-l-4 ${announcement.isActive ? "border-green-500" : "border-neutral-600"}`}
+                className={`bg-neutral-900/50 border rounded-2xl p-5 transition-all duration-200 hover:bg-neutral-900/80 ${
+                  announcement.isActive
+                    ? "border-l-4 border-l-green-500 border-t-neutral-800 border-r-neutral-800 border-b-neutral-800"
+                    : "border-neutral-800 opacity-60"
+                }`}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon
-                        name={typeConfig.icon as any}
-                        className={`w-5 h-5 ${typeConfig.color}`}
-                      />
+                    <div className="flex items-center gap-2 mb-3">
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${typeConfig.color
+                          .replace("text-", "bg-")
+                          .replace("-400", "-500/20")}`}
+                      >
+                        <Icon
+                          name={typeConfig.icon as any}
+                          className={`w-4 h-4 ${typeConfig.color}`}
+                        />
+                      </div>
                       <span
-                        className={`text-xs px-2 py-1 rounded-full bg-neutral-800 ${typeConfig.color}`}
+                        className={`text-xs px-2.5 py-1 rounded-full bg-neutral-800 ${typeConfig.color} font-medium`}
                       >
                         {typeConfig.label}
                       </span>
-                      {!announcement.isActive && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-neutral-700 text-neutral-400">
+                      {announcement.isActive ? (
+                        <span className="text-xs px-2.5 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
+                          ● Activo
+                        </span>
+                      ) : (
+                        <span className="text-xs px-2.5 py-1 rounded-full bg-neutral-700 text-neutral-400">
                           Inactivo
                         </span>
                       )}
@@ -1008,19 +1484,29 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
                     <h3 className="text-lg font-bold text-white">
                       {announcement.title}
                     </h3>
-                    <p className="text-neutral-400 mt-1">
+                    <p className="text-neutral-400 mt-2 line-clamp-2">
                       {announcement.content}
                     </p>
-                    <div className="text-xs text-neutral-500 mt-2">
-                      Publicado: {announcement.publishDate} | Audiencia:{" "}
-                      {announcement.targetAudience === "all"
-                        ? "Todos"
-                        : announcement.targetAudience}
+                    <div className="text-xs text-neutral-500 mt-3 flex items-center gap-4">
+                      <span className="flex items-center gap-1">
+                        <Icon name="calendar" className="w-3 h-3" />
+                        {announcement.publishDate}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Icon name="users" className="w-3 h-3" />
+                        {announcement.targetAudience === "all"
+                          ? "Todos"
+                          : announcement.targetAudience}
+                      </span>
                     </div>
                   </div>
                   <button
                     onClick={() => toggleAnnouncementStatus(announcement)}
-                    className={`px-3 py-1 rounded text-xs font-bold ${announcement.isActive ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"} text-white`}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
+                      announcement.isActive
+                        ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
+                        : "bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
+                    }`}
                   >
                     {announcement.isActive ? "Desactivar" : "Activar"}
                   </button>
@@ -1494,8 +1980,667 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
   );
 };
 
+// =============================================
+// COMPONENTE: Tab de Configuración
+// =============================================
+const SettingsTab = () => {
+  const { addToast } = useToast();
+  const [settings, setSettings] = useState({
+    companyName: "MI CONDO SaaS",
+    supportEmail: "soporte@micondo.app",
+    supportPhone: "809-555-1234",
+    defaultGracePeriod: 7,
+    defaultCurrency: "DOP",
+    enableEmailNotifications: true,
+    enableSmsNotifications: false,
+    maintenanceMode: false,
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveSettings = async () => {
+    setIsSaving(true);
+    // Simular guardado
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    addToast("Configuración guardada correctamente", "success");
+    setIsSaving(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Configuración</h2>
+          <p className="text-neutral-400 text-sm mt-1">
+            Ajustes generales del sistema
+          </p>
+        </div>
+        <button
+          onClick={handleSaveSettings}
+          disabled={isSaving}
+          className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold rounded-xl flex items-center gap-2 disabled:opacity-50 transition-all"
+        >
+          {isSaving ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Guardando...
+            </>
+          ) : (
+            <>
+              <Icon name="save" className="w-4 h-4" />
+              Guardar Cambios
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Información General */}
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+              <Icon name="building-2" className="w-5 h-5 text-blue-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-white">
+              Información General
+            </h3>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-neutral-400 mb-1">
+                Nombre de la Plataforma
+              </label>
+              <input
+                type="text"
+                value={settings.companyName}
+                onChange={(e) =>
+                  setSettings({ ...settings, companyName: e.target.value })
+                }
+                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-400 mb-1">
+                Email de Soporte
+              </label>
+              <input
+                type="email"
+                value={settings.supportEmail}
+                onChange={(e) =>
+                  setSettings({ ...settings, supportEmail: e.target.value })
+                }
+                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-400 mb-1">
+                Teléfono de Soporte
+              </label>
+              <input
+                type="tel"
+                value={settings.supportPhone}
+                onChange={(e) =>
+                  setSettings({ ...settings, supportPhone: e.target.value })
+                }
+                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Configuración de Facturación */}
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+              <Icon name="credit-card" className="w-5 h-5 text-emerald-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-white">Facturación</h3>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-neutral-400 mb-1">
+                Período de Gracia por Defecto (días)
+              </label>
+              <input
+                type="number"
+                value={settings.defaultGracePeriod}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    defaultGracePeriod: parseInt(e.target.value) || 7,
+                  })
+                }
+                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-400 mb-1">
+                Moneda por Defecto
+              </label>
+              <select
+                value={settings.defaultCurrency}
+                onChange={(e) =>
+                  setSettings({ ...settings, defaultCurrency: e.target.value })
+                }
+                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+              >
+                <option value="DOP">DOP - Peso Dominicano</option>
+                <option value="USD">USD - Dólar Americano</option>
+                <option value="EUR">EUR - Euro</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Notificaciones */}
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+              <Icon name="bell" className="w-5 h-5 text-purple-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-white">Notificaciones</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-white">
+                  Notificaciones por Email
+                </p>
+                <p className="text-xs text-neutral-500">
+                  Enviar alertas y notificaciones por correo
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  setSettings({
+                    ...settings,
+                    enableEmailNotifications: !settings.enableEmailNotifications,
+                  })
+                }
+                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${
+                  settings.enableEmailNotifications
+                    ? "bg-purple-600"
+                    : "bg-neutral-700"
+                }`}
+              >
+                <span
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${
+                    settings.enableEmailNotifications
+                      ? "translate-x-5"
+                      : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-white">
+                  Notificaciones por SMS
+                </p>
+                <p className="text-xs text-neutral-500">
+                  Enviar alertas críticas por mensaje de texto
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  setSettings({
+                    ...settings,
+                    enableSmsNotifications: !settings.enableSmsNotifications,
+                  })
+                }
+                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${
+                  settings.enableSmsNotifications
+                    ? "bg-purple-600"
+                    : "bg-neutral-700"
+                }`}
+              >
+                <span
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${
+                    settings.enableSmsNotifications
+                      ? "translate-x-5"
+                      : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Modo Mantenimiento */}
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+              <Icon name="tool" className="w-5 h-5 text-orange-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-white">Sistema</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg border border-orange-500/20">
+              <div>
+                <p className="text-sm font-medium text-white">
+                  Modo Mantenimiento
+                </p>
+                <p className="text-xs text-neutral-500">
+                  Activar para deshabilitar acceso de clientes
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  setSettings({
+                    ...settings,
+                    maintenanceMode: !settings.maintenanceMode,
+                  })
+                }
+                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${
+                  settings.maintenanceMode ? "bg-orange-600" : "bg-neutral-700"
+                }`}
+              >
+                <span
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${
+                    settings.maintenanceMode
+                      ? "translate-x-5"
+                      : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="p-4 bg-neutral-800/30 rounded-lg border border-neutral-700/50">
+              <div className="flex items-start gap-3">
+                <Icon name="info" className="w-5 h-5 text-blue-400 mt-0.5" />
+                <div>
+                  <p className="text-sm text-neutral-300">
+                    Versión del Sistema
+                  </p>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    MI CONDO SaaS v1.0.0-dev
+                  </p>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Ambiente: {window.location.hostname === "localhost" ? "Desarrollo" : "Producción"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// =============================================
+// COMPONENTE: Tab de Planes de Suscripción
+// =============================================
+type PricingTier = {
+  minCondos: number;
+  maxCondos: number | null;
+  pricePerCondo: number;
+  priceUSD: number;
+  label: string;
+};
+
+const PRICING_TIERS: PricingTier[] = [
+  { minCondos: 1, maxCondos: 1, pricePerCondo: 1500, priceUSD: 25, label: "1 condo" },
+  { minCondos: 2, maxCondos: 4, pricePerCondo: 1200, priceUSD: 20, label: "2-4 condos" },
+  { minCondos: 5, maxCondos: 9, pricePerCondo: 1000, priceUSD: 17, label: "5-9 condos" },
+  { minCondos: 10, maxCondos: null, pricePerCondo: 800, priceUSD: 13, label: "10+ condos" },
+];
+
+const TRIAL_DAYS = 14;
+
+const calculateMonthlyPrice = (condoCount: number): { total: number; perCondo: number; tier: PricingTier } => {
+  const tier = PRICING_TIERS.find(
+    (t) => condoCount >= t.minCondos && (t.maxCondos === null || condoCount <= t.maxCondos)
+  ) || PRICING_TIERS[PRICING_TIERS.length - 1];
+  
+  return {
+    total: condoCount * tier.pricePerCondo,
+    perCondo: tier.pricePerCondo,
+    tier,
+  };
+};
+
+const PlansTab = ({ companies }: { companies: Company[] }) => {
+  const { addToast } = useToast();
+  const [condoSlider, setCondoSlider] = useState(1);
+  const [showCalculator, setShowCalculator] = useState(false);
+
+  const pricing = calculateMonthlyPrice(condoSlider);
+  const annualTotal = pricing.total * 12;
+  const annualDiscount = annualTotal * 0.1; // 10% descuento anual
+
+  // Estadísticas de planes actuales
+  const planStats = {
+    trial: companies.filter((c) => c.plan === "Trial" || !c.plan).length,
+    active: companies.filter((c) => c.status === "Activo" && c.plan !== "Trial").length,
+    totalCondos: companies.reduce((acc, c) => acc + (c.condoCount || 1), 0),
+    monthlyRevenue: companies
+      .filter((c) => c.status === "Activo" && c.plan !== "Trial")
+      .reduce((acc, c) => {
+        const condos = c.condoCount || 1;
+        return acc + calculateMonthlyPrice(condos).total;
+      }, 0),
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Planes y Precios</h2>
+          <p className="text-neutral-400 text-sm mt-1">
+            Gestión de planes de suscripción y pricing
+          </p>
+        </div>
+        <button
+          onClick={() => setShowCalculator(!showCalculator)}
+          className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl flex items-center gap-2 transition-colors"
+        >
+          <Icon name="calculator" className="w-4 h-4" />
+          Calculadora
+        </button>
+      </div>
+
+      {/* Métricas de Revenue */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 border border-green-500/30 rounded-xl p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+              <Icon name="dollar-sign" className="w-6 h-6 text-green-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">
+                RD$ {planStats.monthlyRevenue.toLocaleString()}
+              </p>
+              <p className="text-xs text-green-400">Ingreso Mensual</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+              <Icon name="building-2" className="w-6 h-6 text-blue-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">{planStats.totalCondos}</p>
+              <p className="text-xs text-neutral-400">Condos Activos</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+              <Icon name="users" className="w-6 h-6 text-purple-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">{planStats.active}</p>
+              <p className="text-xs text-neutral-400">Clientes Pagando</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+              <Icon name="clock" className="w-6 h-6 text-yellow-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">{planStats.trial}</p>
+              <p className="text-xs text-neutral-400">En Trial</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Calculadora de Precios */}
+      {showCalculator && (
+        <div className="bg-gradient-to-br from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-2xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Icon name="calculator" className="w-5 h-5 text-purple-400" />
+            Calculadora de Precios
+          </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-neutral-300 mb-3">
+                ¿Cuántos condominios administras?
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="20"
+                value={condoSlider}
+                onChange={(e) => setCondoSlider(parseInt(e.target.value))}
+                className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+              />
+              <div className="flex justify-between text-xs text-neutral-500 mt-1">
+                <span>1</span>
+                <span>5</span>
+                <span>10</span>
+                <span>15</span>
+                <span>20+</span>
+              </div>
+              <div className="text-center mt-4">
+                <span className="text-4xl font-bold text-white">{condoSlider}</span>
+                <span className="text-neutral-400 ml-2">condominios</span>
+              </div>
+            </div>
+            <div className="bg-neutral-900/50 rounded-xl p-5 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-neutral-400">Precio por condo:</span>
+                <span className="text-white font-bold">
+                  RD$ {pricing.perCondo.toLocaleString()}/mes
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-lg">
+                <span className="text-neutral-300">Total Mensual:</span>
+                <span className="text-green-400 font-bold">
+                  RD$ {pricing.total.toLocaleString()}
+                </span>
+              </div>
+              <div className="border-t border-neutral-700 pt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-400">Total Anual:</span>
+                  <span className="text-white">RD$ {annualTotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-green-400">Con 10% descuento:</span>
+                  <span className="text-green-400 font-bold">
+                    RD$ {(annualTotal - annualDiscount).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <div className="pt-2">
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  pricing.tier.minCondos >= 10 
+                    ? "bg-green-500/20 text-green-400" 
+                    : pricing.tier.minCondos >= 5 
+                      ? "bg-blue-500/20 text-blue-400"
+                      : pricing.tier.minCondos >= 2
+                        ? "bg-purple-500/20 text-purple-400"
+                        : "bg-neutral-700 text-neutral-300"
+                }`}>
+                  Tier: {pricing.tier.label}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tabla de Precios */}
+      <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl overflow-hidden">
+        <div className="p-6 border-b border-neutral-800">
+          <h3 className="text-lg font-bold text-white">Estructura de Precios</h3>
+          <p className="text-sm text-neutral-400 mt-1">
+            Precio por condo con descuentos por volumen
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-neutral-800/50">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                  Tier
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                  Cantidad
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                  Precio/Condo (RD$)
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                  Precio/Condo (USD)
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                  Descuento
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-800">
+              <tr className="bg-yellow-500/5 border-l-4 border-l-yellow-500">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <Icon name="gift" className="w-5 h-5 text-yellow-400" />
+                    <span className="font-medium text-yellow-400">Trial</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-white">Ilimitado</td>
+                <td className="px-6 py-4">
+                  <span className="text-green-400 font-bold">GRATIS</span>
+                </td>
+                <td className="px-6 py-4 text-neutral-400">$0</td>
+                <td className="px-6 py-4">
+                  <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400">
+                    {TRIAL_DAYS} días
+                  </span>
+                </td>
+              </tr>
+              {PRICING_TIERS.map((tier, index) => (
+                <tr key={index} className="hover:bg-neutral-800/30 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <Icon 
+                        name={index === 0 ? "building" : index === 3 ? "crown" : "building-2"} 
+                        className={`w-5 h-5 ${
+                          index === 3 ? "text-green-400" : 
+                          index === 2 ? "text-blue-400" : 
+                          index === 1 ? "text-purple-400" : "text-neutral-400"
+                        }`} 
+                      />
+                      <span className="font-medium text-white capitalize">
+                        {index === 0 ? "Starter" : index === 1 ? "Growth" : index === 2 ? "Pro" : "Enterprise"}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-white">{tier.label}</td>
+                  <td className="px-6 py-4">
+                    <span className="text-white font-bold">
+                      RD$ {tier.pricePerCondo.toLocaleString()}
+                    </span>
+                    <span className="text-neutral-500 text-sm">/mes</span>
+                  </td>
+                  <td className="px-6 py-4 text-neutral-400">${tier.priceUSD}/mes</td>
+                  <td className="px-6 py-4">
+                    {index === 0 ? (
+                      <span className="text-neutral-500">—</span>
+                    ) : (
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        index === 3 ? "bg-green-500/20 text-green-400" :
+                        index === 2 ? "bg-blue-500/20 text-blue-400" :
+                        "bg-purple-500/20 text-purple-400"
+                      }`}>
+                        {index === 1 ? "-20%" : index === 2 ? "-33%" : "-47%"}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Features Incluidas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Icon name="check-circle" className="w-5 h-5 text-green-400" />
+            Incluido en Todos los Planes
+          </h3>
+          <ul className="space-y-3">
+            {[
+              "Unidades ilimitadas por condominio",
+              "Portal de residentes",
+              "Gestión de pagos y cuotas",
+              "Reportes financieros",
+              "Control de acceso",
+              "Comunicaciones y anuncios",
+              "Gestión de incidentes",
+              "Reserva de amenidades",
+              "Soporte por email",
+            ].map((feature, i) => (
+              <li key={i} className="flex items-center gap-3 text-neutral-300">
+                <Icon name="check" className="w-4 h-4 text-green-400 flex-shrink-0" />
+                {feature}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Icon name="sparkles" className="w-5 h-5 text-purple-400" />
+            Próximamente (Add-ons)
+          </h3>
+          <ul className="space-y-3">
+            {[
+              { name: "Notificaciones WhatsApp", price: "RD$ 500/mes" },
+              { name: "Reportes Premium", price: "RD$ 300/mes" },
+              { name: "Usuarios adicionales", price: "RD$ 200/usuario" },
+              { name: "Almacenamiento extra", price: "RD$ 100/10GB" },
+              { name: "API Access", price: "RD$ 1,000/mes" },
+              { name: "White Label", price: "Cotizar" },
+            ].map((addon, i) => (
+              <li key={i} className="flex items-center justify-between p-2 rounded-lg bg-neutral-800/50">
+                <span className="text-neutral-300 flex items-center gap-2">
+                  <Icon name="plus-circle" className="w-4 h-4 text-purple-400" />
+                  {addon.name}
+                </span>
+                <span className="text-xs text-purple-400">{addon.price}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Comparativa con Competencia */}
+      <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/20 rounded-xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <Icon name="trending-up" className="w-5 h-5 text-blue-400" />
+          ¿Por qué MI CONDO?
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-neutral-900/50 rounded-xl p-4 text-center">
+            <div className="text-3xl font-bold text-green-400 mb-1">-60%</div>
+            <p className="text-sm text-neutral-400">vs Buildium</p>
+            <p className="text-xs text-neutral-500">($62+ USD/mes)</p>
+          </div>
+          <div className="bg-neutral-900/50 rounded-xl p-4 text-center">
+            <div className="text-3xl font-bold text-blue-400 mb-1">∞</div>
+            <p className="text-sm text-neutral-400">Unidades</p>
+            <p className="text-xs text-neutral-500">Sin límite por condo</p>
+          </div>
+          <div className="bg-neutral-900/50 rounded-xl p-4 text-center">
+            <div className="text-3xl font-bold text-purple-400 mb-1">RD$</div>
+            <p className="text-sm text-neutral-400">Pago Local</p>
+            <p className="text-xs text-neutral-500">Sin tarjeta internacional</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const SuperAdminDashboard = () => {
-  const { logout } = useAuth();
+  const { logout, isDevAuthenticated } = useAuth();
   const { addToast } = useToast();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1504,16 +2649,73 @@ export const SuperAdminDashboard = () => {
 
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
 
-  // NUEVO: Tab activo
+  // Tab activo con dashboard como default
   const [activeTab, setActiveTab] = useState<
-    "companies" | "billing" | "communications" | "messages"
-  >("companies");
+    | "dashboard"
+    | "companies"
+    | "billing"
+    | "communications"
+    | "messages"
+    | "roadmap"
+    | "settings"
+    | "plans"
+  >("dashboard");
   const [showRoadmap, setShowRoadmap] = useState(false);
+
+  // Estado para filtro de compañías
+  const [companyFilter, setCompanyFilter] = useState<
+    "all" | "active" | "grace" | "inactive"
+  >("all");
 
   // NUEVO: Estado para el modal de Ver Clientes
   const [viewingCompany, setViewingCompany] = useState<Company | null>(null);
 
+  // Estados para Billing Portal
+  const [allPayments, setAllPayments] = useState<PaymentRecord[]>([]);
+  const [selectedCompanyBilling, setSelectedCompanyBilling] = useState<Company | null>(null);
+  const [isBillingDetailOpen, setIsBillingDetailOpen] = useState(false);
+
+  // DEV MODE check
+  const isDevMode = window.location.hostname === "localhost";
+
   const fetchCompanies = async () => {
+    // En modo desarrollo, usar datos mock
+    if (isDevMode && isDevAuthenticated) {
+      console.log("🔧 DEV MODE: Usando compañías mock");
+      setCompanies([
+        {
+          id: "dev-company-1",
+          name: "Empresa Demo 1",
+          rnc: "123456789",
+          address: "Calle Principal #1",
+          phone: "809-555-0001",
+          email: "demo1@example.com",
+          logoUrl: undefined,
+          status: "Activo",
+          adminUserEmail: "admin@demo1.com",
+          billingStartDate: "2025-01-01",
+          gracePeriodDays: 7,
+          plan: "Pro",
+        },
+        {
+          id: "dev-company-2",
+          name: "Empresa Demo 2",
+          rnc: "987654321",
+          address: "Avenida Central #2",
+          phone: "809-555-0002",
+          email: "demo2@example.com",
+          logoUrl: undefined,
+          status: "Activo",
+          adminUserEmail: "admin@demo2.com",
+          billingStartDate: "2025-01-15",
+          gracePeriodDays: 14,
+          plan: "Enterprise",
+        },
+      ]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const companiesCollection = collection(db, "companies");
@@ -1544,6 +2746,68 @@ export const SuperAdminDashboard = () => {
       setLoading(false);
     }
   };
+
+  // Fetch de todos los pagos para calcular estados
+  const fetchAllPayments = async () => {
+    if (isDevMode && isDevAuthenticated) {
+      // Mock payments para dev mode
+      const mockPayments: PaymentRecord[] = [
+        {
+          id: "pay-1",
+          companyId: "dev-company-1",
+          companyName: "Empresa Demo 1",
+          amount: 1500,
+          paymentDate: "2025-12-01",
+          periodStart: "2025-12-01",
+          periodEnd: "2025-12-31",
+          method: "Transferencia",
+          reference: "REF-001",
+          createdAt: new Date().toISOString(),
+        },
+      ];
+      setAllPayments(mockPayments);
+      return;
+    }
+
+    try {
+      const paymentsRef = collection(db, "saas_payments");
+      const snapshot = await getDocs(paymentsRef);
+      const paymentList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as PaymentRecord[];
+      setAllPayments(paymentList);
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+    }
+  };
+
+  // Calcular compañías que necesitan atención
+  const companiesNeedingAttention = useMemo(() => {
+    return companies
+      .map((company) => {
+        const lastPayment = getLastPayment(allPayments, company.id);
+        const isTrial = company.plan === "Trial" || !company.plan;
+        const billing = calculateBillingStatus(
+          company.billingStartDate,
+          company.gracePeriodDays,
+          lastPayment,
+          isTrial
+        );
+        return { companyId: company.id, billing };
+      })
+      .filter(
+        (item) =>
+          item.billing.status === "grace" ||
+          item.billing.status === "inactive" ||
+          (item.billing.status === "trial" && item.billing.daysUntilDue <= 3) ||
+          (item.billing.status === "active" && item.billing.daysUntilDue <= 5)
+      )
+      .sort((a, b) => {
+        const urgencyOrder = { critical: 0, high: 1, medium: 2, low: 3, none: 4 };
+        return urgencyOrder[a.billing.urgency] - urgencyOrder[b.billing.urgency];
+      });
+  }, [companies, allPayments]);
 
   const toggleCompanyStatus = async (company: Company) => {
     if (isUpdating) return;
@@ -1632,11 +2896,22 @@ export const SuperAdminDashboard = () => {
 
   useEffect(() => {
     fetchCompanies();
+    fetchAllPayments();
   }, []);
 
-  if (showRoadmap) {
-    return <DevRoadmap onClose={() => setShowRoadmap(false)} />;
-  }
+  // Filtrar compañías según el filtro seleccionado
+  const filteredCompanies = React.useMemo(() => {
+    switch (companyFilter) {
+      case "active":
+        return companies.filter((c) => c.status === "Activo");
+      case "grace":
+        return companies.filter((c) => c.status === "Gracia");
+      case "inactive":
+        return companies.filter((c) => c.status === "Inactivo");
+      default:
+        return companies;
+    }
+  }, [companies, companyFilter]);
 
   if (loading) {
     return (
@@ -1646,318 +2921,596 @@ export const SuperAdminDashboard = () => {
     );
   }
 
+  // Calcular métricas para el sidebar
+  const sidebarMetrics = {
+    inGrace: metrics.inGrace,
+    unreadMessages: 0, // TODO: conectar con mensajes reales
+    pendingPayments: metrics.upcomingRenewals,
+  };
+
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-300 p-8">
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-white">
-          🌎 Panel de Gestión de Compañías Administradoras
-        </h1>
-        <div className="flex space-x-4">
-          <button
-            onClick={() => setShowRoadmap(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
-          >
-            <Icon name="map" size={18} />
-            Roadmap
-          </button>
-          <button
-            onClick={handleOpenCreate}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
-          >
-            [+] Añadir Compañía
-          </button>
-          <button
-            onClick={logout}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
-          >
-            [Cerrar Sesión]
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-neutral-950 text-neutral-300">
+      {/* Sidebar */}
+      <SuperAdminSidebar
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab as typeof activeTab)}
+        onShowRoadmap={() => setActiveTab("roadmap")}
+        onLogout={logout}
+        metrics={sidebarMetrics}
+      />
 
-      {/* =============================================
-                DASHBOARD DE MÉTRICAS SaaS
-            ============================================= */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Icon name="building-2" className="w-5 h-5 text-blue-400" />
-            <span className="text-sm text-neutral-400">Total</span>
-          </div>
-          <div className="text-3xl font-bold text-white">{metrics.total}</div>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Icon name="check-circle" className="w-5 h-5 text-green-400" />
-            <span className="text-sm text-neutral-400">Activos</span>
-          </div>
-          <div className="text-3xl font-bold text-green-400">
-            {metrics.active}
-          </div>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Icon name="alert-triangle" className="w-5 h-5 text-yellow-400" />
-            <span className="text-sm text-neutral-400">En Gracia</span>
-          </div>
-          <div className="text-3xl font-bold text-yellow-400">
-            {metrics.inGrace}
-          </div>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Icon name="x-circle" className="w-5 h-5 text-red-400" />
-            <span className="text-sm text-neutral-400">Inactivos</span>
-          </div>
-          <div className="text-3xl font-bold text-red-400">
-            {metrics.inactive}
-          </div>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Icon name="dollar-sign" className="w-5 h-5 text-emerald-400" />
-            <span className="text-sm text-neutral-400">MRR</span>
-          </div>
-          <div className="text-3xl font-bold text-emerald-400">
-            ${metrics.mrr.toLocaleString()}
-          </div>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Icon name="calendar" className="w-5 h-5 text-orange-400" />
-            <span className="text-sm text-neutral-400">Vencen Pronto</span>
-          </div>
-          <div className="text-3xl font-bold text-orange-400">
-            {metrics.upcomingRenewals}
-          </div>
-        </div>
-      </div>
-
-      {/* =============================================
-                SISTEMA DE TABS
-            ============================================= */}
-      <div className="flex space-x-1 bg-neutral-900 p-1 rounded-lg mb-6 w-fit">
-        <button
-          onClick={() => setActiveTab("companies")}
-          className={`px-4 py-2 rounded-md font-medium transition-colors flex items-center gap-2 ${
-            activeTab === "companies"
-              ? "bg-blue-600 text-white"
-              : "text-neutral-400 hover:text-white hover:bg-neutral-800"
-          }`}
-        >
-          <Icon name="building-2" size={18} />
-          Compañías
-        </button>
-        <button
-          onClick={() => setActiveTab("billing")}
-          className={`px-4 py-2 rounded-md font-medium transition-colors flex items-center gap-2 ${
-            activeTab === "billing"
-              ? "bg-green-600 text-white"
-              : "text-neutral-400 hover:text-white hover:bg-neutral-800"
-          }`}
-        >
-          <Icon name="credit-card" size={18} />
-          Facturación
-        </button>
-        <button
-          onClick={() => setActiveTab("communications")}
-          className={`px-4 py-2 rounded-md font-medium transition-colors flex items-center gap-2 ${
-            activeTab === "communications"
-              ? "bg-indigo-600 text-white"
-              : "text-neutral-400 hover:text-white hover:bg-neutral-800"
-          }`}
-        >
-          <Icon name="megaphone" size={18} />
-          Comunicaciones
-        </button>
-        <button
-          onClick={() => setActiveTab("messages")}
-          className={`px-4 py-2 rounded-md font-medium transition-colors flex items-center gap-2 ${
-            activeTab === "messages"
-              ? "bg-purple-600 text-white"
-              : "text-neutral-400 hover:text-white hover:bg-neutral-800"
-          }`}
-        >
-          <Icon name="message-circle" size={18} />
-          Mensajes
-        </button>
-      </div>
-
-      {/* =============================================
-                CONTENIDO SEGÚN TAB ACTIVO
-            ============================================= */}
-      {activeTab === "billing" && <BillingTab companies={companies} />}
-      {activeTab === "communications" && (
-        <CommunicationsTab companies={companies} />
-      )}
-      {activeTab === "messages" && <MessagesTab companies={companies} />}
-      {activeTab === "companies" && (
-        <>
-          <div className="flex justify-between items-center mb-4">
+      {/* Main Content Area */}
+      <main className="ml-64 p-8 min-h-screen">
+        {/* Page Header */}
+        <header className="mb-8">
+          <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl font-bold text-white">
-                📋 Gestión de Compañías
-              </h2>
-              <p className="text-neutral-400">
-                Gestión centralizada de sus clientes SaaS (Compañías
-                Administradoras).
+              <h1 className="text-3xl font-bold text-white mb-1">
+                {activeTab === "dashboard" && "📊 Dashboard"}
+                {activeTab === "companies" && "🏢 Compañías"}
+                {activeTab === "billing" && "💳 Facturación"}
+                {activeTab === "communications" && "📢 Comunicaciones"}
+                {activeTab === "messages" && "💬 Mensajes"}
+                {activeTab === "roadmap" && "🗺️ Development Roadmap"}
+              </h1>
+              <p className="text-neutral-500">
+                {activeTab === "dashboard" &&
+                  "Vista general de tu plataforma SaaS"}
+                {activeTab === "companies" &&
+                  "Gestiona las compañías administradoras"}
+                {activeTab === "billing" &&
+                  "Pagos y facturación de suscripciones"}
+                {activeTab === "communications" &&
+                  "Anuncios para todos los clientes"}
+                {activeTab === "messages" && "Mensajería directa con clientes"}
+                {activeTab === "roadmap" &&
+                  "Progreso y planificación del desarrollo"}
               </p>
             </div>
-          </div>
-
-          {companies.length === 0 ? (
-            <div className="text-center py-10 bg-neutral-900 rounded-lg">
-              No hay compañías registradas.
+            {activeTab === "companies" && (
               <button
                 onClick={handleOpenCreate}
-                className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-lg shadow-indigo-500/20"
               >
-                Añadir la primera Compañía
+                <Icon name="plus" size={18} />
+                Nueva Compañía
               </button>
+            )}
+          </div>
+        </header>
+
+        {/* =============================================
+                  CONTENIDO SEGÚN TAB ACTIVO
+            ============================================= */}
+
+        {/* Dashboard Tab - Métricas principales */}
+        {activeTab === "dashboard" && (
+          <div className="space-y-6">
+            {/* Métricas destacadas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* MRR Card - Grande */}
+              <div className="bg-gradient-to-br from-emerald-600/20 to-teal-600/10 border border-emerald-500/30 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                    <Icon
+                      name="dollar-sign"
+                      className="w-6 h-6 text-emerald-400"
+                    />
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    +12% vs mes anterior
+                  </span>
+                </div>
+                <p className="text-neutral-400 text-sm mb-1">
+                  Ingresos Recurrentes (MRR)
+                </p>
+                <p className="text-4xl font-bold text-white">
+                  ${metrics.mrr.toLocaleString()}
+                </p>
+                <div className="mt-4 h-2 bg-neutral-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
+                    style={{ width: "75%" }}
+                  />
+                </div>
+                <p className="text-xs text-neutral-500 mt-2">
+                  75% del objetivo mensual ($5,000)
+                </p>
+              </div>
+
+              {/* Clientes Activos Card - Grande */}
+              <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/10 border border-blue-500/30 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                    <Icon name="building-2" className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                    {metrics.total} totales
+                  </span>
+                </div>
+                <p className="text-neutral-400 text-sm mb-1">
+                  Clientes Activos
+                </p>
+                <p className="text-4xl font-bold text-white">
+                  {metrics.active}
+                </p>
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  <div className="text-center p-2 bg-neutral-800/50 rounded-lg">
+                    <p className="text-lg font-bold text-green-400">
+                      {metrics.active}
+                    </p>
+                    <p className="text-xs text-neutral-500">Activos</p>
+                  </div>
+                  <div className="text-center p-2 bg-neutral-800/50 rounded-lg">
+                    <p className="text-lg font-bold text-yellow-400">
+                      {metrics.inGrace}
+                    </p>
+                    <p className="text-xs text-neutral-500">En Gracia</p>
+                  </div>
+                  <div className="text-center p-2 bg-neutral-800/50 rounded-lg">
+                    <p className="text-lg font-bold text-red-400">
+                      {metrics.inactive}
+                    </p>
+                    <p className="text-xs text-neutral-500">Inactivos</p>
+                  </div>
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="overflow-x-auto bg-neutral-900 rounded-lg shadow-xl">
-              <table className="min-w-full divide-y divide-neutral-700">
-                <thead className="bg-neutral-800">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider"
-                    >
-                      Compañía
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider"
-                    >
-                      Admin Principal
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider"
-                    >
-                      Facturación
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider"
-                    >
-                      Estado
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-neutral-400 uppercase tracking-wider"
-                    >
-                      Acción
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-800">
-                  {companies.map((company) => (
-                    <tr
-                      key={company.id}
-                      className="hover:bg-neutral-850 transition-colors"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
-                        <div className="flex items-center">
-                          {company.logoUrl ? (
-                            <img
-                              src={company.logoUrl}
-                              alt={`${company.name} Logo`}
-                              className="w-10 h-10 object-contain rounded-full bg-white p-1 mr-4"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 flex items-center justify-center bg-neutral-700 rounded-full mr-4">
-                              [B]
-                            </div>
-                          )}
+
+            {/* Métricas secundarias */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 hover:border-neutral-700 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                    <Icon name="calendar" className="w-5 h-5 text-orange-400" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-white">
+                      {metrics.upcomingRenewals}
+                    </p>
+                    <p className="text-xs text-neutral-500">Vencen Pronto</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 hover:border-neutral-700 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                    <Icon
+                      name="message-circle"
+                      className="w-5 h-5 text-purple-400"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-white">0</p>
+                    <p className="text-xs text-neutral-500">Mensajes Nuevos</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 hover:border-neutral-700 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                    <Icon name="megaphone" className="w-5 h-5 text-pink-400" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-white">0</p>
+                    <p className="text-xs text-neutral-500">Anuncios Activos</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 hover:border-neutral-700 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                    <Icon
+                      name="credit-card"
+                      className="w-5 h-5 text-cyan-400"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-white">0</p>
+                    <p className="text-xs text-neutral-500">Pagos Este Mes</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Panel de Alertas - Grace Period */}
+            {companiesNeedingAttention.length > 0 && (
+              <div className="bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-500/30 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <Icon name="alert-triangle" className="w-5 h-5 text-red-400" />
+                    Requieren Atención ({companiesNeedingAttention.length})
+                  </h3>
+                  <button
+                    onClick={() => setActiveTab("billing")}
+                    className="text-sm text-red-400 hover:text-red-300 flex items-center gap-1"
+                  >
+                    Ver Facturación
+                    <Icon name="arrow-right" className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {companiesNeedingAttention.slice(0, 5).map((item) => {
+                    const company = companies.find((c) => c.id === item.companyId);
+                    if (!company) return null;
+                    return (
+                      <div
+                        key={item.companyId}
+                        className={`flex items-center justify-between p-3 rounded-lg border ${
+                          item.billing.urgency === "critical"
+                            ? "bg-red-500/10 border-red-500/30"
+                            : item.billing.urgency === "high"
+                            ? "bg-orange-500/10 border-orange-500/30"
+                            : "bg-yellow-500/10 border-yellow-500/30"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              item.billing.urgency === "critical"
+                                ? "bg-red-500 animate-pulse"
+                                : item.billing.urgency === "high"
+                                ? "bg-orange-500"
+                                : "bg-yellow-500"
+                            }`}
+                          />
                           <div>
-                            <div className="text-white font-semibold">
+                            <p className="text-sm font-medium text-white">
                               {company.name}
-                            </div>
-                            <div className="text-neutral-500 text-xs">
-                              RNC: {company.rnc}
-                            </div>
+                            </p>
+                            <p className="text-xs text-neutral-400">
+                              {item.billing.statusLabel}
+                            </p>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
-                        <div className="text-sm">{company.adminUserEmail}</div>
-                        <div className="text-neutral-500 text-xs">
-                          {company.phone}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
-                        <div className="text-sm">
-                          Inicia: {company.billingStartDate}
-                        </div>
-                        <div className="text-neutral-500 text-xs">
-                          {company.gracePeriodDays} días de gracia
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            company.status === "Activo"
-                              ? "bg-green-600/20 text-green-400"
-                              : company.status === "Gracia"
-                                ? "bg-yellow-600/20 text-yellow-400"
-                                : "bg-red-600/20 text-red-400"
-                          }`}
-                        >
-                          {company.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                         <button
-                          onClick={() => handleOpenEdit(company)}
-                          className="py-1 px-3 rounded text-white text-xs font-bold transition-colors bg-neutral-600 hover:bg-neutral-700"
+                          onClick={() => {
+                            setSelectedCompanyBilling(company);
+                            setIsBillingDetailOpen(true);
+                          }}
+                          className="px-3 py-1 text-xs bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
                         >
-                          Editar
+                          Ver Detalle
                         </button>
-                        <button
-                          onClick={() => setViewingCompany(company)}
-                          className="py-1 px-3 rounded text-white text-xs font-bold transition-colors bg-blue-600 hover:bg-blue-700"
-                        >
-                          Ver Clientes
-                        </button>
-                        <button
-                          onClick={() => toggleCompanyStatus(company)}
-                          disabled={isUpdating}
-                          className={`py-1 px-3 rounded text-white text-xs font-bold transition-colors ${
-                            company.status === "Activo"
-                              ? "bg-red-600 hover:bg-red-700"
-                              : "bg-green-600 hover:bg-green-700"
-                          }`}
-                        >
-                          {isUpdating
-                            ? "..."
-                            : company.status === "Activo"
-                              ? "Desactivar"
-                              : "Activar"}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Quick Actions */}
+            <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Acciones Rápidas
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button
+                  onClick={() => setActiveTab("companies")}
+                  className="flex items-center gap-3 p-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg transition-colors group"
+                >
+                  <Icon name="building-2" className="w-5 h-5 text-blue-400" />
+                  <span className="text-sm text-neutral-300 group-hover:text-white">
+                    Ver Compañías
+                  </span>
+                </button>
+                <button
+                  onClick={handleOpenCreate}
+                  className="flex items-center gap-3 p-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg transition-colors group"
+                >
+                  <Icon name="plus" className="w-5 h-5 text-green-400" />
+                  <span className="text-sm text-neutral-300 group-hover:text-white">
+                    Nueva Compañía
+                  </span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("billing")}
+                  className="flex items-center gap-3 p-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg transition-colors group"
+                >
+                  <Icon
+                    name="credit-card"
+                    className="w-5 h-5 text-emerald-400"
+                  />
+                  <span className="text-sm text-neutral-300 group-hover:text-white">
+                    Registrar Pago
+                  </span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("communications")}
+                  className="flex items-center gap-3 p-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg transition-colors group"
+                >
+                  <Icon name="megaphone" className="w-5 h-5 text-purple-400" />
+                  <span className="text-sm text-neutral-300 group-hover:text-white">
+                    Nuevo Anuncio
+                  </span>
+                </button>
+              </div>
             </div>
-          )}
-        </>
-      )}
+          </div>
+        )}
+        {activeTab === "billing" && <BillingTab companies={companies} />}
+        {activeTab === "communications" && (
+          <CommunicationsTab companies={companies} />
+        )}
+        {activeTab === "messages" && <MessagesTab companies={companies} />}
+        {activeTab === "roadmap" && <DevRoadmap embedded={true} />}
+        {activeTab === "settings" && <SettingsTab />}
+        {activeTab === "plans" && <PlansTab companies={companies} />}
+        {activeTab === "companies" && (
+          <div className="space-y-6">
+            {/* Filtros y búsqueda */}
+            <div className="flex flex-wrap gap-4 items-center justify-between">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCompanyFilter("all")}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                    companyFilter === "all"
+                      ? "bg-white text-neutral-900"
+                      : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
+                  }`}
+                >
+                  Todos ({companies.length})
+                </button>
+                <button
+                  onClick={() => setCompanyFilter("active")}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                    companyFilter === "active"
+                      ? "bg-green-500 text-white"
+                      : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
+                  }`}
+                >
+                  Activos (
+                  {companies.filter((c) => c.status === "Activo").length})
+                </button>
+                <button
+                  onClick={() => setCompanyFilter("grace")}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                    companyFilter === "grace"
+                      ? "bg-yellow-500 text-white"
+                      : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
+                  }`}
+                >
+                  En Gracia (
+                  {companies.filter((c) => c.status === "Gracia").length})
+                </button>
+                <button
+                  onClick={() => setCompanyFilter("inactive")}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                    companyFilter === "inactive"
+                      ? "bg-red-500 text-white"
+                      : "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
+                  }`}
+                >
+                  Inactivos (
+                  {companies.filter((c) => c.status === "Inactivo").length})
+                </button>
+              </div>
+            </div>
 
-      <CompanyForm
-        isOpen={isFormVisible}
-        onClose={() => setIsFormVisible(false)}
-        onCompanySaved={handleFormSaved}
-        defaultValues={editingCompany}
-      />
+            {/* Empty State */}
+            {filteredCompanies.length === 0 ? (
+              <div className="text-center py-16 bg-neutral-900/50 border border-neutral-800 rounded-2xl">
+                <div className="w-20 h-20 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-4">
+                  <Icon
+                    name="building-2"
+                    className="w-10 h-10 text-neutral-600"
+                  />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {companies.length === 0
+                    ? "No hay compañías registradas"
+                    : "No hay compañías con este filtro"}
+                </h3>
+                <p className="text-neutral-500 mb-6">
+                  {companies.length === 0
+                    ? "Comienza agregando tu primera compañía administradora"
+                    : "Prueba cambiando el filtro o añade más compañías"}
+                </p>
+                {companies.length === 0 && (
+                  <button
+                    onClick={handleOpenCreate}
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/20"
+                  >
+                    <Icon name="plus" className="w-5 h-5 inline mr-2" />
+                    Añadir Primera Compañía
+                  </button>
+                )}
+              </div>
+            ) : (
+              /* Grid de Cards de Compañías */
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {filteredCompanies.map((company) => (
+                  <div
+                    key={company.id}
+                    className={`bg-neutral-900/50 border rounded-2xl p-5 transition-all duration-200 hover:bg-neutral-900/80 hover:shadow-lg group ${
+                      company.status === "Activo"
+                        ? "border-neutral-800 hover:border-green-500/30"
+                        : company.status === "Gracia"
+                          ? "border-yellow-500/30"
+                          : "border-red-500/30 opacity-75"
+                    }`}
+                  >
+                    {/* Header de la Card */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        {/* Logo */}
+                        {company.logoUrl ? (
+                          <img
+                            src={company.logoUrl}
+                            alt={`${company.name} Logo`}
+                            className="w-14 h-14 object-contain rounded-xl bg-white p-2"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center border border-indigo-500/30">
+                            <Icon
+                              name="building-2"
+                              className="w-7 h-7 text-indigo-400"
+                            />
+                          </div>
+                        )}
+                        {/* Nombre y RNC */}
+                        <div>
+                          <h3 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">
+                            {company.name}
+                          </h3>
+                          <p className="text-sm text-neutral-500">
+                            RNC: {company.rnc}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Badge de Estado */}
+                      <span
+                        className={`px-3 py-1.5 text-xs font-bold rounded-full ${
+                          company.status === "Activo"
+                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                            : company.status === "Gracia"
+                              ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                              : "bg-red-500/20 text-red-400 border border-red-500/30"
+                        }`}
+                      >
+                        {company.status === "Activo" && "● "}
+                        {company.status}
+                      </span>
+                    </div>
 
-      <ViewClientsModal
-        isOpen={viewingCompany !== null}
-        onClose={() => setViewingCompany(null)}
-        company={viewingCompany}
-      />
+                    {/* Info Grid */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="bg-neutral-800/50 rounded-xl p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Icon
+                            name="mail"
+                            className="w-4 h-4 text-neutral-500"
+                          />
+                          <span className="text-xs text-neutral-500">
+                            Admin
+                          </span>
+                        </div>
+                        <p className="text-sm text-white truncate">
+                          {company.adminUserEmail}
+                        </p>
+                      </div>
+                      <div className="bg-neutral-800/50 rounded-xl p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Icon
+                            name="phone"
+                            className="w-4 h-4 text-neutral-500"
+                          />
+                          <span className="text-xs text-neutral-500">
+                            Teléfono
+                          </span>
+                        </div>
+                        <p className="text-sm text-white">{company.phone}</p>
+                      </div>
+                      <div className="bg-neutral-800/50 rounded-xl p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Icon
+                            name="calendar"
+                            className="w-4 h-4 text-neutral-500"
+                          />
+                          <span className="text-xs text-neutral-500">
+                            Facturación
+                          </span>
+                        </div>
+                        <p className="text-sm text-white">
+                          {company.billingStartDate}
+                        </p>
+                      </div>
+                      <div className="bg-neutral-800/50 rounded-xl p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Icon
+                            name="clock"
+                            className="w-4 h-4 text-neutral-500"
+                          />
+                          <span className="text-xs text-neutral-500">
+                            Gracia
+                          </span>
+                        </div>
+                        <p className="text-sm text-white">
+                          {company.gracePeriodDays} días
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Plan Badge */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span
+                        className={`px-3 py-1 text-xs font-bold rounded-lg ${
+                          company.plan === "Enterprise"
+                            ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                            : company.plan === "Pro"
+                              ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                              : "bg-neutral-700 text-neutral-300"
+                        }`}
+                      >
+                        Plan {company.plan || "Pro"}
+                      </span>
+                    </div>
+
+                    {/* Acciones */}
+                    <div className="flex gap-2 pt-3 border-t border-neutral-800">
+                      <button
+                        onClick={() => handleOpenEdit(company)}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-sm font-medium transition-colors"
+                      >
+                        <Icon name="edit" className="w-4 h-4" />
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => setViewingCompany(company)}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-sm font-medium transition-colors border border-blue-500/30"
+                      >
+                        <Icon name="building-2" className="w-4 h-4" />
+                        Condos
+                      </button>
+                      <button
+                        onClick={() => toggleCompanyStatus(company)}
+                        disabled={isUpdating}
+                        className={`py-2.5 px-4 rounded-xl text-sm font-medium transition-colors ${
+                          company.status === "Activo"
+                            ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
+                            : "bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
+                        }`}
+                      >
+                        {isUpdating
+                          ? "..."
+                          : company.status === "Activo"
+                            ? "Desactivar"
+                            : "Activar"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <CompanyForm
+          isOpen={isFormVisible}
+          onClose={() => setIsFormVisible(false)}
+          onCompanySaved={handleFormSaved}
+          defaultValues={editingCompany}
+        />
+
+        <ViewClientsModal
+          isOpen={viewingCompany !== null}
+          onClose={() => setViewingCompany(null)}
+          company={viewingCompany}
+        />
+
+        <BillingDetailModal
+          isOpen={isBillingDetailOpen}
+          onClose={() => {
+            setIsBillingDetailOpen(false);
+            setSelectedCompanyBilling(null);
+          }}
+          company={selectedCompanyBilling}
+          payments={allPayments}
+          onPaymentRegistered={() => {
+            fetchAllPayments();
+          }}
+        />
+      </main>
     </div>
   );
 };

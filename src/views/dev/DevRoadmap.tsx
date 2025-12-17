@@ -205,6 +205,91 @@ const ROADMAP_DATA: RoadmapPhase[] = [
     ],
   },
   {
+    id: "phase-1.75",
+    name: "🎨 Phase 1.75: UI/UX Redesign",
+    description: "Modern glassmorphism design for SuperAdmin Dashboard",
+    targetDate: "2024-12-17",
+    items: [
+      {
+        id: "ui-001",
+        title: "SuperAdmin Sidebar Component",
+        description: "Nuevo sidebar con glassmorphism, navegación moderna, iconos",
+        status: "completed",
+        category: "ui",
+        priority: "high",
+        dateAdded: "2024-12-17",
+        dateCompleted: "2024-12-17",
+        linkedFiles: ["src/views/admin/layout/SuperAdminSidebar.tsx"],
+      },
+      {
+        id: "ui-002",
+        title: "Dashboard Tab Redesign",
+        description: "Métricas grandes con iconos, cards elegantes, filtros",
+        status: "completed",
+        category: "ui",
+        priority: "high",
+        dateAdded: "2024-12-17",
+        dateCompleted: "2024-12-17",
+        linkedFiles: ["src/views/admin/SuperAdminDashboard.tsx"],
+      },
+      {
+        id: "ui-003",
+        title: "Companies Tab Cards",
+        description: "Cards interactivas con filtros por estado, búsqueda",
+        status: "completed",
+        category: "ui",
+        priority: "medium",
+        dateAdded: "2024-12-17",
+        dateCompleted: "2024-12-17",
+        linkedFiles: ["src/views/admin/SuperAdminDashboard.tsx"],
+      },
+      {
+        id: "ui-004",
+        title: "Billing Tab Redesign",
+        description: "Diseño moderno con métricas, tabla de pagos recientes",
+        status: "completed",
+        category: "ui",
+        priority: "medium",
+        dateAdded: "2024-12-17",
+        dateCompleted: "2024-12-17",
+        linkedFiles: ["src/views/admin/SuperAdminDashboard.tsx"],
+      },
+      {
+        id: "ui-005",
+        title: "Communications Tab",
+        description: "Anuncios en cards, formulario mejorado",
+        status: "completed",
+        category: "ui",
+        priority: "medium",
+        dateAdded: "2024-12-17",
+        dateCompleted: "2024-12-17",
+        linkedFiles: ["src/views/admin/SuperAdminDashboard.tsx"],
+      },
+      {
+        id: "ui-006",
+        title: "Settings Tab",
+        description: "Panel de configuración con toggles, secciones organizadas",
+        status: "completed",
+        category: "ui",
+        priority: "low",
+        dateAdded: "2024-12-17",
+        dateCompleted: "2024-12-17",
+        linkedFiles: ["src/views/admin/SuperAdminDashboard.tsx"],
+      },
+      {
+        id: "ui-007",
+        title: "Plans Tab",
+        description: "Precios con calculadora interactiva, features list",
+        status: "completed",
+        category: "ui",
+        priority: "high",
+        dateAdded: "2024-12-17",
+        dateCompleted: "2024-12-17",
+        linkedFiles: ["src/views/admin/SuperAdminDashboard.tsx"],
+      },
+    ],
+  },
+  {
     id: "phase-2",
     name: "🧪 Phase 2: Testing & Quality",
     description: "Automated testing to ensure reliability",
@@ -271,29 +356,35 @@ const ROADMAP_DATA: RoadmapPhase[] = [
       {
         id: "pay-002",
         title: "Subscription Plans UI",
-        description: "Create pricing page and plan selection",
-        status: "future",
+        description: "Pricing page with calculator, tiers (RD$1500/1200/1000/800)",
+        status: "completed",
         category: "ui",
         priority: "high",
         dateAdded: "2024-12-14",
+        dateCompleted: "2024-12-17",
+        linkedFiles: ["src/views/admin/SuperAdminDashboard.tsx"],
       },
       {
         id: "pay-003",
         title: "Billing Portal",
-        description: "Customer billing history and invoice management",
-        status: "future",
+        description: "Modal con historial de pagos, estados, y descarga de recibos PDF",
+        status: "completed",
         category: "feature",
         priority: "medium",
         dateAdded: "2024-12-14",
+        dateCompleted: "2024-12-17",
+        linkedFiles: ["src/views/admin/SuperAdminDashboard.tsx", "src/utils/pdf.ts"],
       },
       {
         id: "pay-004",
         title: "Grace Period Automation",
-        description: "Auto-deactivate companies after grace period expires",
-        status: "future",
+        description: "Cálculo automático de estados (Active/Grace/Inactive/Trial)",
+        status: "completed",
         category: "backend",
         priority: "high",
         dateAdded: "2024-12-14",
+        dateCompleted: "2024-12-17",
+        linkedFiles: ["src/utils/billing.ts"],
       },
     ],
   },
@@ -619,7 +710,13 @@ const PhaseCard = ({
 // ===========================================
 // MAIN COMPONENT
 // ===========================================
-export const DevRoadmap = ({ onClose }: { onClose?: () => void }) => {
+export const DevRoadmap = ({
+  onClose,
+  embedded = false,
+}: {
+  onClose?: () => void;
+  embedded?: boolean;
+}) => {
   const [expandedPhases, setExpandedPhases] = useState<string[]>([
     "phase-1",
     "bugs",
@@ -654,6 +751,131 @@ export const DevRoadmap = ({ onClose }: { onClose?: () => void }) => {
   ).length;
   const isLaunchReady =
     criticalCompleted === criticalItems.length && stats.bugs === 0;
+
+  // Si está embebido, solo renderizar el contenido sin el wrapper
+  if (embedded) {
+    return (
+      <div className="space-y-6">
+        {/* Launch Readiness Banner */}
+        <div
+          className={`p-6 rounded-2xl border ${isLaunchReady ? "bg-green-500/10 border-green-500/30" : "bg-yellow-500/10 border-yellow-500/30"}`}
+        >
+          <div className="flex items-center gap-4">
+            <div
+              className={`w-16 h-16 rounded-full flex items-center justify-center ${isLaunchReady ? "bg-green-500/20" : "bg-yellow-500/20"}`}
+            >
+              <Icon
+                name={isLaunchReady ? "rocket" : "alert-triangle"}
+                className={`w-8 h-8 ${isLaunchReady ? "text-green-400" : "text-yellow-400"}`}
+              />
+            </div>
+            <div className="flex-1">
+              <h2
+                className={`text-2xl font-bold ${isLaunchReady ? "text-green-400" : "text-yellow-400"}`}
+              >
+                {isLaunchReady
+                  ? "🚀 Ready for Launch!"
+                  : "⚠️ Not Production Ready"}
+              </h2>
+              <p className="text-neutral-300">
+                {isLaunchReady
+                  ? "All critical items completed and no known bugs!"
+                  : `${criticalItems.length - criticalCompleted} critical items pending, ${stats.bugs} bugs to fix`}
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-4xl font-bold text-white">
+                {overallProgress}%
+              </div>
+              <div className="text-sm text-neutral-400">Overall Progress</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {[
+            {
+              label: "Completados",
+              value: stats.completed,
+              color: "text-green-400",
+              bgColor: "bg-green-500/20",
+              icon: "check-circle",
+            },
+            {
+              label: "En Progreso",
+              value: stats.inProgress,
+              color: "text-blue-400",
+              bgColor: "bg-blue-500/20",
+              icon: "loader",
+            },
+            {
+              label: "Bugs",
+              value: stats.bugs,
+              color: "text-red-400",
+              bgColor: "bg-red-500/20",
+              icon: "bug",
+            },
+            {
+              label: "Planificados",
+              value: stats.planned,
+              color: "text-yellow-400",
+              bgColor: "bg-yellow-500/20",
+              icon: "clock",
+            },
+            {
+              label: "Futuros",
+              value: stats.future,
+              color: "text-neutral-400",
+              bgColor: "bg-neutral-500/20",
+              icon: "calendar",
+            },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="bg-neutral-900/50 rounded-2xl p-4 border border-neutral-800 hover:border-neutral-700 transition-colors"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div
+                  className={`w-8 h-8 rounded-lg ${stat.bgColor} flex items-center justify-center`}
+                >
+                  <Icon name={stat.icon} className={`w-4 h-4 ${stat.color}`} />
+                </div>
+              </div>
+              <div className={`text-2xl font-bold ${stat.color}`}>
+                {stat.value}
+              </div>
+              <span className="text-sm text-neutral-400">{stat.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Phases */}
+        <div className="space-y-4">
+          {ROADMAP_DATA.map((phase) => (
+            <PhaseCard
+              key={phase.id}
+              phase={phase}
+              isExpanded={expandedPhases.includes(phase.id)}
+              onToggle={() => togglePhase(phase.id)}
+            />
+          ))}
+        </div>
+
+        {/* Footer */}
+        <footer className="text-center text-neutral-500 text-sm pt-6 border-t border-neutral-800">
+          <p>Last updated: December 14, 2024</p>
+          <p className="mt-1">
+            Edit{" "}
+            <code className="text-cyan-400 bg-neutral-800 px-2 py-1 rounded">
+              src/views/dev/DevRoadmap.tsx
+            </code>{" "}
+            to update the roadmap
+          </p>
+        </footer>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
