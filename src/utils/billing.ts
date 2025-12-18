@@ -159,6 +159,35 @@ export const calculateMonthlyAmount = (condoCount: number): number => {
 };
 
 /**
+ * Calcula el precio por condo según el tier
+ */
+export const getPricePerCondo = (condoCount: number): number => {
+  if (condoCount >= 10) return 800;
+  if (condoCount >= 5) return 1000;
+  if (condoCount >= 2) return 1200;
+  return 1500;
+};
+
+/**
+ * Calcula el monto total incluyendo addons
+ */
+export const calculateTotalMonthlyFee = (
+  condoCount: number,
+  addons: string[] = [],
+  addonPrices: Record<string, number> = {}
+): { base: number; addonsTotal: number; total: number } => {
+  const base = calculateMonthlyAmount(condoCount);
+  const addonsTotal = addons.reduce((sum, addonId) => {
+    return sum + (addonPrices[addonId] || 0);
+  }, 0);
+  return {
+    base,
+    addonsTotal,
+    total: base + addonsTotal,
+  };
+};
+
+/**
  * Formatea la fecha de vencimiento
  */
 export const formatDueDate = (date: Date): string => {

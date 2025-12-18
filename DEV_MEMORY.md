@@ -329,6 +329,34 @@ npm run dev
 
 **Mantra**: "Si no lo probé, no está listo."
 
+### Lección #13: SIEMPRE usar todo list para tareas multi-paso
+
+**Fecha**: 2024-12-17
+**Origen**: Instrucción directa del usuario
+**Cita**: "si es muy grande el prompt, por favor dividirlos task para que no te detengas"
+
+**Protocolo para Implementaciones Grandes**:
+1. **CREAR** todo list al inicio con todas las sub-tareas
+2. **MARCAR** cada tarea "in-progress" antes de empezar
+3. **COMPLETAR** una tarea a la vez
+4. **MARCAR** "completed" inmediatamente al terminar cada una
+5. **RESPONDER** después de cada 2-3 tareas para no perder contexto
+
+**Beneficios**:
+- El usuario ve el progreso en tiempo real
+- El AI no pierde contexto por prompts largos
+- Si hay error, se sabe exactamente dónde
+
+**Ejemplo práctico**:
+```
+Task 1: Actualizar tipos ✅
+Task 2: Modificar formulario ✅
+Task 3: Añadir lógica de cálculo → in-progress
+Task 4: Verificar y push → pending
+```
+
+**Regla**: Para tareas de más de 20 minutos → OBLIGATORIO usar todo list.
+
 ---
 
 ## 🔗 ARCHIVOS CLAVE DEL PROYECTO

@@ -327,6 +327,35 @@ export type Condo = {
 };
 
 // --- TIPOS DE SUPER ADMIN (Compañías Administradoras) ---
+
+// Planes disponibles
+export type PlanType = "Trial" | "Starter" | "Growth" | "Pro" | "Enterprise";
+
+// Addons disponibles con sus precios
+export interface AddonConfig {
+  id: string;
+  name: string;
+  description: string;
+  monthlyPrice: number; // RD$ por mes
+}
+
+// Configuración de precios por tier
+export const PLAN_PRICING: Record<string, { minCondos: number; maxCondos: number; pricePerCondo: number }> = {
+  "Starter": { minCondos: 1, maxCondos: 1, pricePerCondo: 1500 },
+  "Growth": { minCondos: 2, maxCondos: 4, pricePerCondo: 1200 },
+  "Pro": { minCondos: 5, maxCondos: 9, pricePerCondo: 1000 },
+  "Enterprise": { minCondos: 10, maxCondos: Infinity, pricePerCondo: 800 },
+};
+
+// Addons disponibles
+export const AVAILABLE_ADDONS: AddonConfig[] = [
+  { id: "whatsapp", name: "WhatsApp Business", description: "Notificaciones por WhatsApp a residentes", monthlyPrice: 2500 },
+  { id: "sms", name: "SMS Notifications", description: "Alertas por SMS para pagos y emergencias", monthlyPrice: 1500 },
+  { id: "customDomain", name: "Dominio Personalizado", description: "portal.tucondominio.com", monthlyPrice: 1000 },
+  { id: "prioritySupport", name: "Soporte Prioritario", description: "Respuesta en menos de 2 horas", monthlyPrice: 2000 },
+  { id: "advancedReports", name: "Reportes Avanzados", description: "Analytics y reportes personalizados", monthlyPrice: 1500 },
+];
+
 export interface Company {
   id: string; // Firestore document ID
 
@@ -346,8 +375,10 @@ export interface Company {
   status: "Activo" | "Inactivo" | "Gracia"; // Estado de pago
   billingStartDate: string; // Fecha de inicio de cobro (ISO Date string)
   gracePeriodDays: number; // Días de gracia post-vencimiento
-  plan: string; // 'Pro', 'Basic', etc.
-  monthlyFee?: number; // Cuota mensual del plan
+  plan: PlanType; // Plan actual
+  monthlyFee?: number; // Cuota mensual calculada (base + addons)
+  addons?: string[]; // IDs de addons activos (ej: ["whatsapp", "sms"])
+  condoCount?: number; // Cantidad de condos (para cálculo de precio)
 }
 
 // Pago de suscripción SaaS

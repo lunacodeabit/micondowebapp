@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
-import type { Company, Condo } from "../../types";
+import type { Company, Condo, PlanType, AddonConfig } from "../../types";
+import { PLAN_PRICING, AVAILABLE_ADDONS } from "../../types";
 import {
   collection,
   doc,
@@ -52,6 +53,8 @@ const CompanyForm = ({
         adminUserEmail: defaultValues.adminUserEmail,
         billingStartDate: defaultValues.billingStartDate,
         gracePeriodDays: defaultValues.gracePeriodDays,
+        plan: defaultValues.plan || "Trial" as PlanType,
+        addons: defaultValues.addons || [] as string[],
       };
     }
     return {
@@ -63,6 +66,8 @@ const CompanyForm = ({
       adminUserEmail: "",
       billingStartDate: getLocalDateString(),
       gracePeriodDays: 7,
+      plan: "Trial" as PlanType,
+      addons: [] as string[],
     };
   };
 
@@ -70,14 +75,48 @@ const CompanyForm = ({
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [adminPassword, setAdminPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [condoCount, setCondoCount] = useState(defaultValues?.condoCount || 1);
 
   useEffect(() => {
     if (isOpen) {
       setFormData(getInitialState());
       setLogoFile(null);
       setAdminPassword("");
+      setCondoCount(defaultValues?.condoCount || 1);
     }
   }, [isOpen, defaultValues]);
+
+  // Calcular precio mensual basado en plan y addons
+  const calculateMonthlyFee = () => {
+    if (formData.plan === "Trial") return 0;
+    
+    // Determinar precio por condo según tier
+    let pricePerCondo = 1500; // default Starter
+    if (condoCount >= 10) pricePerCondo = 800;
+    else if (condoCount >= 5) pricePerCondo = 1000;
+    else if (condoCount >= 2) pricePerCondo = 1200;
+    
+    const basePrice = condoCount * pricePerCondo;
+    
+    // Sumar addons
+    const addonsPrice = formData.addons.reduce((sum, addonId) => {
+      const addon = AVAILABLE_ADDONS.find(a => a.id === addonId);
+      return sum + (addon?.monthlyPrice || 0);
+    }, 0);
+    
+    return basePrice + addonsPrice;
+  };
+
+  const monthlyFee = calculateMonthlyFee();
+
+  const handleAddonToggle = (addonId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      addons: prev.addons.includes(addonId)
+        ? prev.addons.filter(id => id !== addonId)
+        : [...prev.addons, addonId]
+    }));
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -131,8 +170,11 @@ const CompanyForm = ({
         billingStartDate: formData.billingStartDate,
         gracePeriodDays: formData.gracePeriodDays,
         status: defaultValues?.status || "Activo",
-        // --- CORRECCIÓN: AÑADIMOS EL CAMPO 'PLAN' ---
-        plan: defaultValues?.plan || "Pro", // Valor por defecto
+        // Plan y Addons
+        plan: formData.plan,
+        addons: formData.addons,
+        monthlyFee: monthlyFee,
+        condoCount: condoCount,
       };
 
       if (defaultValues && defaultValues.id) {
@@ -325,6 +367,100 @@ const CompanyForm = ({
             required
             className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
+        </div>
+
+        {/* Plan Selection */}
+        <h3 className="md:col-span-2 text-lg font-semibold text-white border-b border-neutral-700 pb-2 mb-2 mt-4">
+          Plan y Pricing
+        </h3>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-neutral-400">
+            Plan
+          </label>
+          <select
+            name="plan"
+            value={formData.plan}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          >
+            <option value="Trial">🆓 Trial (14 días gratis)</option>
+            <option value="Starter">⭐ Starter (1 condo)</option>
+            <option value="Growth">🚀 Growth (2-4 condos)</option>
+            <option value="Pro">💎 Pro (5-9 condos)</option>
+            <option value="Enterprise">🏢 Enterprise (10+ condos)</option>
+          </select>
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-neutral-400">
+            Cantidad de Condos
+          </label>
+          <input
+            type="number"
+            min="1"
+            value={condoCount}
+            onChange={(e) => setCondoCount(Math.max(1, parseInt(e.target.value) || 1))}
+            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+          <p className="mt-1 text-xs text-neutral-500">
+            Precio: RD${condoCount >= 10 ? '800' : condoCount >= 5 ? '1,000' : condoCount >= 2 ? '1,200' : '1,500'}/condo
+          </p>
+        </div>
+
+        {/* Addons Section */}
+        <div className="md:col-span-2 mb-4">
+          <label className="block text-sm font-medium text-neutral-400 mb-3">
+            Addons Disponibles
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {AVAILABLE_ADDONS.map((addon) => (
+              <label
+                key={addon.id}
+                className={`flex items-start p-3 rounded-lg border cursor-pointer transition-all ${
+                  formData.addons.includes(addon.id)
+                    ? 'border-indigo-500 bg-indigo-500/10'
+                    : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={formData.addons.includes(addon.id)}
+                  onChange={() => handleAddonToggle(addon.id)}
+                  className="mt-1 h-4 w-4 text-indigo-600 border-neutral-600 rounded focus:ring-indigo-500 bg-neutral-700"
+                />
+                <div className="ml-3 flex-1">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-white">{addon.name}</span>
+                    <span className="text-xs font-bold text-green-400">+RD${addon.monthlyPrice.toLocaleString()}/mes</span>
+                  </div>
+                  <p className="text-xs text-neutral-400 mt-1">{addon.description}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Pricing Summary */}
+        <div className="md:col-span-2 p-4 rounded-lg bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-indigo-500/30 mb-4">
+          <h4 className="text-sm font-medium text-neutral-300 mb-3">Resumen de Facturación</h4>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between text-neutral-400">
+              <span>Plan Base ({condoCount} condo{condoCount > 1 ? 's' : ''})</span>
+              <span>RD${formData.plan === 'Trial' ? '0' : ((condoCount * (condoCount >= 10 ? 800 : condoCount >= 5 ? 1000 : condoCount >= 2 ? 1200 : 1500))).toLocaleString()}</span>
+            </div>
+            {formData.addons.length > 0 && (
+              <div className="flex justify-between text-neutral-400">
+                <span>Addons ({formData.addons.length})</span>
+                <span>+RD${formData.addons.reduce((sum, id) => sum + (AVAILABLE_ADDONS.find(a => a.id === id)?.monthlyPrice || 0), 0).toLocaleString()}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-neutral-700">
+              <span>Total Mensual</span>
+              <span className="text-green-400">RD${monthlyFee.toLocaleString()}</span>
+            </div>
+            {formData.plan === 'Trial' && (
+              <p className="text-xs text-yellow-400 mt-2">⚠️ El plan Trial es gratuito por 14 días. Después se requiere seleccionar un plan pago.</p>
+            )}
+          </div>
         </div>
 
         <div className="md:col-span-2 flex justify-end pt-4">
