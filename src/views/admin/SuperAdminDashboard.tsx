@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
-import type { Company, Condo, PlanType, AddonConfig } from "../../types";
+import type { Company, Condo, PlanType, AddonConfig, ActivityEvent, ActivityEventType } from "../../types";
 import { PLAN_PRICING, AVAILABLE_ADDONS } from "../../types";
 import {
   collection,
@@ -118,10 +118,36 @@ const CompanyForm = ({
     }));
   };
 
+  // Auto-ajustar condos al mínimo del plan cuando cambia
+  const handlePlanChange = (newPlan: string) => {
+    const minCondos: Record<string, number> = {
+      "Trial": 1,
+      "Starter": 1,
+      "Growth": 2,
+      "Pro": 5,
+      "Enterprise": 10,
+    };
+    const min = minCondos[newPlan] || 1;
+    
+    // Si el condo count actual es menor al mínimo del nuevo plan, ajustar
+    if (condoCount < min) {
+      setCondoCount(min);
+    }
+    
+    setFormData(prev => ({ ...prev, plan: newPlan as PlanType }));
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
+    
+    // Si es el plan, usar el handler especial
+    if (name === "plan") {
+      handlePlanChange(value);
+      return;
+    }
+    
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? Number(value) : value,
@@ -177,12 +203,81 @@ const CompanyForm = ({
         condoCount: condoCount,
       };
 
+      // Helper para crear eventos de actividad
+      const createActivityEvent = async (
+        type: ActivityEventType,
+        companyId: string,
+        companyName: string,
+        description: string,
+        details?: ActivityEvent["details"]
+      ) => {
+        await addDoc(collection(db, "activity_events"), {
+          type,
+          companyId,
+          companyName,
+          description,
+          details,
+          createdAt: new Date().toISOString(),
+        });
+      };
+
       if (defaultValues && defaultValues.id) {
         const companyRef = doc(db, "companies", defaultValues.id);
         await updateDoc(companyRef, companyData);
+        
+        // Registrar eventos de actividad
+        // Cambio de plan
+        if (defaultValues.plan !== formData.plan) {
+          await createActivityEvent(
+            "plan_changed",
+            defaultValues.id,
+            formData.name,
+            `Cambió de plan ${defaultValues.plan} → ${formData.plan}`,
+            { oldValue: defaultValues.plan, newValue: formData.plan }
+          );
+        }
+        
+        // Addons añadidos
+        const oldAddons = defaultValues.addons || [];
+        const newAddons = formData.addons;
+        const addedAddons = newAddons.filter(a => !oldAddons.includes(a));
+        const removedAddons = oldAddons.filter(a => !newAddons.includes(a));
+        
+        for (const addonId of addedAddons) {
+          const addon = AVAILABLE_ADDONS.find(a => a.id === addonId);
+          await createActivityEvent(
+            "addon_added",
+            defaultValues.id,
+            formData.name,
+            `Activó addon "${addon?.name}"`,
+            { addonName: addon?.name, newValue: addonId }
+          );
+        }
+        
+        for (const addonId of removedAddons) {
+          const addon = AVAILABLE_ADDONS.find(a => a.id === addonId);
+          await createActivityEvent(
+            "addon_removed",
+            defaultValues.id,
+            formData.name,
+            `Desactivó addon "${addon?.name}"`,
+            { addonName: addon?.name, oldValue: addonId }
+          );
+        }
+        
         addToast(`Compañía "${formData.name}" actualizada.`, "success");
       } else {
-        await addDoc(collection(db, "companies"), companyData);
+        const docRef = await addDoc(collection(db, "companies"), companyData);
+        
+        // Registrar evento de nueva compañía
+        await createActivityEvent(
+          "company_created",
+          docRef.id,
+          formData.name,
+          `Nueva compañía registrada (Plan: ${formData.plan})`,
+          { newValue: formData.plan }
+        );
+        
         addToast(
           `Compañía "${formData.name}" creada. (Usuario admin PENDIENTE).`,
           "success"
@@ -396,9 +491,12 @@ const CompanyForm = ({
           </label>
           <input
             type="number"
-            min="1"
+            min={formData.plan === "Enterprise" ? 10 : formData.plan === "Pro" ? 5 : formData.plan === "Growth" ? 2 : 1}
             value={condoCount}
-            onChange={(e) => setCondoCount(Math.max(1, parseInt(e.target.value) || 1))}
+            onChange={(e) => {
+              const min = formData.plan === "Enterprise" ? 10 : formData.plan === "Pro" ? 5 : formData.plan === "Growth" ? 2 : 1;
+              setCondoCount(Math.max(min, parseInt(e.target.value) || min));
+            }}
             className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
           <p className="mt-1 text-xs text-neutral-500">
@@ -2811,6 +2909,9 @@ export const SuperAdminDashboard = () => {
   const [selectedCompanyBilling, setSelectedCompanyBilling] = useState<Company | null>(null);
   const [isBillingDetailOpen, setIsBillingDetailOpen] = useState(false);
 
+  // Estados para Activity Feed
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
+
   // DEV MODE check
   const isDevMode = window.location.hostname === "localhost";
 
@@ -2983,6 +3084,7 @@ export const SuperAdminDashboard = () => {
 
   const handleFormSaved = () => {
     fetchCompanies();
+    fetchActivityEvents(); // Refrescar eventos después de guardar
   };
 
   // =============================================
@@ -3030,9 +3132,61 @@ export const SuperAdminDashboard = () => {
     };
   }, [companies]);
 
+  // Fetch activity events
+  const fetchActivityEvents = async () => {
+    if (isDevMode && isDevAuthenticated) {
+      // Mock events para dev mode
+      const mockEvents: ActivityEvent[] = [
+        {
+          id: "evt-1",
+          type: "company_created",
+          companyId: "dev-company-1",
+          companyName: "Empresa Demo 1",
+          description: "Nueva compañía registrada (Plan: Pro)",
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 horas
+        },
+        {
+          id: "evt-2",
+          type: "addon_added",
+          companyId: "dev-company-2",
+          companyName: "Empresa Demo 2",
+          description: 'Activó addon "SMS/WhatsApp"',
+          details: { addonName: "SMS/WhatsApp" },
+          createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 horas
+        },
+        {
+          id: "evt-3",
+          type: "plan_changed",
+          companyId: "dev-company-1",
+          companyName: "Empresa Demo 1",
+          description: "Cambió de plan Growth → Pro",
+          details: { oldValue: "Growth", newValue: "Pro" },
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 día
+        },
+      ];
+      setActivityEvents(mockEvents);
+      return;
+    }
+
+    try {
+      const eventsRef = collection(db, "activity_events");
+      const snapshot = await getDocs(eventsRef);
+      const eventList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as ActivityEvent[];
+      // Ordenar por fecha más reciente
+      eventList.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setActivityEvents(eventList.slice(0, 20)); // Solo últimos 20
+    } catch (error) {
+      console.error("Error fetching activity events:", error);
+    }
+  };
+
   useEffect(() => {
     fetchCompanies();
     fetchAllPayments();
+    fetchActivityEvents();
   }, []);
 
   // Filtrar compañías según el filtro seleccionado
@@ -3361,6 +3515,80 @@ export const SuperAdminDashboard = () => {
                   </span>
                 </button>
               </div>
+            </div>
+
+            {/* Panel de Actividad Reciente */}
+            <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <Icon name="activity" className="w-5 h-5 text-indigo-400" />
+                  Actividad Reciente
+                </h3>
+                <button
+                  onClick={fetchActivityEvents}
+                  className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                >
+                  <Icon name="refresh-cw" className="w-4 h-4" />
+                  Actualizar
+                </button>
+              </div>
+              
+              {activityEvents.length === 0 ? (
+                <p className="text-neutral-500 text-sm text-center py-4">
+                  No hay actividad reciente
+                </p>
+              ) : (
+                <div className="space-y-3 max-h-80 overflow-y-auto">
+                  {activityEvents.map((event) => {
+                    // Calcular tiempo relativo
+                    const eventDate = new Date(event.createdAt);
+                    const now = new Date();
+                    const diffMs = now.getTime() - eventDate.getTime();
+                    const diffMins = Math.floor(diffMs / 60000);
+                    const diffHours = Math.floor(diffMs / 3600000);
+                    const diffDays = Math.floor(diffMs / 86400000);
+                    
+                    let timeAgo = "";
+                    if (diffMins < 60) timeAgo = `Hace ${diffMins} min`;
+                    else if (diffHours < 24) timeAgo = `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+                    else timeAgo = `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
+                    
+                    // Icono y color según tipo
+                    const eventConfig: Record<string, { icon: string; color: string; bg: string }> = {
+                      company_created: { icon: "building-2", color: "text-green-400", bg: "bg-green-500/20" },
+                      company_updated: { icon: "edit", color: "text-blue-400", bg: "bg-blue-500/20" },
+                      plan_changed: { icon: "arrow-up-circle", color: "text-purple-400", bg: "bg-purple-500/20" },
+                      addon_added: { icon: "plus-circle", color: "text-emerald-400", bg: "bg-emerald-500/20" },
+                      addon_removed: { icon: "minus-circle", color: "text-orange-400", bg: "bg-orange-500/20" },
+                      payment_received: { icon: "dollar-sign", color: "text-green-400", bg: "bg-green-500/20" },
+                      status_changed: { icon: "toggle-right", color: "text-yellow-400", bg: "bg-yellow-500/20" },
+                    };
+                    const config = eventConfig[event.type] || { icon: "activity", color: "text-neutral-400", bg: "bg-neutral-500/20" };
+                    
+                    return (
+                      <div
+                        key={event.id}
+                        className="flex items-start gap-3 p-3 bg-neutral-800/30 rounded-lg hover:bg-neutral-800/50 transition-colors"
+                      >
+                        <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center flex-shrink-0`}>
+                          <Icon name={config.icon} className={`w-4 h-4 ${config.color}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white font-medium truncate">
+                            {event.companyName}
+                          </p>
+                          <p className="text-xs text-neutral-400">
+                            {event.description}
+                          </p>
+                        </div>
+                        <span className="text-xs text-neutral-500 whitespace-nowrap">
+                          {timeAgo}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}

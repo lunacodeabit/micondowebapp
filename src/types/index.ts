@@ -349,11 +349,10 @@ export const PLAN_PRICING: Record<string, { minCondos: number; maxCondos: number
 
 // Addons disponibles
 export const AVAILABLE_ADDONS: AddonConfig[] = [
-  { id: "whatsapp", name: "WhatsApp Business", description: "Notificaciones por WhatsApp a residentes", monthlyPrice: 2500 },
-  { id: "sms", name: "SMS Notifications", description: "Alertas por SMS para pagos y emergencias", monthlyPrice: 1500 },
-  { id: "customDomain", name: "Dominio Personalizado", description: "portal.tucondominio.com", monthlyPrice: 1000 },
+  { id: "whatsapp", name: "SMS/WhatsApp", description: "Notificaciones por SMS y WhatsApp a residentes", monthlyPrice: 500 },
+  { id: "multiuser", name: "Multi-usuario", description: "Usuarios adicionales para la administración", monthlyPrice: 500 },
+  { id: "storage", name: "Almacenamiento Extra", description: "10GB adicionales para documentos y fotos", monthlyPrice: 300 },
   { id: "prioritySupport", name: "Soporte Prioritario", description: "Respuesta en menos de 2 horas", monthlyPrice: 2000 },
-  { id: "advancedReports", name: "Reportes Avanzados", description: "Analytics y reportes personalizados", monthlyPrice: 1500 },
 ];
 
 export interface Company {
@@ -418,5 +417,29 @@ export interface SaasMessage {
   content: string;
   direction: "to_client" | "from_client";
   isRead: boolean;
+  createdAt: string;
+}
+// Evento de actividad para el panel de SuperAdmin
+export type ActivityEventType = 
+  | "company_created"
+  | "company_updated" 
+  | "plan_changed"
+  | "addon_added"
+  | "addon_removed"
+  | "payment_received"
+  | "status_changed";
+
+export interface ActivityEvent {
+  id: string;
+  type: ActivityEventType;
+  companyId: string;
+  companyName: string;
+  description: string;
+  details?: {
+    oldValue?: string;
+    newValue?: string;
+    amount?: number;
+    addonName?: string;
+  };
   createdAt: string;
 }
