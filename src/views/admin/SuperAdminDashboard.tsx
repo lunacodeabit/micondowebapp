@@ -1667,6 +1667,87 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
         </div>
       </div>
 
+      {/* Templates Rápidos */}
+      <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6">
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <Icon name="zap" className="w-5 h-5 text-yellow-400" />
+          Templates Rápidos
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <button
+            onClick={() => {
+              setAnnouncementForm({
+                title: "Mantenimiento Programado",
+                content: "Realizaremos un mantenimiento programado el [FECHA] de [HORA] a [HORA]. El sistema podría presentar interrupciones. Agradecemos su comprensión.",
+                type: "maintenance",
+                targetAudience: "all",
+              });
+              setIsAnnouncementModalOpen(true);
+            }}
+            className="flex flex-col items-center gap-2 p-4 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-xl transition-colors group"
+          >
+            <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Icon name="wrench" className="w-5 h-5 text-orange-400" />
+            </div>
+            <span className="text-sm text-neutral-300 group-hover:text-white text-center">Mantenimiento</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setAnnouncementForm({
+                title: "¡Nueva Actualización!",
+                content: "Hemos incorporado nuevas funcionalidades para mejorar tu experiencia:\n\n• [Funcionalidad 1]\n• [Funcionalidad 2]\n• [Funcionalidad 3]\n\n¡Explórelas ahora!",
+                type: "update",
+                targetAudience: "all",
+              });
+              setIsAnnouncementModalOpen(true);
+            }}
+            className="flex flex-col items-center gap-2 p-4 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 rounded-xl transition-colors group"
+          >
+            <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Icon name="sparkles" className="w-5 h-5 text-green-400" />
+            </div>
+            <span className="text-sm text-neutral-300 group-hover:text-white text-center">Actualización</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setAnnouncementForm({
+                title: "Recordatorio de Pago",
+                content: "Le recordamos que su cuota de mantenimiento vence el [FECHA]. Para evitar recargos, realice su pago a tiempo.\n\nMétodos de pago disponibles:\n• Transferencia bancaria\n• Pago en oficina\n\n¡Gracias por su puntualidad!",
+                type: "warning",
+                targetAudience: "all",
+              });
+              setIsAnnouncementModalOpen(true);
+            }}
+            className="flex flex-col items-center gap-2 p-4 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 rounded-xl transition-colors group"
+          >
+            <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Icon name="bell" className="w-5 h-5 text-yellow-400" />
+            </div>
+            <span className="text-sm text-neutral-300 group-hover:text-white text-center">Recordatorio</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setAnnouncementForm({
+                title: "Información Importante",
+                content: "[Escriba aquí el mensaje para todos los residentes y administradores de condominios...]",
+                type: "info",
+                targetAudience: "all",
+              });
+              setIsAnnouncementModalOpen(true);
+            }}
+            className="flex flex-col items-center gap-2 p-4 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-xl transition-colors group"
+          >
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Icon name="info" className="w-5 h-5 text-blue-400" />
+            </div>
+            <span className="text-sm text-neutral-300 group-hover:text-white text-center">Información</span>
+          </button>
+        </div>
+      </div>
+
       {/* Header + Botón Nuevo Anuncio */}
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-white">
