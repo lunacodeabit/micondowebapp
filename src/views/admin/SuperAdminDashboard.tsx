@@ -514,8 +514,8 @@ const CompanyForm = ({
               <label
                 key={addon.id}
                 className={`flex items-start p-3 rounded-lg border cursor-pointer transition-all ${formData.addons.includes(addon.id)
-                    ? 'border-indigo-500 bg-indigo-500/10'
-                    : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
+                  ? 'border-indigo-500 bg-indigo-500/10'
+                  : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
                   }`}
               >
                 <input
@@ -836,12 +836,12 @@ const BillingDetailModal = ({
           {/* Estado Actual */}
           <div
             className={`rounded-xl p-4 border ${billing.status === "active"
-                ? "bg-green-500/10 border-green-500/30"
-                : billing.status === "grace"
-                  ? "bg-yellow-500/10 border-yellow-500/30"
-                  : billing.status === "trial"
-                    ? "bg-blue-500/10 border-blue-500/30"
-                    : "bg-red-500/10 border-red-500/30"
+              ? "bg-green-500/10 border-green-500/30"
+              : billing.status === "grace"
+                ? "bg-yellow-500/10 border-yellow-500/30"
+                : billing.status === "trial"
+                  ? "bg-blue-500/10 border-blue-500/30"
+                  : "bg-red-500/10 border-red-500/30"
               }`}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -856,24 +856,24 @@ const BillingDetailModal = ({
                         : "alert-circle"
                 }
                 className={`w-5 h-5 ${billing.status === "active"
-                    ? "text-green-400"
-                    : billing.status === "grace"
-                      ? "text-yellow-400"
-                      : billing.status === "trial"
-                        ? "text-blue-400"
-                        : "text-red-400"
-                  }`}
-              />
-              <span className="text-sm text-neutral-400">Estado</span>
-            </div>
-            <p
-              className={`text-lg font-bold ${billing.status === "active"
                   ? "text-green-400"
                   : billing.status === "grace"
                     ? "text-yellow-400"
                     : billing.status === "trial"
                       ? "text-blue-400"
                       : "text-red-400"
+                  }`}
+              />
+              <span className="text-sm text-neutral-400">Estado</span>
+            </div>
+            <p
+              className={`text-lg font-bold ${billing.status === "active"
+                ? "text-green-400"
+                : billing.status === "grace"
+                  ? "text-yellow-400"
+                  : billing.status === "trial"
+                    ? "text-blue-400"
+                    : "text-red-400"
                 }`}
             >
               {billing.statusLabel}
@@ -1712,8 +1712,8 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
               <div
                 key={announcement.id}
                 className={`bg-neutral-900/50 border rounded-2xl p-5 transition-all duration-200 hover:bg-neutral-900/80 ${announcement.isActive
-                    ? "border-l-4 border-l-green-500 border-t-neutral-800 border-r-neutral-800 border-b-neutral-800"
-                    : "border-neutral-800 opacity-60"
+                  ? "border-l-4 border-l-green-500 border-t-neutral-800 border-r-neutral-800 border-b-neutral-800"
+                  : "border-neutral-800 opacity-60"
                   }`}
               >
                 <div className="flex justify-between items-start">
@@ -1766,8 +1766,8 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
                   <button
                     onClick={() => toggleAnnouncementStatus(announcement)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${announcement.isActive
-                        ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
-                        : "bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
+                      ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
+                      : "bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
                       }`}
                   >
                     {announcement.isActive ? "Desactivar" : "Activar"}
@@ -2064,8 +2064,8 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-3 py-1 rounded text-sm ${filter === f
-                  ? "bg-purple-600 text-white"
-                  : "text-neutral-400 hover:text-white"
+                ? "bg-purple-600 text-white"
+                : "text-neutral-400 hover:text-white"
                 }`}
             >
               {f === "all"
@@ -2105,10 +2105,10 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
             <div
               key={msg.id}
               className={`bg-neutral-900 p-4 rounded-lg border-l-4 cursor-pointer hover:bg-neutral-800 transition-colors ${msg.direction === "from_client"
-                  ? msg.isRead
-                    ? "border-neutral-600"
-                    : "border-green-500"
-                  : "border-blue-500"
+                ? msg.isRead
+                  ? "border-neutral-600"
+                  : "border-green-500"
+                : "border-blue-500"
                 }`}
               onClick={() =>
                 !msg.isRead &&
@@ -2418,14 +2418,14 @@ const SettingsTab = () => {
                   })
                 }
                 className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${settings.enableEmailNotifications
-                    ? "bg-purple-600"
-                    : "bg-neutral-700"
+                  ? "bg-purple-600"
+                  : "bg-neutral-700"
                   }`}
               >
                 <span
                   className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${settings.enableEmailNotifications
-                      ? "translate-x-5"
-                      : "translate-x-0"
+                    ? "translate-x-5"
+                    : "translate-x-0"
                     }`}
                 />
               </button>
@@ -2447,14 +2447,14 @@ const SettingsTab = () => {
                   })
                 }
                 className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${settings.enableSmsNotifications
-                    ? "bg-purple-600"
-                    : "bg-neutral-700"
+                  ? "bg-purple-600"
+                  : "bg-neutral-700"
                   }`}
               >
                 <span
                   className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${settings.enableSmsNotifications
-                      ? "translate-x-5"
-                      : "translate-x-0"
+                    ? "translate-x-5"
+                    : "translate-x-0"
                     }`}
                 />
               </button>
@@ -2492,8 +2492,8 @@ const SettingsTab = () => {
               >
                 <span
                   className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${settings.maintenanceMode
-                      ? "translate-x-5"
-                      : "translate-x-0"
+                    ? "translate-x-5"
+                    : "translate-x-0"
                     }`}
                 />
               </button>
@@ -2703,12 +2703,12 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
               </div>
               <div className="pt-2">
                 <span className={`text-xs px-2 py-1 rounded-full ${pricing.tier.minCondos >= 10
-                    ? "bg-green-500/20 text-green-400"
-                    : pricing.tier.minCondos >= 5
-                      ? "bg-blue-500/20 text-blue-400"
-                      : pricing.tier.minCondos >= 2
-                        ? "bg-purple-500/20 text-purple-400"
-                        : "bg-neutral-700 text-neutral-300"
+                  ? "bg-green-500/20 text-green-400"
+                  : pricing.tier.minCondos >= 5
+                    ? "bg-blue-500/20 text-blue-400"
+                    : pricing.tier.minCondos >= 2
+                      ? "bg-purple-500/20 text-purple-400"
+                      : "bg-neutral-700 text-neutral-300"
                   }`}>
                   Tier: {pricing.tier.label}
                 </span>
@@ -2773,8 +2773,8 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
                       <Icon
                         name={index === 0 ? "building" : index === 3 ? "crown" : "building-2"}
                         className={`w-5 h-5 ${index === 3 ? "text-green-400" :
-                            index === 2 ? "text-blue-400" :
-                              index === 1 ? "text-purple-400" : "text-neutral-400"
+                          index === 2 ? "text-blue-400" :
+                            index === 1 ? "text-purple-400" : "text-neutral-400"
                           }`}
                       />
                       <span className="font-medium text-white capitalize">
@@ -2795,8 +2795,8 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
                       <span className="text-neutral-500">—</span>
                     ) : (
                       <span className={`text-xs px-2 py-1 rounded-full ${index === 3 ? "bg-green-500/20 text-green-400" :
-                          index === 2 ? "bg-blue-500/20 text-blue-400" :
-                            "bg-purple-500/20 text-purple-400"
+                        index === 2 ? "bg-blue-500/20 text-blue-400" :
+                          "bg-purple-500/20 text-purple-400"
                         }`}>
                         {index === 1 ? "-20%" : index === 2 ? "-33%" : "-47%"}
                       </span>
@@ -2887,6 +2887,122 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
         </div>
       </div>
     </div>
+  );
+};
+
+// =============================================
+// COMPONENTE: MRR Chart (Tendencia de Ingresos)
+// =============================================
+declare const Chart: any;
+
+type MRRChartProps = {
+  payments: PaymentRecord[];
+};
+
+const MRRChart = ({ payments }: MRRChartProps) => {
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const chartRef = React.useRef<any>(null);
+
+  React.useEffect(() => {
+    if (!canvasRef.current || typeof Chart === 'undefined') return;
+
+    // Calcular MRR de los últimos 6 meses
+    const today = new Date();
+    const months: { label: string; total: number }[] = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const monthDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const monthName = monthDate.toLocaleDateString('es-DO', { month: 'short' });
+      const year = monthDate.getFullYear();
+
+      // Filtrar pagos de ese mes
+      const monthTotal = payments.reduce((sum, payment) => {
+        const paymentDate = new Date(payment.paymentDate);
+        if (paymentDate.getMonth() === monthDate.getMonth() &&
+          paymentDate.getFullYear() === monthDate.getFullYear()) {
+          return sum + payment.amount;
+        }
+        return sum;
+      }, 0);
+
+      months.push({ label: `${monthName} ${year}`, total: monthTotal });
+    }
+
+    // Destruir chart anterior si existe
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
+    // Crear el chart
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+    gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+    gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+    chartRef.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: months.map(m => m.label),
+        datasets: [{
+          label: 'MRR',
+          data: months.map(m => m.total),
+          fill: true,
+          backgroundColor: gradient,
+          borderColor: 'rgb(16, 185, 129)',
+          borderWidth: 3,
+          tension: 0.4,
+          pointBackgroundColor: 'rgb(16, 185, 129)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(23, 23, 23, 0.9)',
+            titleColor: '#fff',
+            bodyColor: '#10b981',
+            borderColor: 'rgba(16, 185, 129, 0.3)',
+            borderWidth: 1,
+            padding: 12,
+            callbacks: {
+              label: (context: any) => `RD$ ${context.raw.toLocaleString()}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { color: '#888' }
+          },
+          y: {
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: {
+              color: '#888',
+              callback: (value: number) => `$${(value / 1000).toFixed(0)}k`
+            },
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+      }
+    };
+  }, [payments]);
+
+  return (
+    <canvas ref={canvasRef} className="w-full h-full" />
   );
 };
 
@@ -3420,6 +3536,21 @@ export const SuperAdminDashboard = () => {
               </div>
             </div>
 
+            {/* MRR Trend Chart - Últimos 6 meses */}
+            <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <Icon name="trending-up" className="w-5 h-5 text-emerald-400" />
+                  Tendencia MRR (Últimos 6 Meses)
+                </h3>
+                <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  ${metrics.mrr.toLocaleString()}/mes actual
+                </span>
+              </div>
+              <div className="h-64">
+                <MRRChart payments={allPayments} />
+              </div>
+            </div>
             {/* Panel de Alertas - Grace Period */}
             {companiesNeedingAttention.length > 0 && (
               <div className="bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-500/30 rounded-xl p-6">
@@ -3444,19 +3575,19 @@ export const SuperAdminDashboard = () => {
                       <div
                         key={item.companyId}
                         className={`flex items-center justify-between p-3 rounded-lg border ${item.billing.urgency === "critical"
-                            ? "bg-red-500/10 border-red-500/30"
-                            : item.billing.urgency === "high"
-                              ? "bg-orange-500/10 border-orange-500/30"
-                              : "bg-yellow-500/10 border-yellow-500/30"
+                          ? "bg-red-500/10 border-red-500/30"
+                          : item.billing.urgency === "high"
+                            ? "bg-orange-500/10 border-orange-500/30"
+                            : "bg-yellow-500/10 border-yellow-500/30"
                           }`}
                       >
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-2 h-2 rounded-full ${item.billing.urgency === "critical"
-                                ? "bg-red-500 animate-pulse"
-                                : item.billing.urgency === "high"
-                                  ? "bg-orange-500"
-                                  : "bg-yellow-500"
+                              ? "bg-red-500 animate-pulse"
+                              : item.billing.urgency === "high"
+                                ? "bg-orange-500"
+                                : "bg-yellow-500"
                               }`}
                           />
                           <div>
@@ -3623,8 +3754,8 @@ export const SuperAdminDashboard = () => {
                 <button
                   onClick={() => setCompanyFilter("all")}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "all"
-                      ? "bg-white text-neutral-900"
-                      : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
+                    ? "bg-white text-neutral-900"
+                    : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
                     }`}
                 >
                   Todos ({companies.length})
@@ -3632,8 +3763,8 @@ export const SuperAdminDashboard = () => {
                 <button
                   onClick={() => setCompanyFilter("active")}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "active"
-                      ? "bg-green-500 text-white"
-                      : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
+                    ? "bg-green-500 text-white"
+                    : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
                     }`}
                 >
                   Activos (
@@ -3642,8 +3773,8 @@ export const SuperAdminDashboard = () => {
                 <button
                   onClick={() => setCompanyFilter("grace")}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "grace"
-                      ? "bg-yellow-500 text-white"
-                      : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
+                    ? "bg-yellow-500 text-white"
+                    : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
                     }`}
                 >
                   En Gracia (
@@ -3652,8 +3783,8 @@ export const SuperAdminDashboard = () => {
                 <button
                   onClick={() => setCompanyFilter("inactive")}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "inactive"
-                      ? "bg-red-500 text-white"
-                      : "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
+                    ? "bg-red-500 text-white"
+                    : "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
                     }`}
                 >
                   Inactivos (
@@ -3698,10 +3829,10 @@ export const SuperAdminDashboard = () => {
                   <div
                     key={company.id}
                     className={`bg-neutral-900/50 border rounded-2xl p-5 transition-all duration-200 hover:bg-neutral-900/80 hover:shadow-lg group ${company.status === "Activo"
-                        ? "border-neutral-800 hover:border-green-500/30"
-                        : company.status === "Gracia"
-                          ? "border-yellow-500/30"
-                          : "border-red-500/30 opacity-75"
+                      ? "border-neutral-800 hover:border-green-500/30"
+                      : company.status === "Gracia"
+                        ? "border-yellow-500/30"
+                        : "border-red-500/30 opacity-75"
                       }`}
                   >
                     {/* Header de la Card */}
@@ -3735,10 +3866,10 @@ export const SuperAdminDashboard = () => {
                       {/* Badge de Estado */}
                       <span
                         className={`px-3 py-1.5 text-xs font-bold rounded-full ${company.status === "Activo"
-                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                            : company.status === "Gracia"
-                              ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                              : "bg-red-500/20 text-red-400 border border-red-500/30"
+                          ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                          : company.status === "Gracia"
+                            ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                            : "bg-red-500/20 text-red-400 border border-red-500/30"
                           }`}
                       >
                         {company.status === "Activo" && "● "}
@@ -3808,10 +3939,10 @@ export const SuperAdminDashboard = () => {
                     <div className="flex items-center gap-2 mb-4">
                       <span
                         className={`px-3 py-1 text-xs font-bold rounded-lg ${company.plan === "Enterprise"
-                            ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                            : company.plan === "Pro"
-                              ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                              : "bg-neutral-700 text-neutral-300"
+                          ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                          : company.plan === "Pro"
+                            ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                            : "bg-neutral-700 text-neutral-300"
                           }`}
                       >
                         Plan {company.plan || "Pro"}
@@ -3838,8 +3969,8 @@ export const SuperAdminDashboard = () => {
                         onClick={() => toggleCompanyStatus(company)}
                         disabled={isUpdating}
                         className={`py-2.5 px-4 rounded-xl text-sm font-medium transition-colors ${company.status === "Activo"
-                            ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
-                            : "bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
+                          ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
+                          : "bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
                           }`}
                       >
                         {isUpdating
