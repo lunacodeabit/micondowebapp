@@ -89,21 +89,21 @@ const CompanyForm = ({
   // Calcular precio mensual basado en plan y addons
   const calculateMonthlyFee = () => {
     if (formData.plan === "Trial") return 0;
-    
+
     // Determinar precio por condo según tier
     let pricePerCondo = 1500; // default Starter
     if (condoCount >= 10) pricePerCondo = 800;
     else if (condoCount >= 5) pricePerCondo = 1000;
     else if (condoCount >= 2) pricePerCondo = 1200;
-    
+
     const basePrice = condoCount * pricePerCondo;
-    
+
     // Sumar addons
     const addonsPrice = formData.addons.reduce((sum, addonId) => {
       const addon = AVAILABLE_ADDONS.find(a => a.id === addonId);
       return sum + (addon?.monthlyPrice || 0);
     }, 0);
-    
+
     return basePrice + addonsPrice;
   };
 
@@ -128,12 +128,12 @@ const CompanyForm = ({
       "Enterprise": 10,
     };
     const min = minCondos[newPlan] || 1;
-    
+
     // Si el condo count actual es menor al mínimo del nuevo plan, ajustar
     if (condoCount < min) {
       setCondoCount(min);
     }
-    
+
     setFormData(prev => ({ ...prev, plan: newPlan as PlanType }));
   };
 
@@ -141,13 +141,13 @@ const CompanyForm = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
-    
+
     // Si es el plan, usar el handler especial
     if (name === "plan") {
       handlePlanChange(value);
       return;
     }
-    
+
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? Number(value) : value,
@@ -224,7 +224,7 @@ const CompanyForm = ({
       if (defaultValues && defaultValues.id) {
         const companyRef = doc(db, "companies", defaultValues.id);
         await updateDoc(companyRef, companyData);
-        
+
         // Registrar eventos de actividad
         // Cambio de plan
         if (defaultValues.plan !== formData.plan) {
@@ -236,13 +236,13 @@ const CompanyForm = ({
             { oldValue: defaultValues.plan, newValue: formData.plan }
           );
         }
-        
+
         // Addons añadidos
         const oldAddons = defaultValues.addons || [];
         const newAddons = formData.addons;
         const addedAddons = newAddons.filter(a => !oldAddons.includes(a));
         const removedAddons = oldAddons.filter(a => !newAddons.includes(a));
-        
+
         for (const addonId of addedAddons) {
           const addon = AVAILABLE_ADDONS.find(a => a.id === addonId);
           await createActivityEvent(
@@ -253,7 +253,7 @@ const CompanyForm = ({
             { addonName: addon?.name, newValue: addonId }
           );
         }
-        
+
         for (const addonId of removedAddons) {
           const addon = AVAILABLE_ADDONS.find(a => a.id === addonId);
           await createActivityEvent(
@@ -264,11 +264,11 @@ const CompanyForm = ({
             { addonName: addon?.name, oldValue: addonId }
           );
         }
-        
+
         addToast(`Compañía "${formData.name}" actualizada.`, "success");
       } else {
         const docRef = await addDoc(collection(db, "companies"), companyData);
-        
+
         // Registrar evento de nueva compañía
         await createActivityEvent(
           "company_created",
@@ -277,7 +277,7 @@ const CompanyForm = ({
           `Nueva compañía registrada (Plan: ${formData.plan})`,
           { newValue: formData.plan }
         );
-        
+
         addToast(
           `Compañía "${formData.name}" creada. (Usuario admin PENDIENTE).`,
           "success"
@@ -513,11 +513,10 @@ const CompanyForm = ({
             {AVAILABLE_ADDONS.map((addon) => (
               <label
                 key={addon.id}
-                className={`flex items-start p-3 rounded-lg border cursor-pointer transition-all ${
-                  formData.addons.includes(addon.id)
+                className={`flex items-start p-3 rounded-lg border cursor-pointer transition-all ${formData.addons.includes(addon.id)
                     ? 'border-indigo-500 bg-indigo-500/10'
                     : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
-                }`}
+                  }`}
               >
                 <input
                   type="checkbox"
@@ -809,6 +808,14 @@ const BillingDetailModal = ({
       };
 
       await addDoc(collection(db, "saas_payments"), paymentData);
+
+      // FIX Bug #1: Actualizar status de la compañía a "Activo" para sincronizar Dashboard y Companies
+      const companyRef = doc(db, "companies", company.id);
+      await updateDoc(companyRef, {
+        status: "Activo",
+        lastPaymentDate: today.toISOString().split("T")[0]
+      });
+
       addToast(`Pago de RD$${paymentForm.amount} registrado`, "success");
       setIsPaymentFormOpen(false);
       setPaymentForm({ amount: "", method: "Transferencia", reference: "", notes: "" });
@@ -828,15 +835,14 @@ const BillingDetailModal = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Estado Actual */}
           <div
-            className={`rounded-xl p-4 border ${
-              billing.status === "active"
+            className={`rounded-xl p-4 border ${billing.status === "active"
                 ? "bg-green-500/10 border-green-500/30"
                 : billing.status === "grace"
-                ? "bg-yellow-500/10 border-yellow-500/30"
-                : billing.status === "trial"
-                ? "bg-blue-500/10 border-blue-500/30"
-                : "bg-red-500/10 border-red-500/30"
-            }`}
+                  ? "bg-yellow-500/10 border-yellow-500/30"
+                  : billing.status === "trial"
+                    ? "bg-blue-500/10 border-blue-500/30"
+                    : "bg-red-500/10 border-red-500/30"
+              }`}
           >
             <div className="flex items-center gap-2 mb-2">
               <Icon
@@ -844,33 +850,31 @@ const BillingDetailModal = ({
                   billing.status === "active"
                     ? "check-circle"
                     : billing.status === "grace"
-                    ? "clock"
-                    : billing.status === "trial"
-                    ? "gift"
-                    : "alert-circle"
+                      ? "clock"
+                      : billing.status === "trial"
+                        ? "gift"
+                        : "alert-circle"
                 }
-                className={`w-5 h-5 ${
-                  billing.status === "active"
+                className={`w-5 h-5 ${billing.status === "active"
                     ? "text-green-400"
                     : billing.status === "grace"
-                    ? "text-yellow-400"
-                    : billing.status === "trial"
-                    ? "text-blue-400"
-                    : "text-red-400"
-                }`}
+                      ? "text-yellow-400"
+                      : billing.status === "trial"
+                        ? "text-blue-400"
+                        : "text-red-400"
+                  }`}
               />
               <span className="text-sm text-neutral-400">Estado</span>
             </div>
             <p
-              className={`text-lg font-bold ${
-                billing.status === "active"
+              className={`text-lg font-bold ${billing.status === "active"
                   ? "text-green-400"
                   : billing.status === "grace"
-                  ? "text-yellow-400"
-                  : billing.status === "trial"
-                  ? "text-blue-400"
-                  : "text-red-400"
-              }`}
+                    ? "text-yellow-400"
+                    : billing.status === "trial"
+                      ? "text-blue-400"
+                      : "text-red-400"
+                }`}
             >
               {billing.statusLabel}
             </p>
@@ -1233,8 +1237,8 @@ const BillingTab = ({ companies }: BillingTabProps) => {
             $
             {thisMonthPayments.length > 0
               ? Math.round(
-                  totalThisMonth / thisMonthPayments.length
-                ).toLocaleString()
+                totalThisMonth / thisMonthPayments.length
+              ).toLocaleString()
               : "0"}
           </p>
           <p className="text-xs text-neutral-500 mt-2">
@@ -1707,11 +1711,10 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
             return (
               <div
                 key={announcement.id}
-                className={`bg-neutral-900/50 border rounded-2xl p-5 transition-all duration-200 hover:bg-neutral-900/80 ${
-                  announcement.isActive
+                className={`bg-neutral-900/50 border rounded-2xl p-5 transition-all duration-200 hover:bg-neutral-900/80 ${announcement.isActive
                     ? "border-l-4 border-l-green-500 border-t-neutral-800 border-r-neutral-800 border-b-neutral-800"
                     : "border-neutral-800 opacity-60"
-                }`}
+                  }`}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -1762,11 +1765,10 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
                   </div>
                   <button
                     onClick={() => toggleAnnouncementStatus(announcement)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
-                      announcement.isActive
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${announcement.isActive
                         ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
                         : "bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
-                    }`}
+                      }`}
                   >
                     {announcement.isActive ? "Desactivar" : "Activar"}
                   </button>
@@ -2061,11 +2063,10 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-3 py-1 rounded text-sm ${
-                filter === f
+              className={`px-3 py-1 rounded text-sm ${filter === f
                   ? "bg-purple-600 text-white"
                   : "text-neutral-400 hover:text-white"
-              }`}
+                }`}
             >
               {f === "all"
                 ? "Todos"
@@ -2103,13 +2104,12 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
           filteredMessages.map((msg: any) => (
             <div
               key={msg.id}
-              className={`bg-neutral-900 p-4 rounded-lg border-l-4 cursor-pointer hover:bg-neutral-800 transition-colors ${
-                msg.direction === "from_client"
+              className={`bg-neutral-900 p-4 rounded-lg border-l-4 cursor-pointer hover:bg-neutral-800 transition-colors ${msg.direction === "from_client"
                   ? msg.isRead
                     ? "border-neutral-600"
                     : "border-green-500"
                   : "border-blue-500"
-              }`}
+                }`}
               onClick={() =>
                 !msg.isRead &&
                 msg.direction === "from_client" &&
@@ -2417,18 +2417,16 @@ const SettingsTab = () => {
                     enableEmailNotifications: !settings.enableEmailNotifications,
                   })
                 }
-                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${
-                  settings.enableEmailNotifications
+                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${settings.enableEmailNotifications
                     ? "bg-purple-600"
                     : "bg-neutral-700"
-                }`}
+                  }`}
               >
                 <span
-                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${
-                    settings.enableEmailNotifications
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${settings.enableEmailNotifications
                       ? "translate-x-5"
                       : "translate-x-0"
-                  }`}
+                    }`}
                 />
               </button>
             </div>
@@ -2448,18 +2446,16 @@ const SettingsTab = () => {
                     enableSmsNotifications: !settings.enableSmsNotifications,
                   })
                 }
-                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${
-                  settings.enableSmsNotifications
+                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${settings.enableSmsNotifications
                     ? "bg-purple-600"
                     : "bg-neutral-700"
-                }`}
+                  }`}
               >
                 <span
-                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${
-                    settings.enableSmsNotifications
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${settings.enableSmsNotifications
                       ? "translate-x-5"
                       : "translate-x-0"
-                  }`}
+                    }`}
                 />
               </button>
             </div>
@@ -2491,16 +2487,14 @@ const SettingsTab = () => {
                     maintenanceMode: !settings.maintenanceMode,
                   })
                 }
-                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${
-                  settings.maintenanceMode ? "bg-orange-600" : "bg-neutral-700"
-                }`}
+                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${settings.maintenanceMode ? "bg-orange-600" : "bg-neutral-700"
+                  }`}
               >
                 <span
-                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${
-                    settings.maintenanceMode
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${settings.maintenanceMode
                       ? "translate-x-5"
                       : "translate-x-0"
-                  }`}
+                    }`}
                 />
               </button>
             </div>
@@ -2551,7 +2545,7 @@ const calculateMonthlyPrice = (condoCount: number): { total: number; perCondo: n
   const tier = PRICING_TIERS.find(
     (t) => condoCount >= t.minCondos && (t.maxCondos === null || condoCount <= t.maxCondos)
   ) || PRICING_TIERS[PRICING_TIERS.length - 1];
-  
+
   return {
     total: condoCount * tier.pricePerCondo,
     perCondo: tier.pricePerCondo,
@@ -2708,15 +2702,14 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
                 </div>
               </div>
               <div className="pt-2">
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  pricing.tier.minCondos >= 10 
-                    ? "bg-green-500/20 text-green-400" 
-                    : pricing.tier.minCondos >= 5 
+                <span className={`text-xs px-2 py-1 rounded-full ${pricing.tier.minCondos >= 10
+                    ? "bg-green-500/20 text-green-400"
+                    : pricing.tier.minCondos >= 5
                       ? "bg-blue-500/20 text-blue-400"
                       : pricing.tier.minCondos >= 2
                         ? "bg-purple-500/20 text-purple-400"
                         : "bg-neutral-700 text-neutral-300"
-                }`}>
+                  }`}>
                   Tier: {pricing.tier.label}
                 </span>
               </div>
@@ -2777,13 +2770,12 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
                 <tr key={index} className="hover:bg-neutral-800/30 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <Icon 
-                        name={index === 0 ? "building" : index === 3 ? "crown" : "building-2"} 
-                        className={`w-5 h-5 ${
-                          index === 3 ? "text-green-400" : 
-                          index === 2 ? "text-blue-400" : 
-                          index === 1 ? "text-purple-400" : "text-neutral-400"
-                        }`} 
+                      <Icon
+                        name={index === 0 ? "building" : index === 3 ? "crown" : "building-2"}
+                        className={`w-5 h-5 ${index === 3 ? "text-green-400" :
+                            index === 2 ? "text-blue-400" :
+                              index === 1 ? "text-purple-400" : "text-neutral-400"
+                          }`}
                       />
                       <span className="font-medium text-white capitalize">
                         {index === 0 ? "Starter" : index === 1 ? "Growth" : index === 2 ? "Pro" : "Enterprise"}
@@ -2802,11 +2794,10 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
                     {index === 0 ? (
                       <span className="text-neutral-500">—</span>
                     ) : (
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        index === 3 ? "bg-green-500/20 text-green-400" :
-                        index === 2 ? "bg-blue-500/20 text-blue-400" :
-                        "bg-purple-500/20 text-purple-400"
-                      }`}>
+                      <span className={`text-xs px-2 py-1 rounded-full ${index === 3 ? "bg-green-500/20 text-green-400" :
+                          index === 2 ? "bg-blue-500/20 text-blue-400" :
+                            "bg-purple-500/20 text-purple-400"
+                        }`}>
                         {index === 1 ? "-20%" : index === 2 ? "-33%" : "-47%"}
                       </span>
                     )}
@@ -3452,23 +3443,21 @@ export const SuperAdminDashboard = () => {
                     return (
                       <div
                         key={item.companyId}
-                        className={`flex items-center justify-between p-3 rounded-lg border ${
-                          item.billing.urgency === "critical"
+                        className={`flex items-center justify-between p-3 rounded-lg border ${item.billing.urgency === "critical"
                             ? "bg-red-500/10 border-red-500/30"
                             : item.billing.urgency === "high"
-                            ? "bg-orange-500/10 border-orange-500/30"
-                            : "bg-yellow-500/10 border-yellow-500/30"
-                        }`}
+                              ? "bg-orange-500/10 border-orange-500/30"
+                              : "bg-yellow-500/10 border-yellow-500/30"
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-2 h-2 rounded-full ${
-                              item.billing.urgency === "critical"
+                            className={`w-2 h-2 rounded-full ${item.billing.urgency === "critical"
                                 ? "bg-red-500 animate-pulse"
                                 : item.billing.urgency === "high"
-                                ? "bg-orange-500"
-                                : "bg-yellow-500"
-                            }`}
+                                  ? "bg-orange-500"
+                                  : "bg-yellow-500"
+                              }`}
                           />
                           <div>
                             <p className="text-sm font-medium text-white">
@@ -3558,7 +3547,7 @@ export const SuperAdminDashboard = () => {
                   Actualizar
                 </button>
               </div>
-              
+
               {activityEvents.length === 0 ? (
                 <p className="text-neutral-500 text-sm text-center py-4">
                   No hay actividad reciente
@@ -3573,12 +3562,12 @@ export const SuperAdminDashboard = () => {
                     const diffMins = Math.floor(diffMs / 60000);
                     const diffHours = Math.floor(diffMs / 3600000);
                     const diffDays = Math.floor(diffMs / 86400000);
-                    
+
                     let timeAgo = "";
                     if (diffMins < 60) timeAgo = `Hace ${diffMins} min`;
                     else if (diffHours < 24) timeAgo = `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
                     else timeAgo = `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
-                    
+
                     // Icono y color según tipo
                     const eventConfig: Record<string, { icon: string; color: string; bg: string }> = {
                       company_created: { icon: "building-2", color: "text-green-400", bg: "bg-green-500/20" },
@@ -3590,7 +3579,7 @@ export const SuperAdminDashboard = () => {
                       status_changed: { icon: "toggle-right", color: "text-yellow-400", bg: "bg-yellow-500/20" },
                     };
                     const config = eventConfig[event.type] || { icon: "activity", color: "text-neutral-400", bg: "bg-neutral-500/20" };
-                    
+
                     return (
                       <div
                         key={event.id}
@@ -3633,43 +3622,39 @@ export const SuperAdminDashboard = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setCompanyFilter("all")}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                    companyFilter === "all"
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "all"
                       ? "bg-white text-neutral-900"
                       : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
-                  }`}
+                    }`}
                 >
                   Todos ({companies.length})
                 </button>
                 <button
                   onClick={() => setCompanyFilter("active")}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                    companyFilter === "active"
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "active"
                       ? "bg-green-500 text-white"
                       : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
-                  }`}
+                    }`}
                 >
                   Activos (
                   {companies.filter((c) => c.status === "Activo").length})
                 </button>
                 <button
                   onClick={() => setCompanyFilter("grace")}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                    companyFilter === "grace"
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "grace"
                       ? "bg-yellow-500 text-white"
                       : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
-                  }`}
+                    }`}
                 >
                   En Gracia (
                   {companies.filter((c) => c.status === "Gracia").length})
                 </button>
                 <button
                   onClick={() => setCompanyFilter("inactive")}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                    companyFilter === "inactive"
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "inactive"
                       ? "bg-red-500 text-white"
                       : "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
-                  }`}
+                    }`}
                 >
                   Inactivos (
                   {companies.filter((c) => c.status === "Inactivo").length})
@@ -3712,13 +3697,12 @@ export const SuperAdminDashboard = () => {
                 {filteredCompanies.map((company) => (
                   <div
                     key={company.id}
-                    className={`bg-neutral-900/50 border rounded-2xl p-5 transition-all duration-200 hover:bg-neutral-900/80 hover:shadow-lg group ${
-                      company.status === "Activo"
+                    className={`bg-neutral-900/50 border rounded-2xl p-5 transition-all duration-200 hover:bg-neutral-900/80 hover:shadow-lg group ${company.status === "Activo"
                         ? "border-neutral-800 hover:border-green-500/30"
                         : company.status === "Gracia"
                           ? "border-yellow-500/30"
                           : "border-red-500/30 opacity-75"
-                    }`}
+                      }`}
                   >
                     {/* Header de la Card */}
                     <div className="flex items-start justify-between mb-4">
@@ -3750,13 +3734,12 @@ export const SuperAdminDashboard = () => {
                       </div>
                       {/* Badge de Estado */}
                       <span
-                        className={`px-3 py-1.5 text-xs font-bold rounded-full ${
-                          company.status === "Activo"
+                        className={`px-3 py-1.5 text-xs font-bold rounded-full ${company.status === "Activo"
                             ? "bg-green-500/20 text-green-400 border border-green-500/30"
                             : company.status === "Gracia"
                               ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
                               : "bg-red-500/20 text-red-400 border border-red-500/30"
-                        }`}
+                          }`}
                       >
                         {company.status === "Activo" && "● "}
                         {company.status}
@@ -3824,13 +3807,12 @@ export const SuperAdminDashboard = () => {
                     {/* Plan Badge */}
                     <div className="flex items-center gap-2 mb-4">
                       <span
-                        className={`px-3 py-1 text-xs font-bold rounded-lg ${
-                          company.plan === "Enterprise"
+                        className={`px-3 py-1 text-xs font-bold rounded-lg ${company.plan === "Enterprise"
                             ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
                             : company.plan === "Pro"
                               ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
                               : "bg-neutral-700 text-neutral-300"
-                        }`}
+                          }`}
                       >
                         Plan {company.plan || "Pro"}
                       </span>
@@ -3855,11 +3837,10 @@ export const SuperAdminDashboard = () => {
                       <button
                         onClick={() => toggleCompanyStatus(company)}
                         disabled={isUpdating}
-                        className={`py-2.5 px-4 rounded-xl text-sm font-medium transition-colors ${
-                          company.status === "Activo"
+                        className={`py-2.5 px-4 rounded-xl text-sm font-medium transition-colors ${company.status === "Activo"
                             ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
                             : "bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
-                        }`}
+                          }`}
                       >
                         {isUpdating
                           ? "..."
