@@ -107,99 +107,165 @@ export const generateSaasPaymentReceiptPDF = (receipt: SaasPaymentReceipt) => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // Header con logo/marca
-    doc.setFillColor(99, 102, 241); // Indigo
-    doc.rect(0, 0, 210, 40, 'F');
-    
+    // =============================================
+    // DISEÑO PREMIUM EJECUTIVO - MI CONDO
+    // Paleta: Azul Marino + Dorado + Grises
+    // =============================================
+
+    // Colores corporativos
+    const navyBlue: [number, number, number] = [30, 58, 95];
+    const gold: [number, number, number] = [184, 134, 11];
+    const darkGray: [number, number, number] = [51, 51, 51];
+    const mediumGray: [number, number, number] = [128, 128, 128];
+
+    // Header elegante con azul marino
+    doc.setFillColor(...navyBlue);
+    doc.rect(0, 0, 210, 45, 'F');
+
+    // Logo/Marca
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
+    doc.setFontSize(28);
     doc.setFont('helvetica', 'bold');
-    doc.text('MI CONDO', 14, 25);
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Sistema de Administración de Condominios', 14, 33);
+    doc.text('MI CONDO', 20, 25);
 
-    // Recibo número
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.text(`Recibo #${receipt.receiptNumber}`, 150, 25);
-
-    // Reset color
-    doc.setTextColor(0, 0, 0);
-
-    // Título
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('RECIBO DE PAGO', 14, 55);
-
-    // Información del cliente
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Cliente:', 14, 70);
-    doc.setFont('helvetica', 'bold');
-    doc.text(receipt.companyName, 40, 70);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.text('RNC:', 14, 78);
-    doc.text(receipt.companyRnc || 'N/A', 40, 78);
-
-    // Línea separadora
-    doc.setDrawColor(200, 200, 200);
-    doc.line(14, 85, 196, 85);
-
-    // Detalles del pago
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Detalles del Pago', 14, 95);
-
-    // Tabla de detalles
-    doc.autoTable({
-        startY: 100,
-        head: [['Concepto', 'Detalle']],
-        body: [
-            ['Fecha de Pago', formatDate(receipt.paymentDate)],
-            ['Período Cubierto', `${formatDate(receipt.periodStart)} - ${formatDate(receipt.periodEnd)}`],
-            ['Método de Pago', receipt.method],
-            ['Referencia', receipt.reference || 'N/A'],
-        ],
-        theme: 'striped',
-        headStyles: { fillColor: [99, 102, 241] },
-        columnStyles: {
-            0: { fontStyle: 'bold', cellWidth: 60 },
-            1: { cellWidth: 120 },
-        },
-    });
-
-    const finalY = (doc as any).lastAutoTable.finalY;
-
-    // Monto total - Box destacado
-    doc.setFillColor(34, 197, 94); // Green
-    doc.roundedRect(14, finalY + 10, 182, 30, 3, 3, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'normal');
-    doc.text('MONTO PAGADO:', 24, finalY + 27);
-    
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`RD$ ${receipt.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 100, finalY + 28);
-
-    // Reset color
-    doc.setTextColor(0, 0, 0);
-
-    // Pie de página
+    // Subtítulo
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('Este recibo es un comprobante de pago válido.', 14, finalY + 55);
-    doc.text('Conserve este documento para sus registros.', 14, finalY + 62);
-    
-    doc.setTextColor(100, 100, 100);
-    doc.text('MI CONDO SaaS - www.micondo.app', 14, 280);
-    doc.text(`Generado: ${new Date().toLocaleString('es-DO')}`, 140, 280);
+    doc.setTextColor(180, 180, 180);
+    doc.text('SISTEMA DE ADMINISTRACIÓN DE CONDOMINIOS', 20, 35);
 
-    // Guardar
-    const fileName = `Recibo-${receipt.receiptNumber}-${receipt.companyName.replace(/\s/g, '-')}.pdf`;
-    doc.save(fileName);
+    // Número de recibo - lado derecho
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('RECIBO N°', 150, 22);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(receipt.receiptNumber, 150, 32);
+
+    // Línea decorativa dorada
+    doc.setFillColor(...gold);
+    doc.rect(0, 45, 210, 3, 'F');
+
+    // Título del documento
+    doc.setTextColor(...darkGray);
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('COMPROBANTE DE PAGO', 20, 65);
+
+    // Línea sutil bajo el título
+    doc.setDrawColor(...mediumGray);
+    doc.setLineWidth(0.3);
+    doc.line(20, 70, 190, 70);
+
+    // Información del cliente - Sección
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...navyBlue);
+    doc.text('DATOS DEL CLIENTE', 20, 85);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...darkGray);
+    doc.setFontSize(11);
+
+    doc.text('Razón Social:', 20, 95);
+    doc.setFont('helvetica', 'bold');
+    doc.text(receipt.companyName, 55, 95);
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('RNC:', 20, 103);
+    doc.text(receipt.companyRnc || 'N/A', 55, 103);
+
+    // Línea separadora elegante
+    doc.setDrawColor(220, 220, 220);
+    doc.line(20, 112, 190, 112);
+
+    // Detalles del pago
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...navyBlue);
+    doc.text('DETALLES DE LA TRANSACCIÓN', 20, 125);
+
+    // Tabla con estilo ejecutivo
+    doc.autoTable({
+        startY: 130,
+        head: [['Concepto', 'Información']],
+        body: [
+            ['Fecha de Transacción', formatDate(receipt.paymentDate)],
+            ['Período Facturado', `${formatDate(receipt.periodStart)} al ${formatDate(receipt.periodEnd)}`],
+            ['Forma de Pago', receipt.method],
+            ['N° de Referencia', receipt.reference || 'N/A'],
+        ],
+        theme: 'plain',
+        headStyles: {
+            fillColor: [245, 245, 245],
+            textColor: navyBlue,
+            fontStyle: 'bold',
+            fontSize: 10,
+        },
+        bodyStyles: {
+            textColor: darkGray,
+            fontSize: 10,
+        },
+        alternateRowStyles: {
+            fillColor: [252, 252, 252],
+        },
+        columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 60 },
+            1: { cellWidth: 110 },
+        },
+        margin: { left: 20, right: 20 },
+        tableLineColor: [220, 220, 220],
+        tableLineWidth: 0.1,
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY + 15;
+
+    // Box del monto - Estilo premium con borde dorado
+    doc.setDrawColor(...gold);
+    doc.setLineWidth(1.5);
+    doc.setFillColor(252, 252, 250);
+    doc.roundedRect(20, finalY, 170, 35, 2, 2, 'FD');
+
+    // Etiqueta
+    doc.setTextColor(...mediumGray);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text('MONTO TOTAL PAGADO', 30, finalY + 15);
+
+    // Monto grande
+    doc.setTextColor(...navyBlue);
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`RD$ ${receipt.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 30, finalY + 28);
+
+    // Sello de pagado
+    doc.setTextColor(39, 174, 96);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PAGADO', 160, finalY + 22);
+
+    // Pie de página
+    const footerY = finalY + 55;
+
+    doc.setDrawColor(220, 220, 220);
+    doc.line(20, footerY, 190, footerY);
+
+    doc.setTextColor(...mediumGray);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Este documento es un comprobante oficial de pago emitido por MI CONDO.', 20, footerY + 10);
+    doc.text('Guarde este recibo para sus registros contables.', 20, footerY + 16);
+
+    // Footer
+    doc.setFillColor(...navyBlue);
+    doc.rect(0, 277, 210, 20, 'F');
+
+    doc.setTextColor(180, 180, 180);
+    doc.setFontSize(8);
+    doc.text('MI CONDO SaaS | Plataforma de Administración de Condominios', 20, 287);
+    doc.text(`Documento generado: ${new Date().toLocaleString('es-DO')}`, 140, 287);
+
+    // Abrir PDF en nueva pestaña
+    window.open(doc.output('bloburl'), '_blank');
 };
