@@ -3163,15 +3163,16 @@ const PlanDistributionChart = ({ companies }: PlanDistributionChartProps) => {
             display: true,
             position: 'right',
             labels: {
-              color: '#888',
+              color: '#ffffff',
               padding: 15,
-              font: { size: 12 },
+              font: { size: 12, weight: 500 },
               generateLabels: (chart: any) => {
                 const datasets = chart.data.datasets;
                 return chart.data.labels.map((label: string, i: number) => ({
                   text: `${label} (${datasets[0].data[i]})`,
                   fillStyle: datasets[0].backgroundColor[i],
                   strokeStyle: datasets[0].borderColor[i],
+                  fontColor: '#ffffff',
                   lineWidth: 2,
                   hidden: false,
                   index: i,
