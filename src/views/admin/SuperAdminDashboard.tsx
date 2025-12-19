@@ -3115,6 +3115,9 @@ export const SuperAdminDashboard = () => {
     "all" | "active" | "grace" | "inactive"
   >("all");
 
+  // NUEVO: Estado para búsqueda de compañías
+  const [searchQuery, setSearchQuery] = useState("");
+
   // NUEVO: Estado para el modal de Ver Clientes
   const [viewingCompany, setViewingCompany] = useState<Company | null>(null);
 
@@ -3403,19 +3406,63 @@ export const SuperAdminDashboard = () => {
     fetchActivityEvents();
   }, []);
 
-  // Filtrar compañías según el filtro seleccionado
+  // Filtrar compañías según el filtro y búsqueda
   const filteredCompanies = React.useMemo(() => {
+    let result = companies;
+
+    // Aplicar filtro de estado
     switch (companyFilter) {
       case "active":
-        return companies.filter((c) => c.status === "Activo");
+        result = result.filter((c) => c.status === "Activo");
+        break;
       case "grace":
-        return companies.filter((c) => c.status === "Gracia");
+        result = result.filter((c) => c.status === "Gracia");
+        break;
       case "inactive":
-        return companies.filter((c) => c.status === "Inactivo");
-      default:
-        return companies;
+        result = result.filter((c) => c.status === "Inactivo");
+        break;
     }
-  }, [companies, companyFilter]);
+
+    // Aplicar búsqueda
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((c) =>
+        c.name.toLowerCase().includes(query) ||
+        c.rnc.toLowerCase().includes(query) ||
+        c.email?.toLowerCase().includes(query) ||
+        c.adminUserEmail?.toLowerCase().includes(query)
+      );
+    }
+
+    return result;
+  }, [companies, companyFilter, searchQuery]);
+
+  // Función para exportar a CSV
+  const exportToCSV = () => {
+    const headers = ["Nombre", "RNC", "Email", "Plan", "Estado", "Condos", "Fee Mensual", "Fecha Inicio"];
+    const rows = filteredCompanies.map(c => [
+      c.name,
+      c.rnc,
+      c.email || "",
+      c.plan || "Trial",
+      c.status,
+      c.condoCount || 0,
+      c.monthlyFee || 0,
+      c.billingStartDate || ""
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `mi-condo-companies-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    addToast("Archivo CSV exportado exitosamente", "success");
+  };
 
   if (loading) {
     return (
@@ -3829,49 +3876,85 @@ export const SuperAdminDashboard = () => {
         {activeTab === "plans" && <PlansTab companies={companies} />}
         {activeTab === "companies" && (
           <div className="space-y-6">
-            {/* Filtros y búsqueda */}
-            <div className="flex flex-wrap gap-4 items-center justify-between">
-              <div className="flex gap-2">
+            {/* Barra de herramientas - Búsqueda, Filtros, Exportar */}
+            <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-4">
+              <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+                {/* Barra de búsqueda */}
+                <div className="relative flex-1 max-w-md">
+                  <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                  <input
+                    type="text"
+                    placeholder="Buscar por nombre, RNC o email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white"
+                    >
+                      <Icon name="x" className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filtros de estado */}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setCompanyFilter("all")}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "all"
+                      ? "bg-white text-neutral-900"
+                      : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
+                      }`}
+                  >
+                    Todos ({companies.length})
+                  </button>
+                  <button
+                    onClick={() => setCompanyFilter("active")}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "active"
+                      ? "bg-green-500 text-white"
+                      : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
+                      }`}
+                  >
+                    Activos ({companies.filter((c) => c.status === "Activo").length})
+                  </button>
+                  <button
+                    onClick={() => setCompanyFilter("grace")}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "grace"
+                      ? "bg-yellow-500 text-white"
+                      : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
+                      }`}
+                  >
+                    En Gracia ({companies.filter((c) => c.status === "Gracia").length})
+                  </button>
+                  <button
+                    onClick={() => setCompanyFilter("inactive")}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "inactive"
+                      ? "bg-red-500 text-white"
+                      : "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
+                      }`}
+                  >
+                    Inactivos ({companies.filter((c) => c.status === "Inactivo").length})
+                  </button>
+                </div>
+
+                {/* Botón Exportar */}
                 <button
-                  onClick={() => setCompanyFilter("all")}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "all"
-                    ? "bg-white text-neutral-900"
-                    : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
-                    }`}
+                  onClick={exportToCSV}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-emerald-500/20"
                 >
-                  Todos ({companies.length})
-                </button>
-                <button
-                  onClick={() => setCompanyFilter("active")}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "active"
-                    ? "bg-green-500 text-white"
-                    : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
-                    }`}
-                >
-                  Activos (
-                  {companies.filter((c) => c.status === "Activo").length})
-                </button>
-                <button
-                  onClick={() => setCompanyFilter("grace")}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "grace"
-                    ? "bg-yellow-500 text-white"
-                    : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
-                    }`}
-                >
-                  En Gracia (
-                  {companies.filter((c) => c.status === "Gracia").length})
-                </button>
-                <button
-                  onClick={() => setCompanyFilter("inactive")}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "inactive"
-                    ? "bg-red-500 text-white"
-                    : "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
-                    }`}
-                >
-                  Inactivos (
-                  {companies.filter((c) => c.status === "Inactivo").length})
+                  <Icon name="download" className="w-4 h-4" />
+                  Exportar CSV
                 </button>
               </div>
+
+              {/* Resultados de búsqueda */}
+              {searchQuery && (
+                <div className="mt-3 text-sm text-neutral-400">
+                  Mostrando {filteredCompanies.length} resultado{filteredCompanies.length !== 1 ? 's' : ''} para "{searchQuery}"
+                </div>
+              )}
             </div>
 
             {/* Empty State */}
