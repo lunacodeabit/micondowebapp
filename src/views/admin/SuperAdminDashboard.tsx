@@ -3087,6 +3087,196 @@ const MRRChart = ({ payments }: MRRChartProps) => {
   );
 };
 
+// =============================================
+// COMPONENTE: Plan Distribution Chart (Pie Chart)
+// =============================================
+type PlanDistributionChartProps = {
+  companies: Company[];
+};
+
+const PlanDistributionChart = ({ companies }: PlanDistributionChartProps) => {
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const chartRef = React.useRef<any>(null);
+
+  // Calcular distribución por plan
+  const planData = React.useMemo(() => {
+    const counts: Record<string, number> = {
+      'Trial': 0,
+      'Starter': 0,
+      'Growth': 0,
+      'Pro': 0,
+      'Enterprise': 0,
+    };
+
+    companies.forEach(company => {
+      const plan = company.plan || 'Trial';
+      if (counts[plan] !== undefined) {
+        counts[plan]++;
+      } else {
+        counts['Trial']++;
+      }
+    });
+
+    return counts;
+  }, [companies]);
+
+  React.useEffect(() => {
+    if (!canvasRef.current || typeof Chart === 'undefined') return;
+
+    // Destruir chart anterior si existe
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+
+    const labels = Object.keys(planData);
+    const data = Object.values(planData);
+
+    const colors = {
+      'Trial': { bg: 'rgba(156, 163, 175, 0.8)', border: 'rgb(156, 163, 175)' }, // Gray
+      'Starter': { bg: 'rgba(59, 130, 246, 0.8)', border: 'rgb(59, 130, 246)' }, // Blue
+      'Growth': { bg: 'rgba(16, 185, 129, 0.8)', border: 'rgb(16, 185, 129)' }, // Green
+      'Pro': { bg: 'rgba(139, 92, 246, 0.8)', border: 'rgb(139, 92, 246)' }, // Purple
+      'Enterprise': { bg: 'rgba(245, 158, 11, 0.8)', border: 'rgb(245, 158, 11)' }, // Amber
+    };
+
+    chartRef.current = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: labels.map(l => colors[l as keyof typeof colors]?.bg || 'rgba(100, 100, 100, 0.8)'),
+          borderColor: labels.map(l => colors[l as keyof typeof colors]?.border || 'rgb(100, 100, 100)'),
+          borderWidth: 2,
+          hoverOffset: 10,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          legend: {
+            display: true,
+            position: 'right',
+            labels: {
+              color: '#888',
+              padding: 15,
+              font: { size: 12 },
+              generateLabels: (chart: any) => {
+                const datasets = chart.data.datasets;
+                return chart.data.labels.map((label: string, i: number) => ({
+                  text: `${label} (${datasets[0].data[i]})`,
+                  fillStyle: datasets[0].backgroundColor[i],
+                  strokeStyle: datasets[0].borderColor[i],
+                  lineWidth: 2,
+                  hidden: false,
+                  index: i,
+                }));
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(23, 23, 23, 0.9)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
+            padding: 12,
+            callbacks: {
+              label: (context: any) => {
+                const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+                const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
+                return `${context.label}: ${context.raw} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+      }
+    };
+  }, [planData]);
+
+  // Si no hay compañías, mostrar mensaje
+  if (companies.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-neutral-500">
+        <p>No hay datos para mostrar</p>
+      </div>
+    );
+  }
+
+  return (
+    <canvas ref={canvasRef} className="w-full h-full" />
+  );
+};
+
+// =============================================
+// COMPONENTE: Top Clients by Revenue
+// =============================================
+type TopClientsProps = {
+  companies: Company[];
+};
+
+const TopClients = ({ companies }: TopClientsProps) => {
+  const topClients = React.useMemo(() => {
+    return [...companies]
+      .filter(c => c.status === 'Activo')
+      .sort((a, b) => (b.monthlyFee || 0) - (a.monthlyFee || 0))
+      .slice(0, 5);
+  }, [companies]);
+
+  const getMedalColor = (index: number) => {
+    switch (index) {
+      case 0: return 'text-yellow-400'; // Gold
+      case 1: return 'text-neutral-300'; // Silver
+      case 2: return 'text-amber-600'; // Bronze
+      default: return 'text-neutral-600';
+    }
+  };
+
+  if (topClients.length === 0) {
+    return (
+      <div className="text-center text-neutral-500 py-4">
+        No hay clientes activos
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {topClients.map((client, index) => (
+        <div
+          key={client.id}
+          className="flex items-center gap-3 p-3 bg-neutral-800/30 rounded-lg hover:bg-neutral-800/50 transition-colors"
+        >
+          <div className={`text-xl font-bold ${getMedalColor(index)} w-6 text-center`}>
+            {index < 3 ? '🏆' : `#${index + 1}`}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-white font-medium truncate">{client.name}</p>
+            <p className="text-xs text-neutral-500">{client.plan || 'Trial'} · {client.condoCount || 1} condo{(client.condoCount || 1) > 1 ? 's' : ''}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-bold text-emerald-400">
+              RD$ {(client.monthlyFee || 0).toLocaleString()}
+            </p>
+            <p className="text-xs text-neutral-500">/mes</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export const SuperAdminDashboard = () => {
   const { logout, isDevAuthenticated } = useAuth();
   const { addToast } = useToast();
@@ -3679,6 +3869,40 @@ export const SuperAdminDashboard = () => {
                 <MRRChart payments={allPayments} />
               </div>
             </div>
+
+            {/* Charts Row: Plan Distribution + Top Clients */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Plan Distribution Pie Chart */}
+              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <Icon name="pie-chart" className="w-5 h-5 text-purple-400" />
+                    Distribución por Plan
+                  </h3>
+                  <span className="text-xs px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                    {companies.length} clientes
+                  </span>
+                </div>
+                <div className="h-64">
+                  <PlanDistributionChart companies={companies} />
+                </div>
+              </div>
+
+              {/* Top Clients by Revenue */}
+              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <Icon name="trophy" className="w-5 h-5 text-yellow-400" />
+                    Top 5 Clientes
+                  </h3>
+                  <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                    Por revenue mensual
+                  </span>
+                </div>
+                <TopClients companies={companies} />
+              </div>
+            </div>
+
             {/* Panel de Alertas - Grace Period */}
             {companiesNeedingAttention.length > 0 && (
               <div className="bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-500/30 rounded-xl p-6">
