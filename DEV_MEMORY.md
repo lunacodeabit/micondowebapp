@@ -459,6 +459,27 @@ Task 4: Verificar y push → pending
 4. `feat: add quick announcement templates to Communications tab`
 5. `fix: remove duplicate script/link tags causing login overlay bug`
 6. `feat: premium PDF receipt redesign with navy blue and gold corporate styling`
+7. `docs: update DEV_MEMORY with session learnings and auto-run permissions`
+8. `feat: add email service with Firebase Trigger Email integration and premium templates`
+9. `feat: add search bar, filters, and CSV export to Companies tab - premium UX`
+10. `feat: add Plan Distribution chart and Top 5 Clients section to Dashboard`
+11. `fix: white legend text for chart visibility and toast auto-dismiss after 4 seconds`
+
+### New Features Added (2024-12-18 Evening Session)
+
+**Email Service (`src/utils/email.ts`)**:
+- `sendEmail()` function for Firebase Trigger Email extension
+- Templates: Payment Confirmation, Payment Reminder, Welcome, Announcement, Account Suspended
+- Premium HTML design matching brand (navy + gold)
+- **Status**: Code ready, Firebase extension pending configuration
+
+**SuperAdmin Premium UX Enhancements**:
+- 🔍 Search bar in Companies tab (by name, RNC, email)
+- 📊 Status filters (All/Active/Grace/Inactive) with counters
+- 📥 Export to CSV button
+- 📈 Plan Distribution doughnut chart with color-coded legend
+- 🏆 Top 5 Clients by Revenue section
+- ⏱️ Toast notifications now auto-dismiss after 4 seconds
 
 ### Lección #14: Duplicados en index.html causan doble render de React
 
