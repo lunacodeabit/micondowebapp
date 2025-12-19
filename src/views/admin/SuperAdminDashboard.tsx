@@ -1291,12 +1291,15 @@ const BillingTab = ({ companies }: BillingTabProps) => {
               <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
                 Referencia
               </th>
+              <th className="px-6 py-4 text-center text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                Acciones
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800/50">
             {loading && (
               <tr>
-                <td colSpan={5} className="text-center py-12">
+                <td colSpan={6} className="text-center py-12">
                   <Spinner className="w-8 h-8 mx-auto" />
                   <p className="text-neutral-500 mt-2">Cargando pagos...</p>
                 </td>
@@ -1304,7 +1307,7 @@ const BillingTab = ({ companies }: BillingTabProps) => {
             )}
             {!loading && payments.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center py-12">
+                <td colSpan={6} className="text-center py-12">
                   <div className="w-16 h-16 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
                     <Icon
                       name="credit-card"
@@ -1353,6 +1356,29 @@ const BillingTab = ({ companies }: BillingTabProps) => {
                   </td>
                   <td className="px-6 py-4 text-sm text-neutral-500">
                     {payment.reference || "—"}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <button
+                      onClick={() => {
+                        generateSaasPaymentReceiptPDF({
+                          receiptNumber: `REC-${payment.id.slice(-6).toUpperCase()}`,
+                          companyName: payment.companyName,
+                          companyRnc: "",
+                          amount: payment.amount,
+                          paymentDate: payment.paymentDate,
+                          periodStart: payment.periodStart || payment.paymentDate,
+                          periodEnd: payment.periodEnd || payment.paymentDate,
+                          method: payment.method,
+                          reference: payment.reference,
+                        });
+                        addToast("Recibo generado correctamente", "success");
+                      }}
+                      className="p-2 hover:bg-neutral-700 rounded-lg transition-colors inline-flex items-center gap-1 text-neutral-400 hover:text-white"
+                      title="Descargar Recibo PDF"
+                    >
+                      <Icon name="download" className="w-4 h-4" />
+                      <span className="text-xs">PDF</span>
+                    </button>
                   </td>
                 </tr>
               ))}
