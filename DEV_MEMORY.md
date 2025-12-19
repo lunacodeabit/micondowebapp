@@ -423,7 +423,7 @@ Task 4: Verificar y push → pending
 
 ## 📊 ESTADO ACTUAL DEL PROYECTO
 
-**Última actualización**: 2024-12-17
+**Última actualización**: 2024-12-18
 
 | Métrica                    | Valor                              |
 | -------------------------- | ---------------------------------- |
@@ -434,10 +434,60 @@ Task 4: Verificar y push → pending
 | Billing Portal             | ✅ Modal con historial y PDFs      |
 | Grace Period Automation    | ✅ Estados automáticos             |
 | SaaS Billing tracking      | ✅ Implementado                    |
-| SaaS Communications        | ✅ Implementado                    |
+| SaaS Communications        | ✅ Templates rápidos añadidos      |
+| PDF Receipts               | ✅ Rediseñado: estilo ejecutivo    |
+| MRR Chart                  | ✅ Gráfico de tendencia 6 meses    |
 | Test coverage              | 0% ❌                              |
 | Build status               | ✅ Passing                         |
 | Production ready           | ❌ No (falta testing, Stripe)      |
+
+### 🔑 PERMISOS PERMANENTES DEL USUARIO (2024-12-18)
+
+**El usuario ha autorizado ejecutar automáticamente:**
+- ✅ `git add`, `git commit`, `git push` (todos los comandos git)
+- ✅ `npm run build`, `npm run dev` (builds y servidor)
+- ✅ `taskkill` y otros comandos de sistema
+- ✅ Uso del navegador para verificaciones
+
+**Razón**: Agilizar el desarrollo sin esperar confirmaciones para operaciones rutinarias.
+
+### Commits de Hoy (2024-12-18)
+
+1. `fix: add PDF download button to Billing table, migrate Icon to lucide-react`
+2. `fix: sync company.status to Activo after payment registration (Bug #1)`
+3. `feat: add MRR trend chart to Dashboard (6 months visualization)`
+4. `feat: add quick announcement templates to Communications tab`
+5. `fix: remove duplicate script/link tags causing login overlay bug`
+6. `feat: premium PDF receipt redesign with navy blue and gold corporate styling`
+
+### Lección #14: Duplicados en index.html causan doble render de React
+
+**Fecha**: 2024-12-18
+**Problema**: El formulario de login aparecía superpuesto sobre el Dashboard
+**Causa raíz**: `index.html` tenía scripts/stylesheets duplicados:
+```html
+<!-- MALO - Doble carga -->
+<script src="index.tsx"></script>
+<script src="/index.tsx"></script>
+```
+**Consecuencia**: React se monta DOS VECES, renderizando componentes duplicados
+**Solución**: Mantener solo una versión de cada script/stylesheet
+**Aprendizaje**: Siempre revisar index.html si hay comportamientos de render extraños
+
+### Lección #15: PDF doc.save() vs window.open()
+
+**Fecha**: 2024-12-18
+**Problema**: El usuario no veía el PDF abrirse
+**Causa**: `doc.save()` descarga silenciosamente a la carpeta de descargas
+**Solución**: Usar `window.open(doc.output('bloburl'), '_blank')` para abrir en nueva pestaña
+**Aprendizaje**: Para mejor UX, abrir PDFs en pestaña nueva permite previsualización
+
+### Lección #16: Diseño de documentos financieros debe ser conservador
+
+**Fecha**: 2024-12-18
+**Problema**: PDF con colores brillantes (morado + verde) no se veía profesional
+**Solución**: Paleta ejecutiva - Azul marino (#1E3A5F) + Dorado (#B8860B) + Grises
+**Aprendizaje**: Documentos financieros (recibos, facturas) deben usar colores sobrios que transmitan confianza. Inspirarse en bancos premium, no en startups tech.
 
 ### Colecciones Firestore Creadas
 
