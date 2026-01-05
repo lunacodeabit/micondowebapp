@@ -1,1 +1,1 @@
-# MiCondoApp - BRAIN.md
+# MiCondoApp
