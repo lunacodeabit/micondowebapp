@@ -31,7 +31,12 @@ export const AppRouter: React.FC = () => {
     return (
         <Routes>
             {/* Public Routes */}
-            <Route path="/login" element={<LoginSelector condos={condos} />} />
+            <Route
+                path="/login"
+                element={
+                    userRole ? <Navigate to="/" replace /> : <LoginSelector condos={condos} />
+                }
+            />
 
             {/* SuperAdmin Routes */}
             <Route

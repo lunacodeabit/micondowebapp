@@ -3,20 +3,18 @@ import { supabase } from '../supabaseClient';
 export interface BotConversation {
     id: string;
     condo_id: string;
-    customer_id: string; // WhatsApp number
-    status: 'active' | 'escalated' | 'resolved';
-    last_messageTime: string;
-    metadata: any;
+    phone: string; // WhatsApp number
+    state: 'active' | 'escalated' | 'resolved' | string;
+    messages: any[] | null;
+    escalation_level: number;
     created_at: string;
     updated_at: string;
 }
 
 export interface ConversationMessage {
-    id: string;
-    conversation_id: string;
     role: 'user' | 'assistant' | 'system';
     content: string;
-    created_at: string;
+    timestamp?: string;
 }
 
 export const elisaService = {
@@ -35,26 +33,25 @@ export const elisaService = {
     },
 
     /**
-     * Fetch messages for a specific conversation
+     * Fetch all active conversations (for SuperAdmin global monitoring)
      */
-    async getConversationMessages(conversationId: string) {
+    async getAllConversations() {
         const { data, error } = await supabase
-            .from('conversation_messages')
+            .from('bot_conversations')
             .select('*')
-            .eq('conversation_id', conversationId)
-            .order('created_at', { ascending: true });
+            .order('updated_at', { ascending: false });
 
         if (error) throw error;
-        return data as ConversationMessage[];
+        return data as BotConversation[];
     },
 
     /**
-     * Update conversation status (e.g., mark as resolved or escalate)
+     * Update conversation state (e.g., mark as resolved or escalate)
      */
-    async updateConversationStatus(conversationId: string, status: 'active' | 'escalated' | 'resolved') {
+    async updateConversationStatus(conversationId: string, state: 'active' | 'escalated' | 'resolved') {
         const { data, error } = await supabase
             .from('bot_conversations')
-            .update({ status, updated_at: new Date().toISOString() })
+            .update({ state, updated_at: new Date().toISOString() })
             .eq('id', conversationId)
             .select()
             .single();
@@ -76,6 +73,24 @@ export const elisaService = {
                     schema: 'public',
                     table: 'bot_conversations',
                     filter: `condo_id=eq.${condoId}`,
+                },
+                payload => onUpdate(payload)
+            )
+            .subscribe();
+    },
+
+    /**
+     * Subscribe to real-time updates for ALL conversations (SuperAdmin)
+     */
+    subscribeToAllConversations(onUpdate: (payload: any) => void) {
+        return supabase
+            .channel('all_conversations')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'bot_conversations',
                 },
                 payload => onUpdate(payload)
             )

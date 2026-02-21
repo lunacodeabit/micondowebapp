@@ -16,6 +16,7 @@ import {
   type PaymentRecord,
   type BillingInfo,
 } from "../../utils/billing";
+import { ElisaAIContent } from "./tabs/ElisaAIContent";
 
 type CompanyFormProps = {
   isOpen: boolean;
@@ -4073,6 +4074,7 @@ export const SuperAdminDashboard = () => {
         )}
         {activeTab === "messages" && <MessagesTab companies={companies} />}
         {activeTab === "roadmap" && <DevRoadmap embedded={true} />}
+        {activeTab === "elisa" && <ElisaAIContent mode="global" />}
         {activeTab === "settings" && <SettingsTab />}
         {activeTab === "plans" && <PlansTab companies={companies} />}
         {activeTab === "companies" && (

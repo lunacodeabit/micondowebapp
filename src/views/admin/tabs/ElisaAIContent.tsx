@@ -7,14 +7,16 @@ import { formatDate, formatTime } from '../../../utils/date';
 import { StatusBadge } from '../../../components/ui/StatusBadge';
 import { Spinner } from '../../../components/ui/Spinner';
 
-export const ElisaAIContent = () => {
+interface ElisaAIContentProps {
+    mode?: 'condo' | 'global';
+}
+
+export const ElisaAIContent = ({ mode = 'condo' }: ElisaAIContentProps) => {
     const { selectedCondo } = useCondo();
     const { addToast } = useToast();
     const [conversations, setConversations] = useState<BotConversation[]>([]);
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-    const [messages, setMessages] = useState<ConversationMessage[]>([]);
     const [loading, setLoading] = useState(true);
-    const [messagesLoading, setMessagesLoading] = useState(false);
 
     // Filtered and sorted conversations
     const sortedConversations = useMemo(() => {
@@ -27,13 +29,20 @@ export const ElisaAIContent = () => {
         conversations.find(c => c.id === selectedConversationId),
         [conversations, selectedConversationId]);
 
+    const messages = useMemo(() =>
+        selectedConversation?.messages || [],
+        [selectedConversation]);
+
     // Fetch initial data
     useEffect(() => {
         const fetchInitialData = async () => {
-            if (!selectedCondo?.id) return;
+            if (mode === 'condo' && !selectedCondo?.id) return;
+
             try {
                 setLoading(true);
-                const data = await elisaService.getConversations(selectedCondo.id.toString());
+                const data = mode === 'global'
+                    ? await elisaService.getAllConversations()
+                    : await elisaService.getConversations(selectedCondo!.id.toString());
                 setConversations(data);
             } catch (error) {
                 console.error('Error fetching Elisa conversations:', error);
@@ -46,49 +55,35 @@ export const ElisaAIContent = () => {
         fetchInitialData();
 
         // Subscribe to real-time updates
-        if (selectedCondo?.id) {
-            const subscription = elisaService.subscribeToConversations(selectedCondo.id.toString(), (payload) => {
-                if (payload.eventType === 'INSERT') {
-                    setConversations(prev => [payload.new as BotConversation, ...prev]);
-                } else if (payload.eventType === 'UPDATE') {
-                    setConversations(prev => prev.map(c => c.id === payload.new.id ? payload.new as BotConversation : c));
-                } else if (payload.eventType === 'DELETE') {
-                    setConversations(prev => prev.filter(c => c.id !== payload.old.id));
-                }
-            });
+        const subscription = mode === 'global'
+            ? elisaService.subscribeToAllConversations((payload) => {
+                handleRealtimeUpdate(payload);
+            })
+            : selectedCondo?.id
+                ? elisaService.subscribeToConversations(selectedCondo.id.toString(), (payload) => {
+                    handleRealtimeUpdate(payload);
+                })
+                : null;
 
-            return () => {
-                subscription.unsubscribe();
-            };
-        }
-    }, [selectedCondo?.id]);
-
-    // Fetch messages when conversation selected
-    useEffect(() => {
-        const fetchMessages = async () => {
-            if (!selectedConversationId) {
-                setMessages([]);
-                return;
-            }
-            try {
-                setMessagesLoading(true);
-                const data = await elisaService.getConversationMessages(selectedConversationId);
-                setMessages(data);
-            } catch (error) {
-                console.error('Error fetching messages:', error);
-                addToast('Error al cargar mensajes', 'error');
-            } finally {
-                setMessagesLoading(false);
-            }
+        return () => {
+            subscription?.unsubscribe();
         };
+    }, [selectedCondo?.id, mode]);
 
-        fetchMessages();
-    }, [selectedConversationId]);
+    const handleRealtimeUpdate = (payload: any) => {
+        if (payload.eventType === 'INSERT') {
+            setConversations(prev => [payload.new as BotConversation, ...prev]);
+        } else if (payload.eventType === 'UPDATE') {
+            setConversations(prev => prev.map(c => c.id === payload.new.id ? payload.new as BotConversation : c));
+        } else if (payload.eventType === 'DELETE') {
+            setConversations(prev => prev.filter(c => c.id !== payload.old.id));
+        }
+    };
 
-    const handleStatusUpdate = async (id: string, newStatus: 'active' | 'escalated' | 'resolved') => {
+    const handleStatusUpdate = async (id: string, newState: 'active' | 'escalated' | 'resolved') => {
         try {
-            await elisaService.updateConversationStatus(id, newStatus);
-            addToast(`Conversación marcada como ${newStatus}`, 'success');
+            await elisaService.updateConversationStatus(id, newState);
+            addToast(`Conversación marcada como ${newState}`, 'success');
         } catch (error) {
             console.error('Error updating status:', error);
             addToast('Error al actualizar estado', 'error');
@@ -130,12 +125,12 @@ export const ElisaAIContent = () => {
                                     }`}
                             >
                                 <div className="flex justify-between items-start mb-1">
-                                    <span className="font-semibold text-neutral-200 text-sm">{conv.customer_id}</span>
+                                    <span className="font-semibold text-neutral-200 text-sm">{conv.phone}</span>
                                     <span className="text-[10px] text-neutral-500">{formatTime(conv.updated_at)}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <StatusBadge status={conv.status} />
-                                    {conv.status === 'escalated' && (
+                                    <StatusBadge status={conv.state as any} />
+                                    {conv.state === 'escalated' && (
                                         <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
                                     )}
                                 </div>
@@ -161,18 +156,18 @@ export const ElisaAIContent = () => {
                         <div className="p-4 border-b border-neutral-800 bg-neutral-900/80 flex justify-between items-center">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg">
-                                    {selectedConversation?.customer_id.slice(-2)}
+                                    {selectedConversation?.phone.slice(-2)}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-white leading-tight">{selectedConversation?.customer_id}</h4>
+                                    <h4 className="font-bold text-white leading-tight">{selectedConversation?.phone}</h4>
                                     <div className="flex items-center gap-2 mt-0.5">
-                                        <StatusBadge status={selectedConversation?.status || 'active'} />
+                                        <StatusBadge status={selectedConversation?.state as any || 'active'} />
                                         <span className="text-[10px] text-neutral-500">Iniciado {formatDate(selectedConversation?.created_at || '')}</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                {selectedConversation?.status !== 'resolved' && (
+                                {selectedConversation?.state !== 'resolved' && (
                                     <button
                                         onClick={() => handleStatusUpdate(selectedConversationId, 'resolved')}
                                         className="px-3 py-1.5 rounded-lg bg-green-600/20 text-green-400 border border-green-500/30 text-xs font-semibold hover:bg-green-600/30 transition-all flex items-center gap-1.5"
@@ -181,7 +176,7 @@ export const ElisaAIContent = () => {
                                         Resolver
                                     </button>
                                 )}
-                                {selectedConversation?.status === 'escalated' && (
+                                {selectedConversation?.state === 'escalated' && (
                                     <button
                                         className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
                                     >
@@ -194,15 +189,11 @@ export const ElisaAIContent = () => {
 
                         {/* Messages Area */}
                         <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-neutral-950/20">
-                            {messagesLoading ? (
-                                <div className="flex items-center justify-center h-full">
-                                    <Spinner className="w-8 h-8 text-neutral-600" />
-                                </div>
-                            ) : messages.length === 0 ? (
+                            {messages.length === 0 ? (
                                 <div className="text-center py-12 text-neutral-500 italic text-sm">No se encontraron mensajes en esta conversación.</div>
                             ) : (
-                                messages.map((msg, idx) => (
-                                    <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                messages.map((msg: any, idx: number) => (
+                                    <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                         <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl shadow-sm text-sm ${msg.role === 'user'
                                             ? 'bg-blue-600 text-white rounded-tr-none'
                                             : msg.role === 'assistant'
@@ -212,7 +203,7 @@ export const ElisaAIContent = () => {
                                             <p>{msg.content}</p>
                                             <div className={`text-[10px] mt-1.5 opacity-60 flex items-center gap-1.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                                 {msg.role === 'assistant' && <Icon name="bot" size={10} />}
-                                                {formatTime(msg.created_at)}
+                                                {msg.timestamp ? formatTime(msg.timestamp) : ''}
                                             </div>
                                         </div>
                                     </div>
@@ -221,7 +212,7 @@ export const ElisaAIContent = () => {
                         </div>
 
                         {/* Note area if escalated */}
-                        {selectedConversation?.status === 'escalated' && (
+                        {selectedConversation?.state === 'escalated' && (
                             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] p-3 bg-red-950/40 backdrop-blur-md border border-red-500/30 rounded-xl flex items-center gap-3 animate-bounce">
                                 <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center shrink-0">
                                     <Icon name="alert-triangle" size={16} className="text-white" />

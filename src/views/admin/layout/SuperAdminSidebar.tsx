@@ -57,6 +57,7 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
       badge: metrics.unreadMessages,
       badgeColor: "bg-red-500",
     },
+    { id: "elisa", label: "Elisa AI", icon: "bot" },
   ];
 
   return (
@@ -89,10 +90,9 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
               className={`
                 w-full flex items-center justify-between px-3 py-2.5 rounded-lg
                 transition-all duration-200 group
-                ${
-                  isActive
-                    ? "bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-white border border-indigo-500/30"
-                    : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                ${isActive
+                  ? "bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-white border border-indigo-500/30"
+                  : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
                 }
               `}
             >
@@ -127,10 +127,9 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
           className={`
             w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
             transition-all duration-200 group
-            ${
-              activeTab === "roadmap"
-                ? "bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/30"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+            ${activeTab === "roadmap"
+              ? "bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/30"
+              : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
             }
           `}
         >
@@ -150,10 +149,9 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
           className={`
             w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
             transition-all duration-200 group
-            ${
-              activeTab === "settings"
-                ? "bg-gradient-to-r from-neutral-600/20 to-neutral-600/20 text-white border border-neutral-500/30"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+            ${activeTab === "settings"
+              ? "bg-gradient-to-r from-neutral-600/20 to-neutral-600/20 text-white border border-neutral-500/30"
+              : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
             }
           `}
         >

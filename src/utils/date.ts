@@ -8,7 +8,7 @@ export const formatDate = (dateString?: string | null) => {
     if (!dateString) return 'N/A';
     // Create a date object assuming UTC to prevent off-by-one day errors from timezone conversion
     const date = new Date(dateString + 'T00:00:00Z');
-    
+
     // An invalid dateString (like an empty string) results in an invalid Date object.
     // Check for this before trying to format.
     if (isNaN(date.getTime())) {
@@ -20,5 +20,16 @@ export const formatDate = (dateString?: string | null) => {
         month: '2-digit',
         year: 'numeric',
         timeZone: 'UTC'
+    });
+};
+
+export const formatTime = (dateString?: string | null) => {
+    if (!dateString) return '--:--';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '--:--';
+    return date.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
     });
 };
