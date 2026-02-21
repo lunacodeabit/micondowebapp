@@ -420,9 +420,9 @@ export interface SaasMessage {
   createdAt: string;
 }
 // Evento de actividad para el panel de SuperAdmin
-export type ActivityEventType = 
+export type ActivityEventType =
   | "company_created"
-  | "company_updated" 
+  | "company_updated"
   | "plan_changed"
   | "addon_added"
   | "addon_removed"
@@ -441,5 +441,60 @@ export interface ActivityEvent {
     amount?: number;
     addonName?: string;
   };
+  createdAt: string;
+}
+
+// --- ASAMBLEAS Y GOBERNANZA (Phase 7) ---
+
+export type AssemblyType = "Ordinaria" | "Extraordinaria";
+export type AssemblyStatus = "Programada" | "En Curso" | "Completada" | "Cancelada";
+
+export interface Assembly {
+  id: string;
+  companyId: string;
+  condoId: string;
+  title: string;
+  description?: string;
+  type: AssemblyType;
+  status: AssemblyStatus;
+  date: string;
+  quorumRequired: number;
+  createdAt: string;
+  updatedAt: string;
+  topics?: AssemblyTopic[];
+}
+
+export interface AssemblyTopic {
+  id: string;
+  assemblyId: string;
+  title: string;
+  description?: string;
+  order: number;
+  options?: AssemblyVotingOption[];
+  createdAt: string;
+}
+
+export interface AssemblyVotingOption {
+  id: string;
+  topicId: string;
+  label: string;
+  createdAt: string;
+}
+
+export interface AssemblyVote {
+  id: string;
+  topicId: string;
+  unitId: string;
+  optionId: string;
+  weight: number;
+  createdAt: string;
+}
+
+export interface AssemblyAttendance {
+  id: string;
+  assemblyId: string;
+  unitId: string;
+  isPresent: boolean;
+  method: "App" | "Proxy" | "Presencial";
   createdAt: string;
 }

@@ -18,16 +18,17 @@ const navItems = [
     { id: 'communications', label: 'Comunicados', icon: 'megaphone' },
     { id: 'reservations', label: 'Reservas', icon: 'calendar-check' },
     { id: 'incidents', label: 'Incidentes', icon: 'siren' },
+    { id: 'assemblies', label: 'Asambleas', icon: 'gavel' },
 ];
 
-export const ResidentSidebar = ({ 
-    residentName, 
-    unitNumber, 
-    activeTab, 
-    setActiveTab, 
-    onLogout, 
-    isOpenOnMobile, 
-    onCloseMobile 
+export const ResidentSidebar = ({
+    residentName,
+    unitNumber,
+    activeTab,
+    setActiveTab,
+    onLogout,
+    isOpenOnMobile,
+    onCloseMobile
 }: ResidentSidebarProps) => {
 
     return (
@@ -56,20 +57,19 @@ export const ResidentSidebar = ({
                             key={item.id}
                             href="#"
                             onClick={(e) => { e.preventDefault(); setActiveTab(item.id); onCloseMobile(); }}
-                            className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                                activeTab === item.id
+                            className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === item.id
                                     ? 'bg-blue-600 text-white'
                                     : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
-                            }`}
+                                }`}
                         >
                             <Icon name={item.icon} className="w-5 h-5 flex-shrink-0" />
                             <span className="whitespace-nowrap ml-3">{item.label}</span>
                         </a>
                     ))}
                 </nav>
-                
+
                 <div className="mt-auto pt-2 border-t border-neutral-800">
-                     <a
+                    <a
                         href="#"
                         onClick={(e) => { e.preventDefault(); onLogout(); }}
                         className="flex w-full items-center px-4 py-2 text-sm font-medium rounded-md text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"

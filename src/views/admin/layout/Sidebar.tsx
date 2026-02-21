@@ -23,6 +23,7 @@ const navItems = [
     { id: 'incidents', label: 'Incidentes', icon: 'alert-triangle' },
     { id: 'amenities', label: 'Áreas Comunes', icon: 'calendar-check' },
     { id: 'files', label: 'Archivos', icon: 'folder-archive' },
+    { id: 'assemblies', label: 'Asambleas', icon: 'gavel', subLabel: 'Gobierno y Votación' },
     { id: 'reports', label: 'Reportes', icon: 'file-text' },
     { id: 'settings', label: 'Configuración', icon: 'sliders-horizontal' },
     { id: 'elisa', label: 'Elisa AI', icon: 'bot', subLabel: 'Asistente Virtual' },
@@ -55,8 +56,8 @@ export const Sidebar = ({ activeTab, setActiveTab, onBack, onLogout, isCollapsed
                             onClick={(e) => { e.preventDefault(); setActiveTab(item.id); onCloseMobile(); }}
                             title={isCollapsed ? item.label : undefined}
                             className={`flex items-center px-4 py-2.5 text-sm font-medium rounded-md transition-colors ${activeTab === item.id
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+                                ? 'bg-blue-600 text-white'
+                                : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
                                 } ${isCollapsed ? 'justify-center' : ''}`}
                         >
                             <Icon name={item.icon} className="w-5 h-5 flex-shrink-0" />

@@ -9,6 +9,7 @@ import { ResidentCommunications } from './tabs/ResidentCommunications';
 import { ResidentPayments } from './tabs/ResidentPayments';
 import { ResidentReservations } from './tabs/ResidentReservations';
 import { ResidentIncidents } from './tabs/ResidentIncidents';
+import { ResidentAssemblies } from './tabs/ResidentAssemblies';
 
 type ResidentPortalProps = {
     resident: Unit;
@@ -36,6 +37,8 @@ export const ResidentPortal = ({ resident, condo, onLogout }: ResidentPortalProp
                 return <ResidentReservations resident={resident} condo={condo} onUpdateCondoData={updateCondo} />;
             case 'incidents':
                 return <ResidentIncidents resident={resident} condo={condo} onUpdateCondoData={updateCondo} />;
+            case 'assemblies':
+                return <ResidentAssemblies />;
             default:
                 return <ResidentDashboard resident={resident} condo={condo} />;
         }
@@ -48,7 +51,8 @@ export const ResidentPortal = ({ resident, condo, onLogout }: ResidentPortalProp
             payments: 'Notificación de Pagos',
             communications: 'Comunicados',
             reservations: 'Reservas',
-            incidents: 'Incidentes'
+            incidents: 'Incidentes',
+            assemblies: 'Asambleas'
         };
         return titles[activeTab] || 'Portal de Residente';
     };
@@ -65,9 +69,9 @@ export const ResidentPortal = ({ resident, condo, onLogout }: ResidentPortalProp
                 onCloseMobile={() => setIsMobileSidebarOpen(false)}
             />
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
-                <ResidentHeader 
+                <ResidentHeader
                     pageTitle={getPageTitle()}
-                    onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)} 
+                    onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
                 />
                 <main className="flex-1 p-6 overflow-y-auto">
                     {renderContent()}

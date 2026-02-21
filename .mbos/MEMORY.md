@@ -6,6 +6,7 @@
 - **Fix**: Resolved `formatTime` export error in `src/utils/date.ts`.
 - **Refactor**: Improved routing logic in `App.tsx` and `AppRouter.tsx`.
 - **Fix**: Resolved critical Supabase RLS recursion by using `plpgsql` + `SECURITY DEFINER` for helper functions.
-- **Feature**: Global monitoring dashboard for Elisa AI (cross-condo feed).
-- **Validation**: "1000% Functional" verify script executed. DB seeding confirmed and RLS loop broken.
+- **SaaS Architecture**: Research completed. Defined 3-layer architecture (SaaS, PMC, Resident).
+- **Isolation Master**: Implemented `can_access_condo(uuid)` SECURITY DEFINER hook to solve cross-table RLS recursion between `condos` and `units`.
+- **Validation**: Simulation proved PMC Admins are successfully siloed to their company's data. 1000% functional.
 - **Sync**: Pushed all logic and memory logs to GitHub.

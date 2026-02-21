@@ -15,6 +15,7 @@ import { SettingsContent } from './tabs/SettingsContent';
 import { useCondo } from '../../context/CondoContext'; // Nota: Solo dos '../'
 import { ResidentsContent } from './tabs/ResidentsContent';
 import { ElisaAIContent } from './tabs/ElisaAIContent';
+import { AssembliesContent } from './tabs/AssembliesContent';
 
 type CondoAdminPanelProps = {
     onBack: () => void;
@@ -65,6 +66,7 @@ export const CondoAdminPanel = ({ onBack, onLogout }: CondoAdminPanelProps) => {
             case 'settings': return <SettingsContent />;
             case 'residents': return <ResidentsContent />;
             case 'elisa': return <ElisaAIContent />;
+            case 'assemblies': return <AssembliesContent />;
             default: return <DashboardContent onNavigate={handleNavigation} />;
         }
     };
