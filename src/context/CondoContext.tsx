@@ -1,8 +1,5 @@
 ﻿import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-// 1. IMPORTACIONES DE FIRESTORE
-import { collection, query, getDocs, doc, setDoc, where } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
-// ---
+import { supabase } from '../supabaseClient';
 
 import type { Condo, CondoFormData, Unit } from '../types';
 import { recalculateBalances } from '../utils/finance';
@@ -22,76 +19,85 @@ type CondoContextType = {
 const CondoContext = createContext<CondoContextType | undefined>(undefined);
 
 // --- Componente Proveedor (Provider) ---
-// DEV MODE: No intentar conectar a Firebase en localhost
 const DEV_MODE = window.location.hostname === 'localhost';
 
 export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [condos, setCondos] = useState<Condo[]>([]);
     const [selectedCondo, setSelectedCondo] = useState<Condo | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    
+
     // Get the admin's company ID from AuthContext
     const { adminCompanyId, userRole, isSuperAdmin, isDevAuthenticated } = useAuth();
 
-    // --- LÓGICA DE FIRESTORE: FUNCIÓN ASÍNCRONA PARA LEER DATOS ---
-    // Now filters condos by companyId for admins (multi-tenant isolation)
+    // --- SUPABASE: FUNCIÓN ASÍNCRONA PARA LEER DATOS ---
+    // Replaces Firestore collection queries with Supabase .from().select()
     const fetchCondos = useCallback(async () => {
-        // En modo desarrollo con autenticación simulada, no intentar Firebase
+        // En modo desarrollo con autenticación simulada, no intentar Supabase
         if (DEV_MODE && isDevAuthenticated) {
-            console.log('🔧 DEV MODE: Saltando carga de Firebase, usando datos vacíos');
+            console.log('🔧 DEV MODE: Saltando carga de Supabase, usando datos vacíos');
             setCondos([]);
             setIsLoading(false);
             return;
         }
-        
+
         setIsLoading(true);
         try {
-            const condosCollectionRef = collection(db, "condos");
-            
             // Build query based on user role
-            let q;
-            if (isSuperAdmin) {
-                // SuperAdmin sees all condos
-                q = query(condosCollectionRef);
-            } else if (adminCompanyId) {
-                // Admin only sees condos from their company
-                q = query(condosCollectionRef, where("companyId", "==", adminCompanyId));
-            } else {
-                // Residents or unknown - fetch all (filtered by app logic)
-                q = query(condosCollectionRef);
+            // RLS policies handle most filtering, but we add explicit filters for clarity
+            let query = supabase
+                .from('condos')
+                .select('*')
+                .order('name');
+
+            if (!isSuperAdmin && adminCompanyId) {
+                // Admin only sees condos from their company (also enforced by RLS)
+                query = query.eq('company_id', adminCompanyId);
             }
-            
-            const querySnapshot = await getDocs(q);
 
+            const { data: condosData, error } = await query;
+
+            if (error) throw error;
+
+            // For each condo, fetch its units separately (normalized tables)
             const fetchedCondos: Condo[] = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data() as Omit<Condo, 'id'>;
+            for (const condo of (condosData || [])) {
+                const { data: units } = await supabase
+                    .from('units')
+                    .select('*')
+                    .eq('condo_id', condo.id)
+                    .order('number');
 
-                const condoWithBalances = {
-                    ...data,
-                    id: doc.id as unknown as number,
-                    // Aseguramos que las listas existan (Airbag)
-                    units: data.units || [],
-                    communications: data.communications || [],
-                    incidents: data.incidents || [],
-                    accountsPayable: data.accountsPayable || [],
-                    employees: data.employees || [],
-                    suppliers: data.suppliers || [],
-                    payrolls: data.payrolls || [],
-                    amenities: data.amenities || [],
-                    reservations: data.reservations || [],
-                    files: data.files || [],
-                    extraordinaryFees: data.extraordinaryFees || [],
-                    paymentNotifications: data.paymentNotifications || [],
-                    // Recálculo de balances (Definido UNA SOLA VEZ aquí al final)
-                    finances: recalculateBalances(data.finances || [], data.manualBalance || 0),
+                // Fetch transactions for finance recalculation
+                const { data: transactions } = await supabase
+                    .from('transactions')
+                    .select('*')
+                    .eq('condo_id', condo.id)
+                    .order('date', { ascending: true });
+
+                const condoWithData: Condo = {
+                    ...condo,
+                    // Map normalized tables back to the Condo interface
+                    units: units || [],
+                    finances: recalculateBalances(transactions || [], condo.manual_balance || 0),
+                    // These will be loaded on-demand in their respective views
+                    communications: [],
+                    incidents: [],
+                    accountsPayable: [],
+                    employees: [],
+                    suppliers: [],
+                    payrolls: [],
+                    amenities: [],
+                    reservations: [],
+                    files: [],
+                    extraordinaryFees: [],
+                    paymentNotifications: [],
                 } as Condo;
 
-                fetchedCondos.push(condoWithBalances);
-            });
+                fetchedCondos.push(condoWithData);
+            }
 
             if (fetchedCondos.length === 0) {
-                 console.log("No se encontraron condominios en Firestore. Cargando vacío.");
+                console.log("No se encontraron condominios en Supabase. Cargando vacío.");
             }
 
             setCondos(fetchedCondos);
@@ -103,7 +109,7 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     }, [adminCompanyId, isSuperAdmin, isDevAuthenticated]);
 
-    // 4. useEffect: Cargar datos al iniciar (re-fetch when company changes)
+    // useEffect: Cargar datos al iniciar (re-fetch when company changes)
     useEffect(() => {
         fetchCondos();
     }, [fetchCondos]);
@@ -118,7 +124,6 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         setIsLoading(true);
         setTimeout(() => {
-            // Buscamos usando String() para evitar problemas de tipo number vs string ID
             const condoToSelect = condos.find(c => String(c.id) === String(id));
             if (condoToSelect) {
                 setSelectedCondo(condoToSelect);
@@ -136,23 +141,30 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     useEffect(() => {
         const savedCondoId = sessionStorage.getItem('selectedCondoId');
         if (savedCondoId && !selectedCondo && condos.length > 0) {
-            // Intentamos seleccionar usando el ID guardado
             const found = condos.find(c => String(c.id) === savedCondoId);
-            if(found) selectCondo(found.id);
+            if (found) selectCondo(found.id);
         }
     }, [condos, selectedCondo, selectCondo]);
 
-    // --- LÓGICA DE ESCRITURA: ACTUALIZAR UN CONDOMINIO COMPLETO ---
+    // --- SUPABASE: ACTUALIZAR UN CONDOMINIO ---
     const updateCondo = useCallback(async (updatedCondoData: Condo) => {
         setIsLoading(true);
         try {
-            const condoRef = doc(db, "condos", String(updatedCondoData.id));
+            // Extract only the condo-level fields (not nested arrays)
+            const { units, finances, communications, incidents, accountsPayable,
+                employees, suppliers, payrolls, amenities, reservations,
+                files, extraordinaryFees, paymentNotifications, ...condoFields } = updatedCondoData as any;
 
-            await setDoc(condoRef, updatedCondoData);
+            const { error } = await supabase
+                .from('condos')
+                .update(condoFields)
+                .eq('id', updatedCondoData.id);
+
+            if (error) throw error;
 
             const condoWithBalances = {
                 ...updatedCondoData,
-                finances: recalculateBalances(updatedCondoData.finances, updatedCondoData.manualBalance)
+                finances: recalculateBalances(updatedCondoData.finances, (updatedCondoData as any).manual_balance || 0)
             };
 
             setCondos(prev => prev.map(c => c.id === condoWithBalances.id ? condoWithBalances : c));
@@ -163,53 +175,76 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             await new Promise(resolve => setTimeout(resolve, 300));
 
         } catch (error) {
-             console.error("Error updating condo:", error);
+            console.error("Error updating condo:", error);
         } finally {
             setIsLoading(false);
         }
     }, [selectedCondo?.id]);
 
-    // --- LÓGICA DE ESCRITURA: AÑADIR CONDOMINIO ---
-    // Now uses adminCompanyId from AuthContext instead of hardcoded value
+    // --- SUPABASE: AÑADIR CONDOMINIO ---
     const addCondo = useCallback(async (newCondoData: CondoFormData) => {
         setIsLoading(true);
         try {
-            const newCondoRef = doc(collection(db, "condos"));
-            const newId = newCondoRef.id;
-
-            // SECURITY FIX: Use the logged-in admin's company ID
             if (!adminCompanyId) {
                 throw new Error("No company ID found. User must be a company admin to create condos.");
             }
 
-            const newFullCondo: Condo = {
-                ...newCondoData,
-                id: newId as unknown as number,
-                companyId: adminCompanyId, // Use dynamic company ID from auth
-                manualBalance: 0,
-                finances: [], units: [], communications: [], incidents: [], accountsPayable: [],
-                employees: [], suppliers: [], payrolls: [], amenities: [], reservations: [],
-                files: [], extraordinaryFees: [], paymentNotifications: []
-            };
+            // Insert into Supabase (id is auto-generated)
+            const { data: newCondo, error } = await supabase
+                .from('condos')
+                .insert({
+                    ...newCondoData,
+                    company_id: adminCompanyId,
+                    manual_balance: 0,
+                })
+                .select()
+                .single();
 
-            await setDoc(newCondoRef, newFullCondo);
+            if (error) throw error;
+
+            // Build full Condo object for local state
+            const newFullCondo: Condo = {
+                ...newCondo,
+                units: [],
+                finances: [],
+                communications: [],
+                incidents: [],
+                accountsPayable: [],
+                employees: [],
+                suppliers: [],
+                payrolls: [],
+                amenities: [],
+                reservations: [],
+                files: [],
+                extraordinaryFees: [],
+                paymentNotifications: [],
+            } as Condo;
 
             setCondos(prev => [...prev, newFullCondo]);
             await new Promise(resolve => setTimeout(resolve, 300));
 
         } catch (error) {
-             console.error("Error adding condo:", error);
-             throw error; // Re-throw so the UI can show an error
+            console.error("Error adding condo:", error);
+            throw error; // Re-throw so the UI can show an error
         } finally {
             setIsLoading(false);
         }
     }, [adminCompanyId]);
 
-    // --- LÓGICA DE ESCRITURA: ACTUALIZAR UNIDAD (Vincular Residente) ---
+    // --- SUPABASE: ACTUALIZAR UNIDAD ---
     const updateUnitInCondo = useCallback(async (condoId: number, unitId: number, updates: Partial<Unit>) => {
         setIsLoading(true);
 
         try {
+            // Update directly in the units table (normalized, not nested in condo doc)
+            const { error } = await supabase
+                .from('units')
+                .update(updates)
+                .eq('id', unitId);
+
+            if (error) throw error;
+
+            // Update local state
             const condoToUpdate = condos.find(c => c.id === condoId);
             if (!condoToUpdate) throw new Error("Condo not found for unit update.");
 
@@ -221,9 +256,6 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             });
             const updatedCondoData = { ...condoToUpdate, units: updatedUnits };
 
-            const condoRef = doc(db, "condos", String(condoId));
-            await setDoc(condoRef, updatedCondoData);
-
             setCondos(prevCondos =>
                 prevCondos.map(c => c.id === condoId ? updatedCondoData : c)
             );
@@ -232,8 +264,8 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             await new Promise(resolve => setTimeout(resolve, 300));
 
         } catch (error) {
-             console.error("Error updating unit:", error);
-             throw error;
+            console.error("Error updating unit:", error);
+            throw error;
         } finally {
             setIsLoading(false);
         }

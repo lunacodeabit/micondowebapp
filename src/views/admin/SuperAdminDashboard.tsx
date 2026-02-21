@@ -3,18 +3,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import type { Company, Condo, PlanType, AddonConfig, ActivityEvent, ActivityEventType } from "../../types";
 import { PLAN_PRICING, AVAILABLE_ADDONS } from "../../types";
-import {
-  collection,
-  doc,
-  getDocs,
-  updateDoc,
-  addDoc,
-  query,
-  where,
-} from "firebase/firestore";
+import { supabase } from "../../supabaseClient";
 import { SuperAdminSidebar } from "./layout/SuperAdminSidebar";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../../firebaseConfig";
 import { Modal } from "../../components/ui/Modal";
 import { Spinner } from "../../components/ui/Spinner";
 import { Icon } from "../../components/ui/Icon";
@@ -177,12 +167,15 @@ const CompanyForm = ({
       let logoUrl: string | null = defaultValues?.logoUrl || null;
 
       if (logoFile) {
-        const storageRef = ref(
-          storage,
-          `company_logos/${formData.rnc}-${logoFile.name}`
-        );
-        const snapshot = await uploadBytes(storageRef, logoFile);
-        logoUrl = await getDownloadURL(snapshot.ref);
+        const filePath = `company_logos/${formData.rnc}-${logoFile.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('company-assets')
+          .upload(filePath, logoFile, { upsert: true });
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage
+          .from('company-assets')
+          .getPublicUrl(filePath);
+        logoUrl = urlData.publicUrl;
       }
 
       const companyData = {
@@ -211,19 +204,18 @@ const CompanyForm = ({
         description: string,
         details?: ActivityEvent["details"]
       ) => {
-        await addDoc(collection(db, "activity_events"), {
+        await supabase.from('activity_events').insert({
           type,
-          companyId,
-          companyName,
+          company_id: companyId,
+          company_name: companyName,
           description,
           details,
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         });
       };
 
       if (defaultValues && defaultValues.id) {
-        const companyRef = doc(db, "companies", defaultValues.id);
-        await updateDoc(companyRef, companyData);
+        await supabase.from('companies').update(companyData).eq('id', defaultValues.id);
 
         // Registrar eventos de actividad
         // Cambio de plan
@@ -267,7 +259,8 @@ const CompanyForm = ({
 
         addToast(`Compañía "${formData.name}" actualizada.`, "success");
       } else {
-        const docRef = await addDoc(collection(db, "companies"), companyData);
+        const { data: docRef, error: insertError } = await supabase.from('companies').insert(companyData).select('id').single();
+        if (insertError) throw insertError;
 
         // Registrar evento de nueva compañía
         await createActivityEvent(
@@ -610,14 +603,11 @@ const ViewClientsModal = ({
     if (!company) return;
     setLoading(true);
     try {
-      const condosRef = collection(db, "condos");
-      const q = query(condosRef, where("companyId", "==", company.id));
-      const snapshot = await getDocs(q);
-
-      const condoList: Condo[] = snapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id as unknown as number,
-      })) as Condo[];
+      const { data: condoList, error } = await supabase
+        .from('condos')
+        .select('*')
+        .eq('company_id', company.id);
+      if (error) throw error;
 
       setCondos(condoList);
     } catch (error) {
@@ -807,14 +797,13 @@ const BillingDetailModal = ({
         createdAt: today.toISOString(),
       };
 
-      await addDoc(collection(db, "saas_payments"), paymentData);
+      await supabase.from('saas_payments').insert(paymentData);
 
       // FIX Bug #1: Actualizar status de la compañía a "Activo" para sincronizar Dashboard y Companies
-      const companyRef = doc(db, "companies", company.id);
-      await updateDoc(companyRef, {
+      await supabase.from('companies').update({
         status: "Activo",
-        lastPaymentDate: today.toISOString().split("T")[0]
-      });
+        last_payment_date: today.toISOString().split("T")[0]
+      }).eq('id', company.id);
 
       addToast(`Pago de RD$${paymentForm.amount} registrado`, "success");
       setIsPaymentFormOpen(false);
@@ -1120,12 +1109,10 @@ const BillingTab = ({ companies }: BillingTabProps) => {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const paymentsRef = collection(db, "saas_payments");
-      const snapshot = await getDocs(paymentsRef);
-      const paymentList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const { data: paymentList, error } = await supabase
+        .from('saas_payments')
+        .select('*');
+      if (error) throw error;
       // Ordenar por fecha descendente
       paymentList.sort(
         (a: any, b: any) =>
@@ -1163,7 +1150,7 @@ const BillingTab = ({ companies }: BillingTabProps) => {
         createdAt: today.toISOString(),
       };
 
-      await addDoc(collection(db, "saas_payments"), paymentData);
+      await supabase.from('saas_payments').insert(paymentData);
       addToast(
         `Pago de $${paymentForm.amount} registrado para ${selectedCompany.name}.`,
         "success"
@@ -1525,12 +1512,10 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
   const fetchAnnouncements = async () => {
     setLoading(true);
     try {
-      const announcementsRef = collection(db, "saas_announcements");
-      const snapshot = await getDocs(announcementsRef);
-      const announcementList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const { data: announcementList, error } = await supabase
+        .from('saas_announcements')
+        .select('*');
+      if (error) throw error;
       announcementList.sort(
         (a: any, b: any) =>
           new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
@@ -1561,7 +1546,7 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
         createdAt: today.toISOString(),
       };
 
-      await addDoc(collection(db, "saas_announcements"), announcementData);
+      await supabase.from('saas_announcements').insert(announcementData);
       addToast(`Anuncio "${announcementForm.title}" publicado.`, "success");
 
       setIsAnnouncementModalOpen(false);
@@ -1580,8 +1565,7 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
 
   const toggleAnnouncementStatus = async (announcement: any) => {
     try {
-      const announcementRef = doc(db, "saas_announcements", announcement.id);
-      await updateDoc(announcementRef, { isActive: !announcement.isActive });
+      await supabase.from('saas_announcements').update({ is_active: !announcement.isActive }).eq('id', announcement.id);
       fetchAnnouncements();
       addToast(
         `Anuncio ${!announcement.isActive ? "activado" : "desactivado"}.`,
@@ -1982,12 +1966,10 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
   const fetchMessages = async () => {
     setLoading(true);
     try {
-      const messagesRef = collection(db, "saas_messages");
-      const snapshot = await getDocs(messagesRef);
-      const messagesList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const { data: messagesList, error } = await supabase
+        .from('saas_messages')
+        .select('*');
+      if (error) throw error;
       // Ordenar por fecha más reciente
       messagesList.sort(
         (a: any, b: any) =>
@@ -2033,7 +2015,7 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
         createdAt: new Date().toISOString(),
       };
 
-      await addDoc(collection(db, "saas_messages"), newMessage);
+      await supabase.from('saas_messages').insert(newMessage);
       addToast("Mensaje enviado correctamente", "success");
       setIsComposeModalOpen(false);
       setMessageForm({ companyId: "", subject: "", content: "" });
@@ -2046,7 +2028,7 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
 
   const markAsRead = async (messageId: string) => {
     try {
-      await updateDoc(doc(db, "saas_messages", messageId), { isRead: true });
+      await supabase.from('saas_messages').update({ is_read: true }).eq('id', messageId);
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, isRead: true } : m))
       );
@@ -3363,25 +3345,24 @@ export const SuperAdminDashboard = () => {
 
     setLoading(true);
     try {
-      const companiesCollection = collection(db, "companies");
-      const companySnapshot = await getDocs(companiesCollection);
-      const companyList: Company[] = companySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          name: data.name || "Sin Nombre",
-          rnc: data.rnc || "N/A",
-          address: data.address || "Sin Dirección",
-          phone: data.phone || "N/A",
-          email: data.email || "N/A",
-          logoUrl: data.logoUrl || null,
-          status: data.status || "Inactivo",
-          adminUserEmail: data.adminUserEmail || "N/A",
-          billingStartDate: data.billingStartDate || "N/A",
-          gracePeriodDays: data.gracePeriodDays || 0,
-          plan: data.plan || "Pro", // --- CORRECCIÓN: MAPEO DEL PLAN ---
-        };
-      });
+      const { data: rawCompanies, error } = await supabase
+        .from('companies')
+        .select('*');
+      if (error) throw error;
+      const companyList: Company[] = (rawCompanies || []).map((data: any) => ({
+        id: data.id,
+        name: data.name || "Sin Nombre",
+        rnc: data.rnc || "N/A",
+        address: data.address || "Sin Dirección",
+        phone: data.phone || "N/A",
+        email: data.email || "N/A",
+        logoUrl: data.logo_url || null,
+        status: data.status || "Inactivo",
+        adminUserEmail: data.admin_user_email || "N/A",
+        billingStartDate: data.billing_start_date || "N/A",
+        gracePeriodDays: data.grace_period_days || 0,
+        plan: data.plan || "Pro",
+      }));
       setCompanies(companyList);
     } catch (error) {
       console.error("Error fetching companies:", error);
@@ -3415,12 +3396,10 @@ export const SuperAdminDashboard = () => {
     }
 
     try {
-      const paymentsRef = collection(db, "saas_payments");
-      const snapshot = await getDocs(paymentsRef);
-      const paymentList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as PaymentRecord[];
+      const { data: paymentList, error } = await supabase
+        .from('saas_payments')
+        .select('*');
+      if (error) throw error;
       setAllPayments(paymentList);
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -3459,10 +3438,9 @@ export const SuperAdminDashboard = () => {
     setIsUpdating(true);
 
     const newStatus = company.status === "Activo" ? "Inactivo" : "Activo";
-    const companyRef = doc(db, "companies", company.id);
-
     try {
-      await updateDoc(companyRef, { status: newStatus });
+      const { error } = await supabase.from('companies').update({ status: newStatus }).eq('id', company.id);
+      if (error) throw error;
       setCompanies((prevCompanies) =>
         prevCompanies.map((c) =>
           c.id === company.id ? { ...c, status: newStatus } : c
@@ -3577,12 +3555,10 @@ export const SuperAdminDashboard = () => {
     }
 
     try {
-      const eventsRef = collection(db, "activity_events");
-      const snapshot = await getDocs(eventsRef);
-      const eventList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as ActivityEvent[];
+      const { data: eventList, error } = await supabase
+        .from('activity_events')
+        .select('*');
+      if (error) throw error;
       // Ordenar por fecha más reciente
       eventList.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setActivityEvents(eventList.slice(0, 20)); // Solo últimos 20

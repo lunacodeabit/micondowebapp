@@ -5,40 +5,24 @@
   useContext,
   ReactNode,
 } from "react";
+import type { User, Session } from "@supabase/supabase-js";
 import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-  User as FirebaseUser,
-} from "firebase/auth";
-import { auth } from "../firebaseConfig";
-import {
-  doc,
-  getDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
-import { db } from "../firebaseConfig";
-import type { Company, Condo } from "../types";
-
-// Super Admin UID from environment variable (secure - not hardcoded)
-const SUPER_ADMIN_UID = import.meta.env.VITE_SUPER_ADMIN_UID || "";
+  loginWithEmail,
+  logout as supabaseLogout,
+  onAuthStateChange,
+  getUserProfile,
+} from "../services/authService";
+import type { UserProfile } from "../services/authService";
+import { supabase } from "../supabaseClient";
 
 // DEV MODE: Permite acceso rápido sin autenticación real
 // En localhost siempre mostramos los botones de desarrollo
 const DEV_MODE = import.meta.env.DEV || window.location.hostname === 'localhost';
 
-// DEV CREDENTIALS (solo para testing rápido)
-const DEV_SUPERADMIN_EMAIL = import.meta.env.VITE_DEV_SUPERADMIN_EMAIL || "";
-const DEV_SUPERADMIN_PASSWORD =
-  import.meta.env.VITE_DEV_SUPERADMIN_PASSWORD || "";
-
 export type UserRole = "superadmin" | "admin" | "resident" | null;
 
 interface AuthContextType {
-  currentUser: FirebaseUser | null;
+  currentUser: User | null;
   loading: boolean;
   login: (email: string, pass: string) => Promise<any>;
   logout: () => Promise<void>;
@@ -48,7 +32,7 @@ interface AuthContextType {
   companyIsActive: boolean;
 
   residentData: { condoId: string; unitId: number } | null;
-  // NEW: Company ID for admin users (used when creating condos)
+  // Company ID for admin users (used when creating condos)
   adminCompanyId: string | null;
 
   // DEV MODE: Acceso rápido sin autenticación
@@ -72,7 +56,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   // DEV MODE: Usuario simulado
   const [isDevAuthenticated, setIsDevAuthenticated] = useState(false);
@@ -84,22 +68,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     condoId: string;
     unitId: number;
   } | null>(null);
-  // NEW: Store the company ID for admin users
+  // Store the company ID for admin users
   const [adminCompanyId, setAdminCompanyId] = useState<string | null>(null);
 
-  const login = (email: string, pass: string) => {
-    return signInWithEmailAndPassword(auth, email, pass);
+  const login = async (email: string, pass: string) => {
+    return loginWithEmail(email, pass);
   };
 
-  const logout = () => {
-    // Si estamos en dev mode, también resetear el estado
+  const logout = async () => {
+    // Reset all state
     setIsSuperAdmin(false);
     setUserRole(null);
     setCompanyIsActive(false);
     setResidentData(null);
     setAdminCompanyId(null);
     setIsDevAuthenticated(false);
-    return signOut(auth);
+    await supabaseLogout();
   };
 
   // DEV MODE: Función para login rápido SIN autenticación real
@@ -107,7 +91,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const devLogin = (role: UserRole) => {
     if (!DEV_MODE) return;
 
-    console.log(`🔧 DEV MODE: Accediendo como ${role} (sin Firebase Auth)`);
+    console.log(`🔧 DEV MODE: Accediendo como ${role} (sin Supabase Auth)`);
     setLoading(true);
 
     // Simular login según el rol seleccionado
@@ -135,12 +119,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(false);
   };
 
-  // FUNCIÓN DE VERIFICACIÓN DE ROL Y PERMISOS
-  const checkUserRoleAndStatus = async (user: FirebaseUser) => {
-    console.log(" INICIANDO RASTREO DE USUARIO...");
+  // FUNCIÓN DE VERIFICACIÓN DE ROL Y PERMISOS (Supabase version)
+  const checkUserRoleAndStatus = async (user: User) => {
+    console.log("🔍 INICIANDO RASTREO DE USUARIO (Supabase)...");
 
-    // 1. ES SUPER ADMIN?
-    if (user.uid === SUPER_ADMIN_UID) {
+    // 1. Fetch user profile from Supabase
+    const profile = await getUserProfile(user.id);
+
+    if (!profile) {
+      console.error("❌ No profile found for user:", user.id);
+      setUserRole(null);
+      setCompanyIsActive(false);
+      return;
+    }
+
+    console.log("📋 Profile found:", profile.role, "company:", profile.company_id);
+
+    // 2. Route based on role from profiles table
+    if (profile.role === "superadmin") {
       setIsSuperAdmin(true);
       setUserRole("superadmin");
       setCompanyIsActive(true);
@@ -148,95 +144,84 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return;
     }
 
-    // 2. ES ADMIN DE COMPAÑÍA?
-    const companiesRef = collection(db, "companies");
-    const adminQuery = query(
-      companiesRef,
-      where("adminUserEmail", "==", user.email)
-    );
-    const adminSnapshot = await getDocs(adminQuery);
-
-    if (!adminSnapshot.empty) {
-      const companyDoc = adminSnapshot.docs[0];
-      const companyData = companyDoc.data() as Company;
+    if (profile.role === "admin") {
       setUserRole("admin");
-      const isActive =
-        companyData.status === "Activo" || companyData.status === "Gracia";
-      setCompanyIsActive(isActive);
-      // NEW: Store the company ID for this admin
-      setAdminCompanyId(companyDoc.id);
-      console.log(" Admin de compañía ID:", companyDoc.id);
+      setAdminCompanyId(profile.company_id);
+
+      // Check company status
+      if (profile.company_id) {
+        const { data: company } = await supabase
+          .from("companies")
+          .select("status")
+          .eq("id", profile.company_id)
+          .single();
+
+        const isActive = company?.status === "Activo" || company?.status === "Gracia";
+        setCompanyIsActive(isActive);
+        console.log("🏢 Admin de compañía:", profile.company_id, "activa:", isActive);
+      } else {
+        setCompanyIsActive(false);
+      }
       return;
     }
 
-    // 3. ES RESIDENTE?
-    const condosRef = collection(db, "condos");
-    const condosSnapshot = await getDocs(condosRef);
+    if (profile.role === "resident") {
+      setUserRole("resident");
 
-    let foundResident = false;
-    for (const condoDoc of condosSnapshot.docs) {
-      const condoData = condoDoc.data() as Condo;
-      const units = (condoData.units as unknown as any[]) || [];
+      // Find the resident's unit (query units table by auth_uid)
+      const { data: unitData } = await supabase
+        .from("units")
+        .select("id, condo_id")
+        .eq("auth_uid", user.id)
+        .single();
 
-      const foundUnit = units.find((unit: any) => unit.authUid === user.uid);
+      if (unitData) {
+        setResidentData({
+          condoId: String(unitData.condo_id),
+          unitId: unitData.id,
+        });
 
-      if (foundUnit) {
-        console.log(" ENCONTRADO! Unidad:", foundUnit.number || foundUnit.id);
-        setUserRole("resident");
-        foundResident = true;
+        // Check company status through condo → company chain
+        const { data: condoData } = await supabase
+          .from("condos")
+          .select("company_id")
+          .eq("id", unitData.condo_id)
+          .single();
 
-        setResidentData({ condoId: condoDoc.id, unitId: foundUnit.id });
+        if (condoData?.company_id) {
+          const { data: company } = await supabase
+            .from("companies")
+            .select("status")
+            .eq("id", condoData.company_id)
+            .single();
 
-        // --- DEBUGGING PROFUNDO DE COMPAÑÍA ---
-        const companyIdToCheck = condoData.companyId;
-        console.log(" Condominio vinculado a CompanyID:", companyIdToCheck);
-
-        if (!companyIdToCheck) {
-          console.error(" El condominio no tiene companyId vinculado.");
-          setCompanyIsActive(false);
-          break;
-        }
-
-        const companyRef = doc(db, "companies", companyIdToCheck);
-        const companyDocSnapshot = await getDoc(companyRef);
-
-        if (companyDocSnapshot.exists()) {
-          const companyData = companyDocSnapshot.data() as Company;
-
-          // IMPRIMIMOS CON COMILLAS PARA VER ESPACIOS OCULTOS
-          console.log(" Status encontrado en DB:", companyData.status);
-
-          const isActive =
-            companyData.status === "Activo" || companyData.status === "Gracia";
-          console.log("   > Es válido (Activo/Gracia)?:", isActive);
-
+          const isActive = company?.status === "Activo" || company?.status === "Gracia";
           setCompanyIsActive(isActive);
-        } else {
-          console.error(" La compañía con ese ID NO existe en Firestore.");
-          setCompanyIsActive(false);
         }
-        // -------------------------------------
-        break;
+      } else {
+        console.error("❌ Residente sin unidad asignada");
+        setResidentData(null);
+        setCompanyIsActive(false);
       }
+      return;
     }
 
-    // 4. SI NO ES NADA
-    if (!foundResident) {
-      console.error(" ERROR: Usuario logueado pero no asignado a unidad.");
-      setUserRole(null);
-      setCompanyIsActive(false);
-    }
+    // 4. Unknown role
+    console.error("❌ Usuario con rol desconocido:", profile.role);
+    setUserRole(null);
+    setCompanyIsActive(false);
   };
 
   useEffect(() => {
-    // EN DEV MODE: Si ya estamos autenticados con devLogin, no esperar Firebase
+    // EN DEV MODE: Si ya estamos autenticados con devLogin, no esperar Supabase
     if (DEV_MODE && isDevAuthenticated) {
       setLoading(false);
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      // Si estamos en dev mode y ya autenticados, ignorar Firebase
+    // Subscribe to Supabase auth state changes
+    const subscription = onAuthStateChange(async (user, _session) => {
+      // Si estamos en dev mode y ya autenticados, ignorar Supabase
       if (DEV_MODE && isDevAuthenticated) {
         setLoading(false);
         return;
@@ -257,7 +242,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [isDevAuthenticated]);
 
   const value = {

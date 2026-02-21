@@ -1,5 +1,4 @@
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { supabase } from '../supabaseClient';
 
 // =============================================
 // EMAIL SERVICE - Firebase Trigger Email Extension
@@ -7,18 +6,18 @@ import { db } from '../firebaseConfig';
 
 // Tipos de email
 export type EmailType =
-    | 'payment_confirmation'
-    | 'payment_reminder'
-    | 'welcome'
-    | 'announcement'
-    | 'grace_period_warning'
-    | 'account_suspended';
+  | 'payment_confirmation'
+  | 'payment_reminder'
+  | 'welcome'
+  | 'announcement'
+  | 'grace_period_warning'
+  | 'account_suspended';
 
 export interface EmailData {
-    to: string | string[];
-    subject: string;
-    html: string;
-    text?: string;
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
 }
 
 // Colección donde Firebase Extension escucha
@@ -30,23 +29,24 @@ const MAIL_COLLECTION = 'mail';
  * @returns ID del documento creado
  */
 export const sendEmail = async (emailData: EmailData): Promise<string> => {
-    try {
-        const docRef = await addDoc(collection(db, MAIL_COLLECTION), {
-            to: emailData.to,
-            message: {
-                subject: emailData.subject,
-                html: emailData.html,
-                text: emailData.text || '',
-            },
-            createdAt: Timestamp.now(),
-        });
+  try {
+    const { data, error } = await supabase.from(MAIL_COLLECTION).insert({
+      to: emailData.to,
+      message: {
+        subject: emailData.subject,
+        html: emailData.html,
+        text: emailData.text || '',
+      },
+      created_at: new Date().toISOString(),
+    }).select('id').single();
 
-        console.log('Email queued with ID:', docRef.id);
-        return docRef.id;
-    } catch (error) {
-        console.error('Error sending email:', error);
-        throw error;
-    }
+    if (error) throw error;
+    console.log('Email queued with ID:', data.id);
+    return data.id;
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw error;
+  }
 };
 
 // =============================================
@@ -94,16 +94,16 @@ const emailFooter = `
  * Template: Confirmación de Pago
  */
 export const getPaymentConfirmationEmail = (data: {
-    companyName: string;
-    amount: number;
-    paymentDate: string;
-    receiptNumber: string;
-    periodStart: string;
-    periodEnd: string;
+  companyName: string;
+  amount: number;
+  paymentDate: string;
+  receiptNumber: string;
+  periodStart: string;
+  periodEnd: string;
 }): EmailData => ({
-    to: '', // Se llenará al llamar
-    subject: `✓ Pago Confirmado - ${data.companyName} | MI CONDO`,
-    html: `
+  to: '', // Se llenará al llamar
+  subject: `✓ Pago Confirmado - ${data.companyName} | MI CONDO`,
+  html: `
     <!DOCTYPE html>
     <html>
     <head>${emailStyles}</head>
@@ -139,14 +139,14 @@ export const getPaymentConfirmationEmail = (data: {
  * Template: Recordatorio de Pago
  */
 export const getPaymentReminderEmail = (data: {
-    companyName: string;
-    amount: number;
-    dueDate: string;
-    daysOverdue?: number;
+  companyName: string;
+  amount: number;
+  dueDate: string;
+  daysOverdue?: number;
 }): EmailData => ({
-    to: '',
-    subject: `⚠️ Recordatorio de Pago - ${data.companyName} | MI CONDO`,
-    html: `
+  to: '',
+  subject: `⚠️ Recordatorio de Pago - ${data.companyName} | MI CONDO`,
+  html: `
     <!DOCTYPE html>
     <html>
     <head>${emailStyles}</head>
@@ -186,13 +186,13 @@ export const getPaymentReminderEmail = (data: {
  * Template: Bienvenida
  */
 export const getWelcomeEmail = (data: {
-    companyName: string;
-    adminName: string;
-    trialEndDate: string;
+  companyName: string;
+  adminName: string;
+  trialEndDate: string;
 }): EmailData => ({
-    to: '',
-    subject: `🎉 Bienvenido a MI CONDO - ${data.companyName}`,
-    html: `
+  to: '',
+  subject: `🎉 Bienvenido a MI CONDO - ${data.companyName}`,
+  html: `
     <!DOCTYPE html>
     <html>
     <head>${emailStyles}</head>
@@ -233,28 +233,28 @@ export const getWelcomeEmail = (data: {
  * Template: Anuncio General
  */
 export const getAnnouncementEmail = (data: {
-    title: string;
-    content: string;
-    type: 'info' | 'warning' | 'update' | 'maintenance';
+  title: string;
+  content: string;
+  type: 'info' | 'warning' | 'update' | 'maintenance';
 }): EmailData => {
-    const typeColors: Record<string, string> = {
-        info: '#3498DB',
-        warning: '#E74C3C',
-        update: '#27AE60',
-        maintenance: '#F39C12',
-    };
+  const typeColors: Record<string, string> = {
+    info: '#3498DB',
+    warning: '#E74C3C',
+    update: '#27AE60',
+    maintenance: '#F39C12',
+  };
 
-    const typeIcons: Record<string, string> = {
-        info: 'ℹ️',
-        warning: '⚠️',
-        update: '✨',
-        maintenance: '🔧',
-    };
+  const typeIcons: Record<string, string> = {
+    info: 'ℹ️',
+    warning: '⚠️',
+    update: '✨',
+    maintenance: '🔧',
+  };
 
-    return {
-        to: '',
-        subject: `${typeIcons[data.type]} ${data.title} | MI CONDO`,
-        html: `
+  return {
+    to: '',
+    subject: `${typeIcons[data.type]} ${data.title} | MI CONDO`,
+    html: `
       <!DOCTYPE html>
       <html>
       <head>${emailStyles}</head>
@@ -272,20 +272,20 @@ export const getAnnouncementEmail = (data: {
       </body>
       </html>
     `,
-    };
+  };
 };
 
 /**
  * Template: Cuenta Suspendida
  */
 export const getAccountSuspendedEmail = (data: {
-    companyName: string;
-    suspensionDate: string;
-    amountDue: number;
+  companyName: string;
+  suspensionDate: string;
+  amountDue: number;
 }): EmailData => ({
-    to: '',
-    subject: `🔒 Cuenta Suspendida - ${data.companyName} | MI CONDO`,
-    html: `
+  to: '',
+  subject: `🔒 Cuenta Suspendida - ${data.companyName} | MI CONDO`,
+  html: `
     <!DOCTYPE html>
     <html>
     <head>${emailStyles}</head>
