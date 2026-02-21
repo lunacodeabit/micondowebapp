@@ -14,6 +14,7 @@ import { FilesContent } from './tabs/FilesContent';
 import { SettingsContent } from './tabs/SettingsContent';
 import { useCondo } from '../../context/CondoContext'; // Nota: Solo dos '../'
 import { ResidentsContent } from './tabs/ResidentsContent';
+import { ElisaAIContent } from './tabs/ElisaAIContent';
 
 type CondoAdminPanelProps = {
     onBack: () => void;
@@ -63,6 +64,7 @@ export const CondoAdminPanel = ({ onBack, onLogout }: CondoAdminPanelProps) => {
             case 'reports': return <ReportsContent />;
             case 'settings': return <SettingsContent />;
             case 'residents': return <ResidentsContent />;
+            case 'elisa': return <ElisaAIContent />;
             default: return <DashboardContent onNavigate={handleNavigation} />;
         }
     };
@@ -80,9 +82,9 @@ export const CondoAdminPanel = ({ onBack, onLogout }: CondoAdminPanelProps) => {
                 onCloseMobile={() => setIsMobileSidebarOpen(false)}
             />
             <main className={`flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300 ease-in-out ${isDesktopSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-                <AdminHeader 
+                <AdminHeader
                     condoName={selectedCondo?.name || ''}
-                    onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)} 
+                    onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
                 />
                 <div className="flex-1 p-6 overflow-y-auto">
                     {renderContent()}

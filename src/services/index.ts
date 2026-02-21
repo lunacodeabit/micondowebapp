@@ -62,3 +62,8 @@ export {
     createReservation,
     updateReservation,
 } from './operationsService';
+// AI / Bot
+export {
+    elisaService
+} from './elisaService';
+export type { BotConversation, ConversationMessage } from './elisaService';
