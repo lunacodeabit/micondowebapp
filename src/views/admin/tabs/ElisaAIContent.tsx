@@ -42,7 +42,7 @@ export const ElisaAIContent = ({ mode = 'condo' }: ElisaAIContentProps) => {
                 setLoading(true);
                 const data = mode === 'global'
                     ? await elisaService.getAllConversations()
-                    : await elisaService.getConversations(selectedCondo!.id.toString());
+                    : await elisaService.getConversations(selectedCondo!.id);
                 setConversations(data);
             } catch (error) {
                 console.error('Error fetching Elisa conversations:', error);
@@ -60,7 +60,7 @@ export const ElisaAIContent = ({ mode = 'condo' }: ElisaAIContentProps) => {
                 handleRealtimeUpdate(payload);
             })
             : selectedCondo?.id
-                ? elisaService.subscribeToConversations(selectedCondo.id.toString(), (payload) => {
+                ? elisaService.subscribeToConversations(selectedCondo.id, (payload) => {
                     handleRealtimeUpdate(payload);
                 })
                 : null;

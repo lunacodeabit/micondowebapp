@@ -91,7 +91,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const devLogin = (role: UserRole) => {
     if (!DEV_MODE) return;
 
-    console.log(`🔧 DEV MODE: Accediendo como ${role} (sin Supabase Auth)`);
+    // console.log(`🔧 DEV MODE: Accediendo como ${role} (sin Supabase Auth)`);
     setLoading(true);
 
     // Simular login según el rol seleccionado
@@ -121,7 +121,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // FUNCIÓN DE VERIFICACIÓN DE ROL Y PERMISOS (Supabase version)
   const checkUserRoleAndStatus = async (user: User) => {
-    console.log("🔍 INICIANDO RASTREO DE USUARIO (Supabase)...");
+    // console.log("🔍 INICIANDO RASTREO DE USUARIO (Supabase)...");
 
     // 1. Fetch user profile from Supabase
     const profile = await getUserProfile(user.id);
@@ -133,7 +133,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return;
     }
 
-    console.log("📋 Profile found:", profile.role, "company:", profile.company_id);
+    // console.log("📋 Profile found:", profile.role, "company:", profile.company_id);
 
     // 2. Route based on role from profiles table
     if (profile.role === "superadmin") {
@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         const isActive = company?.status === "Activo" || company?.status === "Gracia";
         setCompanyIsActive(isActive);
-        console.log("🏢 Admin de compañía:", profile.company_id, "activa:", isActive);
+        // console.log("🏢 Admin de compañía:", profile.company_id, "activa:", isActive);
       } else {
         setCompanyIsActive(false);
       }

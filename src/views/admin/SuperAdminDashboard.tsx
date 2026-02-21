@@ -2530,7 +2530,7 @@ const SettingsTab = () => {
         <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-              <Icon name="tool" className="w-5 h-5 text-orange-400" />
+              <Icon name="settings" className="w-5 h-5 text-orange-400" />
             </div>
             <h3 className="text-lg font-semibold text-white">Sistema</h3>
           </div>
@@ -3309,7 +3309,7 @@ export const SuperAdminDashboard = () => {
   const fetchCompanies = async () => {
     // En modo desarrollo, usar datos mock
     if (isDevMode && isDevAuthenticated) {
-      console.log("🔧 DEV MODE: Usando compañías mock");
+      // console.log("🔧 DEV MODE: Usando compañías mock");
       setCompanies([
         {
           id: "dev-company-1",

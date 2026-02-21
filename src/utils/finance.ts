@@ -6,7 +6,7 @@ export const recalculateBalances = (transactions: Transaction[], initialBalance:
     const sortedTransactions = [...transactions].sort((a, b) => {
         const dateComparison = new Date(a.date).getTime() - new Date(b.date).getTime();
         if (dateComparison !== 0) return dateComparison;
-        return a.id - b.id;
+        return a.id.localeCompare(b.id);
     });
 
     return sortedTransactions.map(tx => {
@@ -29,7 +29,7 @@ export const calculateAgingBalances = (accountHistory: AccountHistoryItem[], asO
     const charges = accountHistory
         .filter(item => item.type === 'Cargo')
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        
+
     let credits = accountHistory
         .filter(item => item.type === 'Abono')
         .reduce((sum, item) => sum + item.amount, 0);
@@ -69,11 +69,11 @@ export const calculateAgingBalances = (accountHistory: AccountHistoryItem[], asO
     }
 
     aging.total = aging.current + aging['31-60'] + aging['61-90'] + aging['91+'];
-    
+
     // Round to 2 decimal places to avoid floating point issues
     Object.keys(aging).forEach(key => {
         aging[key as keyof typeof aging] = parseFloat(aging[key as keyof typeof aging].toFixed(2));
     });
-    
+
     return aging;
 };

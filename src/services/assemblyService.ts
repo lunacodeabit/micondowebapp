@@ -89,5 +89,47 @@ export const assemblyService = {
         }, {});
 
         return results;
+    },
+
+    async getAssemblyReportData(assemblyId: string) {
+        // 1. Fetch Assembly & Topics
+        const { data: assembly, error: assemblyError } = await supabase
+            .from('assemblies')
+            .select(`
+                *,
+                topics:assembly_topics(
+                    *,
+                    options:assembly_voting_options(*)
+                )
+            `)
+            .eq('id', assemblyId)
+            .single();
+
+        if (assemblyError) throw assemblyError;
+
+        // 2. Fetch Attendance
+        const { data: attendance, error: attendanceError } = await supabase
+            .from('assembly_attendance')
+            .select(`
+                *,
+                unit:units(apartment_number, owner_name, percentage)
+            `)
+            .eq('assembly_id', assemblyId);
+
+        if (attendanceError) throw attendanceError;
+
+        // 3. Fetch all votes for this assembly
+        const { data: votes, error: votesError } = await supabase
+            .from('assembly_votes')
+            .select('*')
+            .in('topic_id', assembly.topics.map((t: any) => t.id));
+
+        if (votesError) throw votesError;
+
+        return {
+            assembly,
+            attendance,
+            votes
+        };
     }
 };

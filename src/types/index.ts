@@ -11,7 +11,7 @@ declare global {
 
 // Add specific types for the application data models
 export type Transaction = {
-  id: number;
+  id: string;
   date: string;
   type: "Ingreso" | "Egreso";
   description: string;
@@ -44,7 +44,7 @@ export type FeeRecipient =
   | "Propietario, Inquilino y Representante";
 
 export type Unit = {
-  id: number;
+  id: string;
   apartmentNumber: string;
   unitType: UnitType;
   requiresNcf: boolean;
@@ -81,14 +81,14 @@ export type Unit = {
 };
 
 export type Communication = {
-  id: number;
+  id: string;
   date: string;
   title: string;
   content: string;
 };
 
 export type Incident = {
-  id: number;
+  id: string;
   date: string;
   reportedBy: string;
   description: string;
@@ -97,7 +97,7 @@ export type Incident = {
 };
 
 export type AccountPayable = {
-  id: number;
+  id: string;
   supplier: string;
   invoiceNumber: string;
   issueDate: string;
@@ -110,7 +110,7 @@ export type AccountPayable = {
 };
 
 export type Employee = {
-  id: number;
+  id: string;
   name: string;
   position: string;
   phone: string;
@@ -121,7 +121,7 @@ export type Employee = {
 };
 
 export type Supplier = {
-  id: number;
+  id: string;
   name: string;
   serviceType: string;
   status: "Activo" | "Inactivo";
@@ -141,7 +141,7 @@ export type PayrollPayment = {
 };
 
 export type Payroll = {
-  id: number;
+  id: string;
   year: number;
   month: number;
   fortnight: 1 | 2;
@@ -152,7 +152,7 @@ export type Payroll = {
 };
 
 export type Amenity = {
-  id: number;
+  id: string;
   name: string;
   description: string;
   capacity: number;
@@ -161,7 +161,7 @@ export type Amenity = {
 };
 
 export type Reservation = {
-  id: number;
+  id: string;
   unitId: number;
   amenityId: number;
   date: string;
@@ -178,7 +178,7 @@ export type ManagementHistoryItem = {
 };
 
 export type Novedad = {
-  id: number;
+  id: string;
   title: string;
   date: string;
   content: string;
@@ -190,7 +190,7 @@ export type UtilityCompany = {
 };
 
 export type CondoFile = {
-  id: number;
+  id: string;
   code: string;
   fileType: string; // Mime type e.g., 'application/pdf'
   title: string;
@@ -201,7 +201,7 @@ export type CondoFile = {
 };
 
 export type ExtraordinaryFee = {
-  id: number;
+  id: string;
   title: string;
   description: string;
   totalAmount: number;
@@ -212,7 +212,7 @@ export type ExtraordinaryFee = {
 };
 
 export type PaymentNotification = {
-  id: number;
+  id: string;
   unitId: number;
   dateReported: string;
   paymentDate: string;
@@ -303,7 +303,7 @@ export type Condo = {
   // 1. VÍNCULO A LA COMPAÑÍA ADMINISTRADORA (CLIENTE SAAS)
   companyId: string; // ID del documento en la colección 'companies'
   // ---
-  id: number;
+  id: string;
   code: string;
   name: string;
   address: string;

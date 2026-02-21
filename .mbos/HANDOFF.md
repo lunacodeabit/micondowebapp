@@ -4,12 +4,12 @@
 We have successfully completed the migration to Supabase and the implementation of the Elisa AI Global Dashboard.
 
 ### Accomplishments:
-- **Global Dashboard**: SuperAdmins can now monitor all Elisa conversations across all condos.
-- **Air-Tight Isolation**: RLS policies finalized. PMC Admins are strictly siloed.
-- **Recursion Resolved**: No more infinite loops in Supabase thanks to `can_access_condo()` helper.
-- **Verified**: SQL simulation confirmed that data isolation is perfect across different roles.
+- **Phase 7.1 (Assemblies)**: 100% Functional. Database schema, RLS, service, and dual UI (Admin/Resident) implemented and verified.
+- **Weighted Voting**: Integrated unit percentage into voting logic.
+- **Architecture Audit**: Documented Elisa's hybrid hosting and reliability strategy.
+- **Git Sync**: All progress pushed to `lunacodeabit/micondowebapp`.
 
 ### Next Steps:
-- [ ] Implement Phase 6.2: SuperAdmin-to-PMC communication portal.
-- [ ] Expand legal knowledge base for more regional variants.
-- [ ] Start production deployment of the Elisa standalone bot.
+- [ ] Implement Phase 7.2: Automated "Acta de Asamblea" (Minutes) PDF generator.
+- [ ] Implement Phase 8: Omnichannel Bot Integration (WhatsApp/Elisa).
+- [ ] Advanced Finance: Budget vs. Actual reporting.

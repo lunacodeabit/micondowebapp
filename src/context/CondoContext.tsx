@@ -9,10 +9,10 @@ import { useAuth } from './AuthContext';
 type CondoContextType = {
     condos: Condo[];
     selectedCondo: Condo | null;
-    selectCondo: (id: number | null) => void;
+    selectCondo: (id: string | null) => void;
     updateCondo: (updatedCondo: Condo) => void;
     addCondo: (newCondoData: CondoFormData) => void;
-    updateUnitInCondo: (condoId: number, unitId: number, updates: Partial<Unit>) => Promise<void>;
+    updateUnitInCondo: (condoId: string, unitId: string, updates: Partial<Unit>) => Promise<void>;
     isLoading: boolean;
 };
 
@@ -34,7 +34,7 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const fetchCondos = useCallback(async () => {
         // En modo desarrollo con autenticación simulada, no intentar Supabase
         if (DEV_MODE && isDevAuthenticated) {
-            console.log('🔧 DEV MODE: Saltando carga de Supabase, usando datos vacíos');
+            // console.log('🔧 DEV MODE: Saltando carga de Supabase, usando datos vacíos');
             setCondos([]);
             setIsLoading(false);
             return;
@@ -97,7 +97,7 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             }
 
             if (fetchedCondos.length === 0) {
-                console.log("No se encontraron condominios en Supabase. Cargando vacío.");
+                // console.log("No se encontraron condominios en Supabase. Cargando vacío.");
             }
 
             setCondos(fetchedCondos);
@@ -115,7 +115,7 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, [fetchCondos]);
 
     // --- FUNCIÓN DE SELECCIÓN ---
-    const selectCondo = useCallback((id: number | null) => {
+    const selectCondo = useCallback((id: string | null) => {
         if (id === null) {
             setSelectedCondo(null);
             sessionStorage.removeItem('selectedCondoId');
@@ -232,7 +232,7 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, [adminCompanyId]);
 
     // --- SUPABASE: ACTUALIZAR UNIDAD ---
-    const updateUnitInCondo = useCallback(async (condoId: number, unitId: number, updates: Partial<Unit>) => {
+    const updateUnitInCondo = useCallback(async (condoId: string, unitId: string, updates: Partial<Unit>) => {
         setIsLoading(true);
 
         try {
