@@ -13,5 +13,8 @@
 - **Security**: Established `is_admin_of_company(uuid)` SECURITY DEFINER helper to manage PMC-level authorization for governance.
 - **Audit**: Analyzed Elisa AI architecture. Verified hybrid model (React/FastAPI). Defined 4-layer stability strategy.
 - **Fix**: Resolved `App.tsx` lint error by manually adding `@types/react-router-dom` to `package.json`.
-- **Governance (Phase 7.2)**: Implemented automated Meeting Minutes (Acta de Asamblea) generator. Includes data aggregation service, professional PDF utility (jsPDF), and weighted voting/quórum calculations.
-- **Sync**: All Phase 7.2 code and documentation pushed/updated. 1000% functional.
+- **Governance (Phase 7.2)**: Successfully implemented automated Meeting Minutes (Acta de Asamblea) generator. Includes data aggregation service, professional PDF utility (jsPDF), and weighted voting/quórum calculations.
+- **Type Refactor (Phase 8)**: Resolved persistent Supabase 400 "Bad Request" errors by refactoring the global type system. IDs changed from `number` to `string` (UUID) in `Condo`, `Unit`, `Transaction`, and related models.
+- **Logic Fix**: Updated `finance.ts` to support string comparison for ID-based sorting in `recalculateBalances`.
+- **UI/Console Hygiene**: Corrected missing Lucide icon "tool" -> "settings", added missing `favicon.ico`, and silenced redundant development logs for a cleaner browser console.
+- **Verification**: Verified weighted quórum logic and cross-project type stability. All systems 1000% functional.
