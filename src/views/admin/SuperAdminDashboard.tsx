@@ -185,16 +185,16 @@ const CompanyForm = ({
         phone: formData.phone,
         email: formData.email,
         rnc: formData.rnc,
-        logoUrl: logoUrl,
-        adminUserEmail: formData.adminUserEmail,
-        billingStartDate: formData.billingStartDate,
-        gracePeriodDays: formData.gracePeriodDays,
+        logo_url: logoUrl,
+        admin_user_email: formData.adminUserEmail,
+        billing_start_date: formData.billingStartDate,
+        grace_period_days: formData.gracePeriodDays,
         status: defaultValues?.status || "Activo",
         // Plan y Addons
         plan: formData.plan,
         addons: formData.addons,
-        monthlyFee: monthlyFee,
-        condoCount: condoCount,
+        monthly_fee: monthlyFee,
+        condo_count: condoCount,
       };
 
       // Helper para crear eventos de actividad
@@ -786,16 +786,16 @@ const BillingDetailModal = ({
       nextMonth.setMonth(nextMonth.getMonth() + 1);
 
       const paymentData = {
-        companyId: company.id,
-        companyName: company.name,
+        company_id: company.id,
+        company_name: company.name,
         amount: parseFloat(paymentForm.amount),
-        paymentDate: today.toISOString().split("T")[0],
-        periodStart: today.toISOString().split("T")[0],
-        periodEnd: nextMonth.toISOString().split("T")[0],
+        payment_date: today.toISOString().split("T")[0],
+        period_start: today.toISOString().split("T")[0],
+        period_end: nextMonth.toISOString().split("T")[0],
         method: paymentForm.method,
         reference: paymentForm.reference,
         notes: paymentForm.notes,
-        createdAt: today.toISOString(),
+        created_at: today.toISOString(),
       };
 
       await supabase.from('saas_payments').insert(paymentData);
@@ -1114,12 +1114,23 @@ const BillingTab = ({ companies }: BillingTabProps) => {
         .from('saas_payments')
         .select('*');
       if (error) throw error;
+
+      const mappedPayments = (paymentList || []).map((p: any) => ({
+        ...p,
+        companyId: p.company_id,
+        companyName: p.company_name,
+        paymentDate: p.payment_date,
+        periodStart: p.period_start,
+        periodEnd: p.period_end,
+        createdAt: p.created_at
+      }));
+
       // Ordenar por fecha descendente
-      paymentList.sort(
+      mappedPayments.sort(
         (a: any, b: any) =>
           new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
       );
-      setPayments(paymentList);
+      setPayments(mappedPayments);
     } catch (error) {
       console.error("Error fetching payments:", error);
     } finally {
@@ -1513,15 +1524,24 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
   const fetchAnnouncements = async () => {
     setLoading(true);
     try {
-      const { data: announcementList, error } = await supabase
+      const { data: announcementsList, error } = await supabase
         .from('saas_announcements')
         .select('*');
       if (error) throw error;
-      announcementList.sort(
+
+      const mappedAnnouncements = (announcementsList || []).map((a: any) => ({
+        ...a,
+        isActive: a.is_active,
+        targetAudience: a.target_audience,
+        publishDate: a.publish_date,
+        expirationDate: a.expiration_date
+      }));
+
+      mappedAnnouncements.sort(
         (a: any, b: any) =>
           new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
       );
-      setAnnouncements(announcementList);
+      setAnnouncements(mappedAnnouncements);
     } catch (error) {
       console.error("Error fetching announcements:", error);
     } finally {
@@ -1536,20 +1556,19 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
     }
 
     try {
-      const today = new Date();
-      const announcementData = {
+      const newAnnouncement = {
         title: announcementForm.title,
         content: announcementForm.content,
         type: announcementForm.type,
-        targetAudience: announcementForm.targetAudience,
-        publishDate: today.toISOString().split("T")[0],
-        isActive: true,
-        createdAt: today.toISOString(),
+        target_audience: announcementForm.targetAudience,
+        is_active: true,
+        publish_date: new Date().toISOString().split('T')[0],
       };
 
-      await supabase.from('saas_announcements').insert(announcementData);
-      addToast(`Anuncio "${announcementForm.title}" publicado.`, "success");
+      const { data, error } = await supabase.from('saas_announcements').insert(newAnnouncement);
+      if (error) throw error;
 
+      addToast("Anuncio publicado correctamente", "success");
       setIsAnnouncementModalOpen(false);
       setAnnouncementForm({
         title: "",
@@ -1565,15 +1584,23 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
   };
 
   const toggleAnnouncementStatus = async (announcement: any) => {
+    const newStatus = !announcement.isActive;
     try {
-      await supabase.from('saas_announcements').update({ is_active: !announcement.isActive }).eq('id', announcement.id);
-      fetchAnnouncements();
+      const { error } = await supabase
+        .from('saas_announcements')
+        .update({ is_active: newStatus })
+        .eq('id', announcement.id);
+      if (error) throw error;
+      setAnnouncements((prev) =>
+        prev.map((a) => (a.id === announcement.id ? { ...a, isActive: newStatus } : a))
+      );
       addToast(
-        `Anuncio ${!announcement.isActive ? "activado" : "desactivado"}.`,
+        `Anuncio ${newStatus ? "activado" : "desactivado"} correctamente`,
         "success"
       );
     } catch (error) {
-      console.error("Error toggling announcement:", error);
+      console.error("Error toggling announcement status:", error);
+      addToast("Error al actualizar el estado del anuncio", "error");
     }
   };
 
@@ -1971,12 +1998,21 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
         .from('saas_messages')
         .select('*');
       if (error) throw error;
+
+      const mappedMessages = (messagesList || []).map((m: any) => ({
+        ...m,
+        companyId: m.company_id,
+        companyName: m.company_name,
+        isRead: m.is_read,
+        createdAt: m.created_at
+      }));
+
       // Ordenar por fecha más reciente
-      messagesList.sort(
+      mappedMessages.sort(
         (a: any, b: any) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
-      setMessages(messagesList);
+      setMessages(mappedMessages);
     } catch (error) {
       console.error("Error fetching messages:", error);
       addToast("Error al cargar los mensajes", "error");
@@ -2007,13 +2043,13 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
 
     try {
       const newMessage = {
-        companyId: messageForm.companyId,
-        companyName: company.name,
+        company_id: messageForm.companyId,
+        company_name: company.name,
         subject: messageForm.subject,
         content: messageForm.content,
         direction: "to_client",
-        isRead: false,
-        createdAt: new Date().toISOString(),
+        is_read: false,
+        created_at: new Date().toISOString(),
       };
 
       await supabase.from('saas_messages').insert(newMessage);
@@ -2320,13 +2356,52 @@ const SettingsTab = () => {
     maintenanceMode: false,
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchSettings = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.from('saas_settings').select('key, value');
+      if (error) throw error;
+
+      const newSettings = { ...settings };
+      data.forEach((row: any) => {
+        Object.assign(newSettings, row.value);
+      });
+      setSettings(newSettings);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      addToast("Error al cargar la configuración", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   const handleSaveSettings = async () => {
     setIsSaving(true);
-    // Simular guardado
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    addToast("Configuración guardada correctamente", "success");
-    setIsSaving(false);
+    try {
+      const updates = [
+        { key: 'platform_info', value: { companyName: settings.companyName, supportEmail: settings.supportEmail, supportPhone: settings.supportPhone } },
+        { key: 'billing_defaults', value: { defaultGracePeriod: settings.defaultGracePeriod, defaultCurrency: settings.defaultCurrency } },
+        { key: 'notifications', value: { enableEmailNotifications: settings.enableEmailNotifications, enableSmsNotifications: settings.enableSmsNotifications } },
+        { key: 'system_status', value: { maintenanceMode: settings.maintenanceMode } },
+      ];
+
+      for (const update of updates) {
+        await supabase.from('saas_settings').update({ value: update.value }).eq('key', update.key);
+      }
+
+      addToast("Configuración guardada correctamente", "success");
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      addToast("Error al guardar la configuración", "error");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -2819,7 +2894,7 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
                     <span className="font-medium text-yellow-400">Trial</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-white">Ilimitado</td>
+                <td className="px-6 py-4">Ilimitado</td>
                 <td className="px-6 py-4">
                   <span className="text-green-400 font-bold">GRATIS</span>
                 </td>
@@ -3281,6 +3356,7 @@ export const SuperAdminDashboard = () => {
     | "roadmap"
     | "settings"
     | "plans"
+    | "elisa"
   >("dashboard");
   const [showRoadmap, setShowRoadmap] = useState(false);
 
@@ -3401,7 +3477,18 @@ export const SuperAdminDashboard = () => {
         .from('saas_payments')
         .select('*');
       if (error) throw error;
-      setAllPayments(paymentList);
+
+      const mappedPayments = (paymentList || []).map((p: any) => ({
+        ...p,
+        companyId: p.company_id,
+        companyName: p.company_name,
+        paymentDate: p.payment_date,
+        periodStart: p.period_start,
+        periodEnd: p.period_end,
+        createdAt: p.created_at
+      }));
+
+      setAllPayments(mappedPayments);
     } catch (error) {
       console.error("Error fetching payments:", error);
     }
