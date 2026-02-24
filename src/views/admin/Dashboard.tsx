@@ -6,7 +6,7 @@ import { CondoForm } from './forms/CondoForm';
 
 type CondoSelectorProps = {
     condos: Condo[];
-    onSelectCondo: (id: number) => void;
+    onSelectCondo: (id: string) => void;
     onLogout: () => void;
     onBack: () => void;
     onAddCondo: (data: any) => void; // This will be handled by the form now
