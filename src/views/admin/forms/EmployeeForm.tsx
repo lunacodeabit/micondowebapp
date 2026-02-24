@@ -36,7 +36,7 @@ export const EmployeeForm = ({ onSuccess, onCancel, defaultValues }: EmployeeFor
             if (defaultValues?.id) {
                 updatedEmployees = selectedCondo.employees.map(e => e.id === defaultValues.id ? { ...e, ...data } : e);
             } else {
-                updatedEmployees = [...selectedCondo.employees, { ...data, id: Date.now() }];
+                updatedEmployees = [...selectedCondo.employees, { ...data, id: Date.now().toString() }];
             }
             updateCondo({ ...selectedCondo, employees: updatedEmployees });
 

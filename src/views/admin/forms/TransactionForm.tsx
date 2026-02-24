@@ -9,7 +9,7 @@ import { useCondo } from '../../../context/CondoContext';
 import { useToast } from '../../../context/ToastContext';
 
 
-type TransactionFormData = Partial<Transaction> & { unitId?: number };
+type TransactionFormData = Partial<Transaction> & { unitId?: string };
 
 type TransactionFormProps = {
     onSuccess: () => void;
@@ -41,7 +41,7 @@ export const TransactionForm = ({ onSuccess, onCancel, defaultValues }: Transact
 
     useEffect(() => {
         if (isFeePayment && selectedUnitId && selectedCondo) {
-            const unit = selectedCondo.units.find(u => u.id === parseInt(selectedUnitId, 10));
+            const unit = selectedCondo.units.find(u => u.id === selectedUnitId);
             if (unit) {
                 setValue('amount', unit.monthlyFee);
                 const date = new Date(watch('date') + 'T00:00:00Z'); // Ensure correct date parsing
@@ -61,9 +61,9 @@ export const TransactionForm = ({ onSuccess, onCancel, defaultValues }: Transact
 
             const submitData: TransactionFormData = { ...data };
             if (isFeePayment && selectedUnitId) {
-                submitData.unitId = parseInt(selectedUnitId, 10);
+                submitData.unitId = selectedUnitId;
             }
-            
+
             const updatedCondo = { ...selectedCondo };
             let updatedFinances;
 
@@ -71,7 +71,7 @@ export const TransactionForm = ({ onSuccess, onCancel, defaultValues }: Transact
                 updatedFinances = selectedCondo.finances.map(tx => tx.id === defaultValues.id ? { ...tx, ...submitData } as Transaction : tx);
             } else {
                 const newTx: Transaction = {
-                    id: Date.now(),
+                    id: Date.now().toString(),
                     date: submitData.date!,
                     type: submitData.type!,
                     description: submitData.description!,
@@ -81,14 +81,14 @@ export const TransactionForm = ({ onSuccess, onCancel, defaultValues }: Transact
                 };
                 updatedFinances = [...selectedCondo.finances, newTx];
             }
-            
+
             updatedCondo.finances = updatedFinances;
 
             if (submitData.unitId && submitData.type === 'Ingreso') {
                 const unitIndex = updatedCondo.units.findIndex(u => u.id === submitData.unitId);
                 if (unitIndex !== -1) {
                     const newHistoryItem: AccountHistoryItem = {
-                        id: Date.now() + 1,
+                        id: (Date.now() + 1).toString(),
                         date: submitData.date!,
                         type: 'Abono',
                         description: 'Pago cuota',
@@ -97,7 +97,7 @@ export const TransactionForm = ({ onSuccess, onCancel, defaultValues }: Transact
                     updatedCondo.units[unitIndex].accountHistory.push(newHistoryItem);
                 }
             }
-            
+
             updateCondo(updatedCondo);
             addToast(`Transacción ${defaultValues?.id ? 'actualizada' : 'creada'} con éxito.`, 'success');
             onSuccess();
@@ -121,13 +121,13 @@ export const TransactionForm = ({ onSuccess, onCancel, defaultValues }: Transact
 
             {transactionType === 'Ingreso' && (
                 <div className="flex items-center gap-2 bg-neutral-800 p-3 rounded-md">
-                    <input type="checkbox" id="isFeePayment" checked={isFeePayment} onChange={(e) => setIsFeePayment(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"/>
+                    <input type="checkbox" id="isFeePayment" checked={isFeePayment} onChange={(e) => setIsFeePayment(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                     <label htmlFor="isFeePayment" className="text-sm text-neutral-300">Es un pago de cuota de mantenimiento</label>
                 </div>
             )}
-            
+
             {isFeePayment && transactionType === 'Ingreso' && (
-                 <FormCommon.Group label="Unidad" htmlFor="unitSelect">
+                <FormCommon.Group label="Unidad" htmlFor="unitSelect">
                     <FormCommon.Select id="unitSelect" value={selectedUnitId} onChange={(e) => setSelectedUnitId(e.target.value)}>
                         <option value="">Seleccione una unidad</option>
                         {selectedCondo?.units.filter(u => u.status === 'Activo').map(unit => (
@@ -145,20 +145,20 @@ export const TransactionForm = ({ onSuccess, onCancel, defaultValues }: Transact
                     <FormCommon.Input type="number" step="0.01" id="amount" {...register('amount', { required: 'El monto es requerido', valueAsNumber: true })} disabled={isFeePayment} />
                 </FormCommon.Group>
             </div>
-            
+
             <FormCommon.Group label="Descripción" htmlFor="description" error={errors.description?.message}>
                 <FormCommon.Input id="description" {...register('description', { required: 'La descripción es requerida' })} disabled={isFeePayment} />
             </FormCommon.Group>
 
             {transactionType === 'Egreso' && (
-                 <FormCommon.Group label="Categoría" htmlFor="category">
+                <FormCommon.Group label="Categoría" htmlFor="category">
                     <FormCommon.Select id="category" {...register('category')}>
                         <option value="">Sin Categoría</option>
                         {expenseCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </FormCommon.Select>
                 </FormCommon.Group>
             )}
-            
+
             <div className="flex justify-end gap-4 pt-4">
                 <FormCommon.Button type="button" variant="secondary" onClick={onCancel}>Cancelar</FormCommon.Button>
                 <FormCommon.Button type="submit" isLoading={isLoading}>Guardar Transacción</FormCommon.Button>

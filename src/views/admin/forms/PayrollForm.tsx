@@ -61,7 +61,7 @@ export const PayrollForm = ({ onSuccess, onCancel }: PayrollFormProps) => {
             const periodLabel = `${data.fortnight === 1 ? '1ra' : '2da'} Quincena ${monthName} ${data.year}`;
 
             const newPayroll: Payroll = {
-                id: Date.now(),
+                id: Date.now().toString(),
                 year: data.year,
                 month: data.month,
                 fortnight: data.fortnight,
@@ -70,7 +70,7 @@ export const PayrollForm = ({ onSuccess, onCancel }: PayrollFormProps) => {
                 status: 'Abierta',
                 payments
             };
-            
+
             updateCondo({ ...selectedCondo, payrolls: [newPayroll, ...selectedCondo.payrolls] });
             addToast('Nómina generada con éxito.', 'success');
             onSuccess();
@@ -97,19 +97,19 @@ export const PayrollForm = ({ onSuccess, onCancel }: PayrollFormProps) => {
                         {years.map(y => <option key={y} value={y}>{y}</option>)}
                     </FormCommon.Select>
                 </FormCommon.Group>
-                 <FormCommon.Group label="Mes" htmlFor="month">
+                <FormCommon.Group label="Mes" htmlFor="month">
                     <FormCommon.Select id="month" {...register('month', { valueAsNumber: true })}>
                         {months.map((m, i) => <option key={i} value={i}>{m}</option>)}
                     </FormCommon.Select>
                 </FormCommon.Group>
             </div>
-             <FormCommon.Group label="Tipo de Período" htmlFor="periodType">
+            <FormCommon.Group label="Tipo de Período" htmlFor="periodType">
                 <FormCommon.Select id="periodType" {...register('periodType')}>
                     <option value="Quincenal">Quincenal</option>
                     <option value="Mensual">Mensual</option>
                 </FormCommon.Select>
             </FormCommon.Group>
-             <FormCommon.Group label="Quincena" htmlFor="fortnight">
+            <FormCommon.Group label="Quincena" htmlFor="fortnight">
                 <FormCommon.Select id="fortnight" {...register('fortnight', { valueAsNumber: true })}>
                     <option value={1}>1ra Quincena</option>
                     <option value={2}>2da Quincena</option>

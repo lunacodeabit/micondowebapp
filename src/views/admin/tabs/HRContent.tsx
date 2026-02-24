@@ -25,7 +25,7 @@ const EmployeesTab = () => {
         setEditingEmployee(null);
         setIsModalOpen(false);
     };
-    
+
     if (!selectedCondo) return null;
 
     // --- AIRBAG ---
@@ -59,7 +59,7 @@ const EmployeesTab = () => {
                     </tbody>
                 </table>
             </div>
-             <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingEmployee ? 'Editar Empleado' : 'Nuevo Empleado'}>
+            <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingEmployee ? 'Editar Empleado' : 'Nuevo Empleado'}>
                 <EmployeeForm onSuccess={handleCloseModal} onCancel={handleCloseModal} defaultValues={editingEmployee || { status: 'Activo' }} />
             </Modal>
         </div>
@@ -77,7 +77,7 @@ const PayrollsTab = () => {
 
     const handleCloseAndPayPayroll = (payroll: Payroll) => {
         if (!selectedCondo || payroll.status !== 'Abierta') return;
-        
+
         if (!window.confirm(`¿Está seguro que desea cerrar y pagar la nómina "${payroll.periodLabel}"? Esta acción registrará un egreso y no se puede deshacer.`)) {
             return;
         }
@@ -87,7 +87,7 @@ const PayrollsTab = () => {
         const totalPayrollAmount = paymentsSafe.reduce((acc: number, p: any) => acc + p.netPay, 0);
 
         const newExpense: Transaction = {
-            id: Date.now(),
+            id: Date.now().toString(),
             date: getLocalDateString(),
             type: 'Egreso',
             description: `Pago Nómina - ${payroll.periodLabel}`,
@@ -106,7 +106,7 @@ const PayrollsTab = () => {
         updateCondo({ ...selectedCondo, payrolls: updatedPayrolls as any, finances: updatedFinances as any });
         addToast('Nómina cerrada y pagada con éxito.', 'success');
     };
-    
+
     if (!selectedCondo) return null;
 
     return (
@@ -118,13 +118,13 @@ const PayrollsTab = () => {
             </div>
             <div className="bg-neutral-900 rounded-lg shadow-md overflow-x-auto">
                 <table className="min-w-full">
-                     <thead className="bg-neutral-800">
+                    <thead className="bg-neutral-800">
                         <tr>
                             {['Período', 'Tipo', 'Estado', 'Acciones'].map(h => <th key={h} className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">{h}</th>)}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-800">
-                       {payrolls.map((p: any) => (
+                        {payrolls.map((p: any) => (
                             <tr key={p.id}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{p.periodLabel}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{p.periodType}</td>
@@ -132,8 +132,8 @@ const PayrollsTab = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm flex items-center gap-4">
                                     <button onClick={() => setViewingPayroll(p)} className="text-blue-500 hover:text-blue-400">Ver Detalles</button>
                                     {p.status === 'Abierta' && (
-                                        <button 
-                                            onClick={() => handleCloseAndPayPayroll(p)} 
+                                        <button
+                                            onClick={() => handleCloseAndPayPayroll(p)}
                                             className="text-green-500 hover:text-green-400 font-semibold"
                                             title="Cerrar la nómina y registrar el egreso en finanzas"
                                         >
@@ -203,11 +203,11 @@ const SuppliersTab = () => {
     return (
         <div>
             <div className="flex justify-end mb-4">
-                 <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
                     <Icon name="plus" size={18} /><span>Añadir Proveedor</span>
                 </button>
             </div>
-             <div className="bg-neutral-900 rounded-lg shadow-md overflow-x-auto">
+            <div className="bg-neutral-900 rounded-lg shadow-md overflow-x-auto">
                 <table className="min-w-full">
                     <thead className="bg-neutral-800">
                         <tr>
@@ -215,7 +215,7 @@ const SuppliersTab = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-800">
-                       {suppliers.map((s: any) => (
+                        {suppliers.map((s: any) => (
                             <tr key={s.id}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{s.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{s.serviceType}</td>
@@ -231,7 +231,7 @@ const SuppliersTab = () => {
                     </tbody>
                 </table>
             </div>
-             <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingSupplier ? 'Editar Proveedor' : 'Nuevo Proveedor'}>
+            <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingSupplier ? 'Editar Proveedor' : 'Nuevo Proveedor'}>
                 <SupplierForm onSuccess={handleCloseModal} onCancel={handleCloseModal} defaultValues={editingSupplier || { status: 'Activo' }} />
             </Modal>
         </div>
@@ -250,7 +250,7 @@ export const HRContent = () => {
             default: return null;
         }
     };
-    
+
     const tabs = [
         { id: 'employees', label: 'Empleados' },
         { id: 'payrolls', label: 'Nóminas' },
@@ -261,7 +261,7 @@ export const HRContent = () => {
         <div>
             <h2 className="text-2xl font-bold text-white mb-6">Recursos Humanos</h2>
             <div className="border-b border-neutral-800 mb-6">
-                 <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                <nav className="-mb-px flex space-x-6" aria-label="Tabs">
                     {tabs.map(tab => (
                         <button key={tab.id} onClick={() => setActiveSubTab(tab.id)}
                             className={`${activeSubTab === tab.id

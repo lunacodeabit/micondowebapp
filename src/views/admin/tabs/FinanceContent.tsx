@@ -38,12 +38,12 @@ const TransactionsTab = ({ initialAction, clearInitialAction }: Omit<FinanceCont
         setEditingTx(null);
         setIsModalOpen(false);
     };
-    
+
     const filteredTransactions = useMemo(() => {
         if (!selectedCondo) return [];
         const finances = (selectedCondo.finances as unknown as any[]) || [];
         let transactions = [...finances];
-        
+
         if (filter !== 'all') {
             transactions = transactions.filter((tx: any) => tx.type === filter);
         }
@@ -59,14 +59,14 @@ const TransactionsTab = ({ initialAction, clearInitialAction }: Omit<FinanceCont
     if (!selectedCondo) return null;
 
     return (
-         <div>
+        <div>
             <div className="flex justify-end mb-4">
                 <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
                     <Icon name="plus" size={18} />
                     <span>Nueva Transacción</span>
                 </button>
             </div>
-            
+
             <div className="flex flex-wrap justify-between items-center gap-y-4 gap-x-6 mb-4 p-4 bg-neutral-900 rounded-lg">
                 <div className="flex items-center flex-wrap gap-4">
                     <span className="font-semibold text-sm flex-shrink-0">Filtrar por Tipo:</span>
@@ -78,9 +78,9 @@ const TransactionsTab = ({ initialAction, clearInitialAction }: Omit<FinanceCont
                 </div>
                 <div className="flex items-center flex-wrap gap-2">
                     <label htmlFor="startDate" className="text-sm font-semibold flex-shrink-0">Fechas:</label>
-                    <input type="date" id="startDate" value={dateRange.start} onChange={e => setDateRange(prev => ({...prev, start: e.target.value }))} className="bg-neutral-800 border border-neutral-700 rounded-md px-3 py-1.5 text-white text-sm" />
+                    <input type="date" id="startDate" value={dateRange.start} onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))} className="bg-neutral-800 border border-neutral-700 rounded-md px-3 py-1.5 text-white text-sm" />
                     <span className="text-neutral-500">a</span>
-                    <input type="date" id="endDate" value={dateRange.end} onChange={e => setDateRange(prev => ({...prev, end: e.target.value }))} className="bg-neutral-800 border border-neutral-700 rounded-md px-3 py-1.5 text-white text-sm" />
+                    <input type="date" id="endDate" value={dateRange.end} onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))} className="bg-neutral-800 border border-neutral-700 rounded-md px-3 py-1.5 text-white text-sm" />
                     <button onClick={() => setDateRange({ start: '', end: '' })} title="Limpiar filtro de fechas" className="flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 text-white font-semibold p-2 rounded-lg text-sm">
                         <Icon name="x" size={16} />
                     </button>
@@ -89,7 +89,7 @@ const TransactionsTab = ({ initialAction, clearInitialAction }: Omit<FinanceCont
 
             <div className="bg-neutral-900 rounded-lg shadow-md overflow-x-auto">
                 <table className="min-w-full">
-                     <thead className="bg-neutral-800">
+                    <thead className="bg-neutral-800">
                         <tr>
                             {['Fecha', 'Descripción', 'Categoría', 'Monto', 'Balance', 'Acciones'].map(h => (
                                 <th key={h} className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">{h}</th>
@@ -97,26 +97,26 @@ const TransactionsTab = ({ initialAction, clearInitialAction }: Omit<FinanceCont
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-800">
-                       {filteredTransactions.map((tx: any) => (
-                           <tr key={tx.id} className="hover:bg-neutral-800/50">
-                               <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{formatDate(tx.date)}</td>
-                               <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{tx.description}</td>
-                               <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-400">{tx.category || 'N/A'}</td>
-                               <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${tx.type === 'Ingreso' ? 'text-green-400' : 'text-red-400'}`}>
-                                   {tx.type === 'Ingreso' ? '+' : '-'} RD$ {Math.abs(tx.amount).toLocaleString()}
+                        {filteredTransactions.map((tx: any) => (
+                            <tr key={tx.id} className="hover:bg-neutral-800/50">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{formatDate(tx.date)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{tx.description}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-400">{tx.category || 'N/A'}</td>
+                                <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${tx.type === 'Ingreso' ? 'text-green-400' : 'text-red-400'}`}>
+                                    {tx.type === 'Ingreso' ? '+' : '-'} RD$ {Math.abs(tx.amount).toLocaleString()}
                                 </td>
-                               <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">RD$ {tx.balance.toLocaleString()}</td>
-                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                   <button onClick={() => handleOpenModal(tx)} className="text-blue-500 hover:text-blue-400">Editar</button>
-                               </td>
-                           </tr>
-                       ))}
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">RD$ {tx.balance.toLocaleString()}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button onClick={() => handleOpenModal(tx)} className="text-blue-500 hover:text-blue-400">Editar</button>
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
-                 {filteredTransactions.length === 0 && <p className="text-center text-neutral-400 py-8">No hay transacciones para mostrar.</p>}
+                {filteredTransactions.length === 0 && <p className="text-center text-neutral-400 py-8">No hay transacciones para mostrar.</p>}
             </div>
 
-             <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingTx ? 'Editar Transacción' : 'Nueva Transacción'}>
+            <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingTx ? 'Editar Transacción' : 'Nueva Transacción'}>
                 <TransactionForm onSuccess={handleCloseModal} onCancel={handleCloseModal} defaultValues={editingTx || { type: 'Ingreso' }} />
             </Modal>
         </div>
@@ -140,7 +140,7 @@ const ExtraordinaryFeesTab = () => {
         // --- CORRECCIÓN CRÍTICA: Forzamos unidades a lista ---
         const unitsSafe = (selectedCondo.units as unknown as any[]) || [];
         const activeUnits = unitsSafe.filter((u: any) => u.status === 'Activo');
-        
+
         if (activeUnits.length === 0) {
             addToast('No hay unidades activas para aplicar la cuota.', 'info');
             return;
@@ -150,7 +150,7 @@ const ExtraordinaryFeesTab = () => {
         const updatedUnits = unitsSafe.map((unit: any) => {
             if (unit.status === 'Activo') {
                 const newCharge: AccountHistoryItem = {
-                    id: Date.now() + unit.id,
+                    id: `${Date.now()}-${unit.id}`,
                     date: fee.issueDate,
                     type: 'Cargo',
                     description: fee.title,
@@ -166,7 +166,7 @@ const ExtraordinaryFeesTab = () => {
         updateCondo({ ...selectedCondo, units: updatedUnits as any, extraordinaryFees: updatedFees as any });
         addToast(`Cuota aplicada a ${activeUnits.length} unidades.`, 'success');
     };
-    
+
     const handleSuccess = () => {
         setIsModalOpen(false);
         setEditingFee(null);
@@ -234,7 +234,7 @@ const PaymentNotificationsTab = () => {
 
     const handleConfirmPayment = (notification: PaymentNotification) => {
         if (!selectedCondo) return;
-        
+
         const unitsSafe = (selectedCondo.units as unknown as any[]) || [];
         const unit = unitsSafe.find((u: any) => u.id === notification.unitId);
         if (!unit) {
@@ -243,17 +243,17 @@ const PaymentNotificationsTab = () => {
         }
 
         const newTransaction: Transaction = {
-            id: Date.now(),
+            id: Date.now().toString(),
             date: notification.paymentDate,
             type: 'Ingreso',
             description: `Pago reportado por Residente - ${unit.ownerName} (Apto ${unit.apartmentNumber})`,
             amount: notification.amount,
             category: 'Pago de Cuota',
-            balance: 0, 
+            balance: 0,
         };
 
         const newAccountHistoryItem: AccountHistoryItem = {
-            id: Date.now() + 1,
+            id: (Date.now() + 1).toString(),
             date: notification.paymentDate,
             type: 'Abono',
             description: notification.notes || 'Pago reportado por residente',
@@ -266,7 +266,7 @@ const PaymentNotificationsTab = () => {
 
         const financesSafe = (selectedCondo.finances as unknown as any[]) || [];
         const updatedCondoData = { ...selectedCondo };
-        
+
         updatedCondoData.finances = [...financesSafe, newTransaction] as any;
         updatedCondoData.units = unitsSafe.map((u: any) =>
             u.id === unit.id ? { ...u, accountHistory: [...((u.accountHistory as unknown as any[]) || []), newAccountHistoryItem] as any } : u
@@ -277,7 +277,7 @@ const PaymentNotificationsTab = () => {
         addToast('Pago confirmado y registrado con éxito.', 'success');
     };
 
-    const handleRejectPayment = (notificationId: number) => {
+    const handleRejectPayment = (notificationId: string) => {
         if (!selectedCondo) return;
         const updatedNotifications = notificationsSafe.map((n: any) =>
             n.id === notificationId ? { ...n, status: 'Rechazado' as 'Rechazado' } : n
@@ -285,7 +285,7 @@ const PaymentNotificationsTab = () => {
         updateCondo({ ...selectedCondo, paymentNotifications: updatedNotifications as any });
         addToast('Notificación de pago rechazada.', 'info');
     };
-    
+
     if (!selectedCondo) return null;
 
     const pendingNotifications = notificationsSafe.filter((n: any) => n.status === 'Pendiente').sort((a: any, b: any) => new Date(b.dateReported).getTime() - new Date(a.dateReported).getTime());
@@ -293,7 +293,7 @@ const PaymentNotificationsTab = () => {
     return (
         <div>
             {pendingNotifications.length === 0 ? (
-                 <div className="text-center py-10 px-6 bg-neutral-900 rounded-lg">
+                <div className="text-center py-10 px-6 bg-neutral-900 rounded-lg">
                     <Icon name="check-circle-2" className="mx-auto h-12 w-12 text-green-500" />
                     <h3 className="mt-2 text-lg font-medium text-white">Bandeja de entrada limpia</h3>
                     <p className="mt-1 text-sm text-neutral-400">No hay nuevas notificaciones de pago pendientes de revisión.</p>
@@ -312,25 +312,26 @@ const PaymentNotificationsTab = () => {
                             {pendingNotifications.map((notif: any) => {
                                 const unit = ((selectedCondo.units as unknown as any[]) || []).find((u: any) => u.id === notif.unitId);
                                 return (
-                                <tr key={notif.id} className="hover:bg-neutral-800/50">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{unit?.apartmentNumber}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{unit?.ownerName}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{formatDate(notif.paymentDate)}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-semibold">RD$ {notif.amount.toLocaleString()}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={notif.status} /></td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-4">
-                                        <button onClick={() => setViewingNotification(notif)} className="text-blue-500 hover:text-blue-400">
-                                            Ver Comprobante
-                                        </button>
-                                        <button onClick={() => handleConfirmPayment(notif)} className="text-green-500 hover:text-green-400">
-                                            Confirmar
-                                        </button>
-                                        <button onClick={() => handleRejectPayment(notif.id)} className="text-red-500 hover:text-red-400">
-                                            Rechazar
-                                        </button>
-                                    </td>
-                                </tr>
-                            )})}
+                                    <tr key={notif.id} className="hover:bg-neutral-800/50">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{unit?.apartmentNumber}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{unit?.ownerName}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{formatDate(notif.paymentDate)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-semibold">RD$ {notif.amount.toLocaleString()}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={notif.status} /></td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-4">
+                                            <button onClick={() => setViewingNotification(notif)} className="text-blue-500 hover:text-blue-400">
+                                                Ver Comprobante
+                                            </button>
+                                            <button onClick={() => handleConfirmPayment(notif)} className="text-green-500 hover:text-green-400">
+                                                Confirmar
+                                            </button>
+                                            <button onClick={() => handleRejectPayment(notif.id)} className="text-red-500 hover:text-red-400">
+                                                Rechazar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -403,7 +404,7 @@ export const FinanceContent = (props: FinanceContentProps) => {
                     ))}
                 </nav>
             </div>
-            
+
             {activeSubTab === 'transactions' && <TransactionsTab {...props} />}
             {activeSubTab === 'extraordinaryFees' && <ExtraordinaryFeesTab />}
             {activeSubTab === 'paymentNotifications' && <PaymentNotificationsTab />}

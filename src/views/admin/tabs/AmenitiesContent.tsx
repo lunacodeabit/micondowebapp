@@ -27,16 +27,16 @@ export const AmenitiesContent = () => {
         setEditingAmenity(null);
         setIsAmenityModalOpen(false);
     };
-    
-    const handleUpdateReservationStatus = (reservationId: number, status: Reservation['status']) => {
+
+    const handleUpdateReservationStatus = (reservationId: string, status: Reservation['status']) => {
         if (!selectedCondo) return;
-        const updatedReservations = selectedCondo.reservations.map(r => 
+        const updatedReservations = selectedCondo.reservations.map(r =>
             r.id === reservationId ? { ...r, status } : r
         );
         updateCondo({ ...selectedCondo, reservations: updatedReservations });
     };
 
-    const getReservationsForAmenity = (amenityId: number) => {
+    const getReservationsForAmenity = (amenityId: string) => {
         if (!selectedCondo) return [];
         return selectedCondo.reservations
             .filter(r => r.amenityId === amenityId)
@@ -47,7 +47,7 @@ export const AmenitiesContent = () => {
         setAmenityForNewReservation(amenity);
         setIsReservationFormOpen(true);
     };
-    
+
     const handleCloseReservationForm = () => {
         setAmenityForNewReservation(null);
         setIsReservationFormOpen(false);
@@ -75,15 +75,15 @@ export const AmenitiesContent = () => {
                 {selectedCondo.amenities.map(amenity => (
                     <div key={amenity.id} className="bg-neutral-900 rounded-lg shadow-md p-6 flex flex-col">
                         <div className="flex-1">
-                             <h3 className="text-xl font-bold text-white mb-2">{amenity.name}</h3>
-                             <p className="text-neutral-400 text-sm mb-4">{amenity.description}</p>
-                             <div className="text-sm space-y-2 mb-4">
+                            <h3 className="text-xl font-bold text-white mb-2">{amenity.name}</h3>
+                            <p className="text-neutral-400 text-sm mb-4">{amenity.description}</p>
+                            <div className="text-sm space-y-2 mb-4">
                                 <p><Icon name="users" size={16} className="inline mr-2" /> Capacidad: {amenity.capacity} personas</p>
                                 <p><Icon name="dollar-sign" size={16} className="inline mr-2" /> Costo: RD$ {amenity.fee.toLocaleString()}</p>
                             </div>
                         </div>
                         <div className="mt-4 flex gap-2">
-                             <button onClick={() => setViewingReservations(amenity)} className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm">
+                            <button onClick={() => setViewingReservations(amenity)} className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm">
                                 Ver Reservas
                             </button>
                             <button onClick={() => handleOpenAmenityModal(amenity)} className="flex-1 text-center bg-neutral-700 hover:bg-neutral-600 text-white font-semibold py-2 px-4 rounded-lg text-sm">
@@ -136,7 +136,7 @@ export const AmenitiesContent = () => {
 
             <Modal isOpen={isReservationFormOpen} onClose={handleCloseReservationForm} title={`Nueva Reserva para ${amenityForNewReservation?.name}`}>
                 {amenityForNewReservation && (
-                    <ReservationForm 
+                    <ReservationForm
                         onSuccess={handleReservationSuccess}
                         onCancel={handleCloseReservationForm}
                         units={selectedCondo.units.filter(u => u.status === 'Activo')}

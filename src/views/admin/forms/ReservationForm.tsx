@@ -13,7 +13,7 @@ type ReservationFormProps = {
     onSuccess: () => void;
     onCancel: () => void;
     units: Unit[];
-    amenityId: number;
+    amenityId: string;
     defaultValues?: Partial<ReservationFormData>;
 };
 
@@ -45,15 +45,15 @@ export const ReservationForm = ({ onSuccess, onCancel, units, amenityId, default
 
             const newReservation: Reservation = {
                 ...data,
-                id: Date.now(),
+                id: Date.now().toString(),
                 amenityId: amenityId,
-                unitId: Number(data.unitId)
+                unitId: data.unitId
             };
-    
+
             const updatedReservations = [...selectedCondo.reservations, newReservation];
             updateCondo({ ...selectedCondo, reservations: updatedReservations });
             onSuccess();
-        } catch(error) {
+        } catch (error) {
             addToast('Error al crear la reserva.', 'error');
         } finally {
             setIsLoading(false);
@@ -64,7 +64,7 @@ export const ReservationForm = ({ onSuccess, onCancel, units, amenityId, default
         // 2. SINTAXIS CORREGIDA
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
             <FormCommon.Group label="Unidad" htmlFor="unitId" error={errors.unitId?.message}>
-                <FormCommon.Select id="unitId" {...register('unitId', { required: 'Debe seleccionar una unidad', valueAsNumber: true })}>
+                <FormCommon.Select id="unitId" {...register('unitId', { required: 'Debe seleccionar una unidad' })}>
                     <option value="">Seleccione una unidad...</option>
                     {units.map(unit => (
                         <option key={unit.id} value={unit.id}>
@@ -99,8 +99,8 @@ export const ReservationForm = ({ onSuccess, onCancel, units, amenityId, default
                     />
                 </FormCommon.Group>
             </div>
-            
-             <FormCommon.Group label="Estado" htmlFor="status">
+
+            <FormCommon.Group label="Estado" htmlFor="status">
                 <FormCommon.Select id="status" {...register('status')}>
                     <option value="Aprobada">Aprobada</option>
                     <option value="Pendiente">Pendiente</option>

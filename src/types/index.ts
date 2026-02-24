@@ -21,7 +21,7 @@ export type Transaction = {
 };
 
 export type AccountHistoryItem = {
-  id: number;
+  id: string;
   date: string;
   type: "Cargo" | "Abono";
   description: string;
@@ -106,7 +106,7 @@ export type AccountPayable = {
   description: string;
   status: "Pagada" | "Pendiente";
   paymentDate: string | null;
-  relatedExpenseId: number | null;
+  relatedExpenseId: string | null;
 };
 
 export type Employee = {
@@ -133,7 +133,7 @@ export type Supplier = {
 };
 
 export type PayrollPayment = {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   netPay: number;
   incomeDetails: { concept: string; amount: number }[]; // ✅ LISTA DE INGRESOS
@@ -162,8 +162,8 @@ export type Amenity = {
 
 export type Reservation = {
   id: string;
-  unitId: number;
-  amenityId: number;
+  unitId: string;
+  amenityId: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -171,7 +171,7 @@ export type Reservation = {
 };
 
 export type ManagementHistoryItem = {
-  id: number;
+  id: string;
   date: string;
   type: "Comentario" | "Acción";
   content: string;
@@ -213,7 +213,7 @@ export type ExtraordinaryFee = {
 
 export type PaymentNotification = {
   id: string;
-  unitId: number;
+  unitId: string;
   dateReported: string;
   paymentDate: string;
   amount: number;

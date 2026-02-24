@@ -36,7 +36,7 @@ export const SupplierForm = ({ onSuccess, onCancel, defaultValues }: SupplierFor
             if (defaultValues?.id) {
                 updatedSuppliers = selectedCondo.suppliers.map(s => s.id === defaultValues.id ? { ...s, ...data } : s);
             } else {
-                updatedSuppliers = [...selectedCondo.suppliers, { ...data, id: Date.now() }];
+                updatedSuppliers = [...selectedCondo.suppliers, { ...data, id: Date.now().toString() }];
             }
             updateCondo({ ...selectedCondo, suppliers: updatedSuppliers });
 
@@ -74,7 +74,7 @@ export const SupplierForm = ({ onSuccess, onCancel, defaultValues }: SupplierFor
                     <FormCommon.Input id="rnc" {...register('rnc')} />
                 </FormCommon.Group>
             </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormCommon.Group label="Estado" htmlFor="status">
                     <FormCommon.Select id="status" {...register('status')}>
                         <option value="Activo">Activo</option>

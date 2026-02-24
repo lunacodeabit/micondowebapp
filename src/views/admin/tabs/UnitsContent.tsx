@@ -12,11 +12,11 @@ import { useToast } from '../../../context/ToastContext';
 const UnitAccountHistory = ({ unit }: { unit: Unit }) => {
     const { selectedCondo, updateCondo } = useCondo();
     const { addToast } = useToast();
-    
+
     // --- AIRBAG: Historial ---
     const history = (unit.accountHistory as unknown as any[]) || [];
     const balance = history.reduce((acc: number, item: any) => acc + (item.type === 'Cargo' ? item.amount : -item.amount), 0);
-    
+
     const [isPaymentFormVisible, setIsPaymentFormVisible] = useState(false);
     const [paymentAmount, setPaymentAmount] = useState<number | string>('');
     const [paymentDescription, setPaymentDescription] = useState('Pago cuota');
@@ -31,11 +31,11 @@ const UnitAccountHistory = ({ unit }: { unit: Unit }) => {
         if (Number(paymentAmount) > 0) {
             // --- CORRECCIÓN 1: FORZAR LISTA DE UNIDADES ---
             const unitsSafe = (selectedCondo.units as unknown as any[]) || [];
-            
+
             const updatedUnits = unitsSafe.map((u: any) => {
                 if (u.id === unit.id) {
-                    const newHistoryItem: AccountHistoryItem = { 
-                        id: Date.now(),
+                    const newHistoryItem: AccountHistoryItem = {
+                        id: Date.now().toString(),
                         date: new Date().toISOString(),
                         type: 'Abono',
                         description: paymentDescription,
@@ -45,7 +45,7 @@ const UnitAccountHistory = ({ unit }: { unit: Unit }) => {
                 }
                 return u;
             });
-            
+
             // Forzamos el guardado ignorando el tipo erroneo de Condo
             updateCondo({ ...selectedCondo, units: updatedUnits as any });
 
@@ -55,11 +55,11 @@ const UnitAccountHistory = ({ unit }: { unit: Unit }) => {
             addToast('Pago registrado con éxito.', 'success');
         }
     };
-    
+
     return (
         <div className="mt-4 p-4 bg-neutral-800 rounded-lg">
-             <h4 className="text-lg font-semibold mb-2">Historial de Cuenta</h4>
-             <table className="min-w-full text-sm">
+            <h4 className="text-lg font-semibold mb-2">Historial de Cuenta</h4>
+            <table className="min-w-full text-sm">
                 <thead>
                     <tr>
                         <th className="text-left py-2 px-3">Fecha</th>
@@ -85,7 +85,7 @@ const UnitAccountHistory = ({ unit }: { unit: Unit }) => {
                     </tr>
                 </tfoot>
             </table>
-            
+
             {isPaymentFormVisible ? (
                 <div className="mt-4 pt-4 border-t border-neutral-700 space-y-2">
                     <input type="number" value={paymentAmount} onChange={e => setPaymentAmount(parseFloat(e.target.value))} placeholder="Monto" className="w-full bg-neutral-700 p-2 rounded" />
@@ -96,7 +96,7 @@ const UnitAccountHistory = ({ unit }: { unit: Unit }) => {
                     </div>
                 </div>
             ) : (
-                 <button onClick={handleAddPaymentClick} className="mt-4 text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-3 rounded-md">
+                <button onClick={handleAddPaymentClick} className="mt-4 text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-3 rounded-md">
                     Registrar Pago
                 </button>
             )}
@@ -139,15 +139,15 @@ export const UnitsContent = () => {
         const monthName = today.toLocaleString('es-ES', { month: 'long' });
 
         let unitsCharged = 0;
-        
+
         // --- CORRECCIÓN 2: FORZAR LISTA ---
         const unitsSafe = (selectedCondo.units as unknown as any[]) || [];
 
         const updatedUnits = unitsSafe.map((unit: any) => {
             if (unit.status === 'Activo') {
                 const history = (unit.accountHistory as unknown as any[]) || [];
-                const alreadyCharged = history.some((item: any) => 
-                    item.type === 'Cargo' && 
+                const alreadyCharged = history.some((item: any) =>
+                    item.type === 'Cargo' &&
                     item.description.toLowerCase().includes(monthName.toLowerCase()) &&
                     item.description.includes(String(year))
                 );
@@ -155,7 +155,7 @@ export const UnitsContent = () => {
                 if (!alreadyCharged) {
                     unitsCharged++;
                     const newCharge: AccountHistoryItem = {
-                        id: Date.now() + unitsCharged,
+                        id: (Date.now() + unitsCharged).toString(),
                         date: new Date(year, month, 1).toISOString(),
                         type: 'Cargo',
                         description: `Cuota Mantenimiento ${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`,
@@ -166,7 +166,7 @@ export const UnitsContent = () => {
             }
             return unit;
         });
-        
+
         if (unitsCharged > 0) {
             updateCondo({ ...selectedCondo, units: updatedUnits as any });
             addToast(`Se han generado cargos de mantenimiento para ${unitsCharged} unidades.`, 'success');
@@ -174,7 +174,7 @@ export const UnitsContent = () => {
             addToast('Todas las unidades activas ya tienen el cargo para el mes actual.', 'info');
         }
     };
-    
+
     const handleApplyLateFees = () => {
         if (!selectedCondo) return;
         // Check safe access
@@ -183,17 +183,17 @@ export const UnitsContent = () => {
             addToast("La aplicación de moras no está activada en la configuración.", 'info');
             return;
         }
-        
+
         const { gracePeriodDays, type, value, chargeConcept } = lateFees;
 
         const today = new Date();
         const currentDay = today.getDate();
-        
+
         if (currentDay <= gracePeriodDays) {
             addToast(`Las moras solo se aplican después del día ${gracePeriodDays} del mes.`, 'info');
             return;
         }
-        
+
         if (!window.confirm("Esto aplicará cargos por mora a todas las unidades con balance vencido del mes anterior. ¿Desea continuar?")) {
             return;
         }
@@ -206,10 +206,10 @@ export const UnitsContent = () => {
         const prevMonthYear = prevMonthDate.getFullYear();
 
         let unitsCharged = 0;
-        
+
         // --- CORRECCIÓN 3: FORZAR LISTA ---
         const unitsSafe = (selectedCondo.units as unknown as any[]) || [];
-        
+
         const activeUnits = unitsSafe.filter((u: any) => u.status === 'Activo');
 
         const updatedUnits = activeUnits.map((unit: any) => {
@@ -220,7 +220,7 @@ export const UnitsContent = () => {
             if (alreadyCharged) {
                 return unit;
             }
-            
+
             const debtBalance = history
                 .filter((item: any) => new Date(item.date) <= endOfPrevMonth)
                 .reduce((acc: number, item: any) => acc + (item.type === 'Cargo' ? item.amount : -item.amount), 0);
@@ -236,7 +236,7 @@ export const UnitsContent = () => {
                 if (feeAmount > 0) {
                     unitsCharged++;
                     const newCharge: AccountHistoryItem = {
-                        id: Date.now() + unitsCharged,
+                        id: (Date.now() + unitsCharged).toString(),
                         date: getLocalDateString(),
                         type: 'Cargo',
                         description: expectedChargeDescription,
@@ -260,10 +260,10 @@ export const UnitsContent = () => {
 
     const filteredUnits = useMemo(() => {
         if (!selectedCondo) return [];
-        
+
         // --- CORRECCIÓN 4: FORZAR LISTA EN MEMO ---
         const unitsSafe = (selectedCondo.units as unknown as any[]) || [];
-        
+
         return unitsSafe.filter((unit: any) =>
             unit.apartmentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
             unit.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -277,7 +277,7 @@ export const UnitsContent = () => {
             <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
                 <h2 className="text-2xl font-bold text-white">Unidades y Propietarios</h2>
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
-                     <div className="relative">
+                    <div className="relative">
                         <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
                         <input
                             type="text"
@@ -289,7 +289,7 @@ export const UnitsContent = () => {
                     </div>
                     <div className="flex items-center gap-2 md:gap-4">
                         {selectedCondo.settings?.lateFees?.apply && (
-                           <button onClick={handleApplyLateFees} title="Aplicar cargos por mora a unidades con balance vencido" className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">
+                            <button onClick={handleApplyLateFees} title="Aplicar cargos por mora a unidades con balance vencido" className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">
                                 <Icon name="percent-circle" size={18} />
                                 <span>Aplicar Moras</span>
                             </button>
@@ -308,7 +308,7 @@ export const UnitsContent = () => {
 
             {/* Desktop Table View */}
             <div className="hidden md:block bg-neutral-900 rounded-lg shadow-md overflow-x-auto">
-                 <table className="min-w-full">
+                <table className="min-w-full">
                     <thead className="bg-neutral-800">
                         <tr>
                             {['Apto', 'Propietario', 'Cuota Mensual', 'Balance', 'Miembro Desde', 'Estado', 'Acciones'].map(h => (
@@ -322,26 +322,26 @@ export const UnitsContent = () => {
                             const balance = history.reduce((acc: number, item: any) => acc + (item.type === 'Cargo' ? item.amount : -item.amount), 0);
                             return (
                                 <React.Fragment key={unit.id}>
-                                <tr className="hover:bg-neutral-800/50 group">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{unit.apartmentNumber}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{unit.ownerName}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">RD$ {unit.monthlyFee.toLocaleString()}</td>
-                                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-bold ${balance > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                                        RD$ {balance.toLocaleString()}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{formatDate(unit.registeredDate)}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={unit.status} /></td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm space-x-4">
-                                        <button onClick={() => handleOpenModal(unit)} className="text-blue-500 hover:text-blue-400">Editar</button>
-                                        <button onClick={() => generateInvoicePDF(unit, selectedCondo)} className="text-green-500 hover:text-green-400">Aviso</button>
-                                        <button onClick={() => handleGenerateStatement(unit)} className="text-yellow-500 hover:text-yellow-400">Estado</button>
-                                    </td>
-                                </tr>
-                                <tr className="hidden group-hover:table-row bg-neutral-800">
-                                    <td colSpan={7} className="p-0">
-                                        <UnitAccountHistory unit={unit}/>
-                                    </td>
-                                </tr>
+                                    <tr className="hover:bg-neutral-800/50 group">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{unit.apartmentNumber}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{unit.ownerName}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">RD$ {unit.monthlyFee.toLocaleString()}</td>
+                                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-bold ${balance > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                                            RD$ {balance.toLocaleString()}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{formatDate(unit.registeredDate)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={unit.status} /></td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm space-x-4">
+                                            <button onClick={() => handleOpenModal(unit)} className="text-blue-500 hover:text-blue-400">Editar</button>
+                                            <button onClick={() => generateInvoicePDF(unit, selectedCondo)} className="text-green-500 hover:text-green-400">Aviso</button>
+                                            <button onClick={() => handleGenerateStatement(unit)} className="text-yellow-500 hover:text-yellow-400">Estado</button>
+                                        </td>
+                                    </tr>
+                                    <tr className="hidden group-hover:table-row bg-neutral-800">
+                                        <td colSpan={7} className="p-0">
+                                            <UnitAccountHistory unit={unit} />
+                                        </td>
+                                    </tr>
                                 </React.Fragment>
                             );
                         })}
@@ -355,7 +355,7 @@ export const UnitsContent = () => {
                     const history = (unit.accountHistory as unknown as any[]) || [];
                     const balance = history.reduce((acc: number, item: any) => acc + (item.type === 'Cargo' ? item.amount : -item.amount), 0);
                     return (
-                         <div key={unit.id} className="bg-neutral-900 rounded-lg shadow-md p-4">
+                        <div key={unit.id} className="bg-neutral-900 rounded-lg shadow-md p-4">
                             <div className="flex justify-between items-start mb-2">
                                 <div>
                                     <h3 className="font-bold text-lg text-white">{unit.apartmentNumber}</h3>
@@ -367,7 +367,7 @@ export const UnitsContent = () => {
                                 <p className="text-neutral-400">Cuota: <span className="text-neutral-200 font-medium">RD$ {unit.monthlyFee.toLocaleString()}</span></p>
                                 <p className="text-neutral-400">Balance: <span className={`font-bold ${balance > 0 ? 'text-red-400' : 'text-green-400'}`}>RD$ {balance.toLocaleString()}</span></p>
                             </div>
-                             <div className="flex justify-start items-center gap-4">
+                            <div className="flex justify-start items-center gap-4">
                                 <button onClick={() => handleOpenModal(unit)} className="text-blue-500 hover:text-blue-400 text-sm font-semibold">Editar</button>
                                 <button onClick={() => generateInvoicePDF(unit, selectedCondo)} className="text-green-500 hover:text-green-400 text-sm font-semibold">Aviso</button>
                                 <button onClick={() => handleGenerateStatement(unit)} className="text-yellow-500 hover:text-yellow-400 text-sm font-semibold">Estado</button>
@@ -376,21 +376,21 @@ export const UnitsContent = () => {
                     );
                 })}
             </div>
-            
+
             <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingUnit ? 'Editar Unidad' : 'Agregando Unidad'} size="4xl">
                 <UnitForm onSuccess={handleCloseModal} onCancel={handleCloseModal} defaultValues={editingUnit || undefined} />
             </Modal>
-             <Modal isOpen={isStatementModalOpen} onClose={() => setIsStatementModalOpen(false)} title={`Generar Estado de Cuenta para ${statementUnit?.apartmentNumber}`}>
+            <Modal isOpen={isStatementModalOpen} onClose={() => setIsStatementModalOpen(false)} title={`Generar Estado de Cuenta para ${statementUnit?.apartmentNumber}`}>
                 {statementUnit && (
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="startDate" className="block text-sm">Fecha de Inicio</label>
-                                <input type="date" id="startDate" value={statementDates.start} onChange={e => setStatementDates(prev => ({ ...prev, start: e.target.value }))} className="w-full bg-neutral-800 p-2 rounded mt-1"/>
+                                <input type="date" id="startDate" value={statementDates.start} onChange={e => setStatementDates(prev => ({ ...prev, start: e.target.value }))} className="w-full bg-neutral-800 p-2 rounded mt-1" />
                             </div>
                             <div>
                                 <label htmlFor="endDate" className="block text-sm">Fecha de Fin</label>
-                                <input type="date" id="endDate" value={statementDates.end} onChange={e => setStatementDates(prev => ({ ...prev, end: e.target.value }))} className="w-full bg-neutral-800 p-2 rounded mt-1"/>
+                                <input type="date" id="endDate" value={statementDates.end} onChange={e => setStatementDates(prev => ({ ...prev, end: e.target.value }))} className="w-full bg-neutral-800 p-2 rounded mt-1" />
                             </div>
                         </div>
                         <button

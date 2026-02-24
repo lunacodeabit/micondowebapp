@@ -29,10 +29,10 @@ export const AmenityForm = ({ onSuccess, onCancel, defaultValues }: AmenityFormP
             if (defaultValues?.id) {
                 updatedAmenities = selectedCondo.amenities.map(a => a.id === defaultValues.id ? { ...a, ...data } : a);
             } else {
-                updatedAmenities = [...selectedCondo.amenities, { ...data, id: Date.now() }];
+                updatedAmenities = [...selectedCondo.amenities, { ...data, id: Date.now().toString() }];
             }
             updateCondo({ ...selectedCondo, amenities: updatedAmenities });
-            
+
             addToast(`Área común ${defaultValues?.id ? 'actualizada' : 'creada'} con éxito.`, 'success');
             onSuccess();
         } catch (error) {

@@ -21,7 +21,7 @@ export const AccountPayableForm = ({ onSuccess, onCancel, defaultValues }: Accou
             dueDate: getLocalDateString(defaultValues?.dueDate),
         }
     });
-    
+
     const { selectedCondo, updateCondo } = useCondo();
     const { addToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
@@ -29,20 +29,20 @@ export const AccountPayableForm = ({ onSuccess, onCancel, defaultValues }: Accou
     const handleFormSubmit = async (data: AccountPayable) => {
         if (!selectedCondo) return;
         setIsLoading(true);
-        
+
         try {
             // Simulate API call
             await new Promise(res => setTimeout(res, 700));
 
             const updatedCondo = { ...selectedCondo };
             let newExpense: Transaction | null = null;
-            
+
             const wasPending = defaultValues?.id ? defaultValues.status === 'Pendiente' : false;
             const isNowPaid = data.status === 'Pagada';
             const needsExpense = !defaultValues?.relatedExpenseId && (isNowPaid || (wasPending && isNowPaid));
 
             if (needsExpense) {
-                const expenseId = Date.now();
+                const expenseId = Date.now().toString();
                 newExpense = {
                     id: expenseId,
                     date: getLocalDateString(),
@@ -50,7 +50,7 @@ export const AccountPayableForm = ({ onSuccess, onCancel, defaultValues }: Accou
                     description: `Pago Factura: ${data.supplier} - #${data.invoiceNumber}`,
                     amount: data.amount,
                     category: 'Servicios',
-                    balance: 0, 
+                    balance: 0,
                 };
                 data.relatedExpenseId = expenseId;
                 data.paymentDate = getLocalDateString();
@@ -62,18 +62,18 @@ export const AccountPayableForm = ({ onSuccess, onCancel, defaultValues }: Accou
             } else {
                 const newPayable: AccountPayable = {
                     ...data,
-                    id: Date.now() + 1,
+                    id: (Date.now() + 1).toString(),
                     paymentDate: data.status === 'Pagada' ? getLocalDateString() : null,
                     relatedExpenseId: data.relatedExpenseId || null,
                 };
                 updatedPayables = [...selectedCondo.accountsPayable, newPayable];
             }
-            
+
             updatedCondo.accountsPayable = updatedPayables;
             if (newExpense) {
                 updatedCondo.finances = [...selectedCondo.finances, newExpense];
             }
-            
+
             updateCondo(updatedCondo);
             addToast(`Cuenta por pagar ${defaultValues?.id ? 'actualizada' : 'creada'} con éxito.`, 'success');
             onSuccess();
@@ -94,7 +94,7 @@ export const AccountPayableForm = ({ onSuccess, onCancel, defaultValues }: Accou
             <FormCommon.Group label="Número de Factura" htmlFor="invoiceNumber" error={errors.invoiceNumber?.message}>
                 <FormCommon.Input id="invoiceNumber" {...register('invoiceNumber', { required: 'El número de factura es requerido' })} />
             </FormCommon.Group>
-             <FormCommon.Group label="Descripción" htmlFor="description" error={errors.description?.message}>
+            <FormCommon.Group label="Descripción" htmlFor="description" error={errors.description?.message}>
                 <FormCommon.Input id="description" {...register('description', { required: 'La descripción es requerida' })} />
             </FormCommon.Group>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

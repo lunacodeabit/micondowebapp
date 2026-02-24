@@ -27,7 +27,7 @@ export const ExtraordinaryFeeForm = ({ onSuccess, onCancel, defaultValues }: Ext
     const { selectedCondo, updateCondo } = useCondo();
     const { addToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
-    
+
     const handleFormSubmit = async (data: ExtraordinaryFeeFormData) => {
         if (!selectedCondo) return;
         setIsLoading(true);
@@ -43,14 +43,14 @@ export const ExtraordinaryFeeForm = ({ onSuccess, onCancel, defaultValues }: Ext
             } else {
                 const newFee: ExtraordinaryFee = {
                     ...data,
-                    id: Date.now(),
+                    id: Date.now().toString(),
                     status: 'Pendiente',
                     distributionType: 'EQUAL',
                 };
                 updatedFees = [...(selectedCondo.extraordinaryFees || []), newFee];
             }
             updateCondo({ ...selectedCondo, extraordinaryFees: updatedFees });
-            
+
             addToast(`Cuota extraordinaria ${defaultValues?.id ? 'actualizada' : 'creada'} con éxito.`, 'success');
             onSuccess();
         } catch (error) {
