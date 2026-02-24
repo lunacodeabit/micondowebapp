@@ -20,7 +20,7 @@ type CondoContextType = {
 const CondoContext = createContext<CondoContextType | undefined>(undefined);
 
 // --- Componente Proveedor (Provider) ---
-const DEV_MODE = window.location.hostname === 'localhost';
+const DEV_MODE = true; // HABILITADO PARA TESTING GLOBAL
 
 export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [condos, setCondos] = useState<Condo[]>([]);

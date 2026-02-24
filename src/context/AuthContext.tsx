@@ -16,8 +16,8 @@ import type { UserProfile } from "../services/authService";
 import { supabase } from "../supabaseClient";
 
 // DEV MODE: Permite acceso rápido sin autenticación real
-// En localhost siempre mostramos los botones de desarrollo
-const DEV_MODE = import.meta.env.DEV || window.location.hostname === 'localhost';
+// HABILITADO GLOBALMENTE PARA TESTING
+const DEV_MODE = true;
 
 export type UserRole = "superadmin" | "admin" | "resident" | null;
 
