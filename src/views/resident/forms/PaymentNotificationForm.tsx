@@ -54,7 +54,7 @@ export const PaymentNotificationForm = ({ onSuccess, onCancel, resident }: Payme
 
             const newNotification: PaymentNotification = {
                 ...data,
-                id: Date.now(),
+                id: Date.now().toString(),
                 unitId: resident.id,
                 dateReported: new Date().toISOString(),
                 status: 'Pendiente',
@@ -71,9 +71,9 @@ export const PaymentNotificationForm = ({ onSuccess, onCancel, resident }: Payme
                 paymentNotifications: [...currentNotifications, newNotification] as any
             };
             // ---------------------------
-            
+
             updateCondo(updatedCondo);
-            
+
             addToast('Notificación de pago enviada con éxito.', 'success');
             onSuccess();
         } catch (error) {
@@ -88,12 +88,12 @@ export const PaymentNotificationForm = ({ onSuccess, onCancel, resident }: Payme
     return (
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
             <input type="hidden" {...register('proofFileName')} />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormCommon.Group label="Fecha del Pago" htmlFor="paymentDate" error={errors.paymentDate?.message}>
                     <FormCommon.Input type="date" id="paymentDate" {...register('paymentDate', { required: 'La fecha es requerida' })} />
                 </FormCommon.Group>
-                
+
                 <FormCommon.Group label="Monto Pagado (RD$)" htmlFor="amount" error={errors.amount?.message}>
                     <FormCommon.Input type="number" step="0.01" id="amount" {...register('amount', { required: 'El monto es requerido', valueAsNumber: true, min: 1 })} />
                 </FormCommon.Group>
@@ -114,7 +114,7 @@ export const PaymentNotificationForm = ({ onSuccess, onCancel, resident }: Payme
                     </p>
                 )}
             </FormCommon.Group>
-            
+
             <FormCommon.Group label="Notas (Opcional)" htmlFor="notes">
                 <FormCommon.Textarea id="notes" {...register('notes')} placeholder="Ej: Pago cuota Junio + abono a cuota extraordinaria." />
             </FormCommon.Group>

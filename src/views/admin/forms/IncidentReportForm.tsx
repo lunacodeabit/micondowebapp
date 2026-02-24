@@ -36,7 +36,7 @@ export const IncidentReportForm = ({ onSuccess, onCancel }: IncidentReportFormPr
             await new Promise(res => setTimeout(res, 700));
 
             const newIncident: Incident = {
-                id: Date.now(),
+                id: Date.now().toString(),
                 date: data.date,
                 reportedBy: 'Administrador',
                 description: data.description,

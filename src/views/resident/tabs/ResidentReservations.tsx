@@ -14,7 +14,7 @@ type ResidentReservationsProps = {
 
 export const ResidentReservations = ({ resident, condo, onUpdateCondoData }: ResidentReservationsProps) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedAmenityId, setSelectedAmenityId] = useState<number | ''>('');
+    const [selectedAmenityId, setSelectedAmenityId] = useState<string | ''>('');
     const [reservationDate, setReservationDate] = useState(getLocalDateString());
     const [startTime, setStartTime] = useState('12:00');
     const [endTime, setEndTime] = useState('16:00');
@@ -40,24 +40,24 @@ export const ResidentReservations = ({ resident, condo, onUpdateCondoData }: Res
         }
 
         const newReservation: Reservation = {
-            id: Date.now(),
+            id: Date.now().toString(),
             unitId: resident.id,
-            amenityId: Number(selectedAmenityId),
+            amenityId: selectedAmenityId as string,
             date: reservationDate,
             startTime,
             endTime,
             status: 'Pendiente'
         };
-        
+
         // --- CORRECCIÓN DEFINITIVA (Línea 56) ---
         // Usamos 'as any' para forzar el guardado de la lista, ignorando
         // si el tipo 'Condo' espera erróneamente un objeto singular.
-        onUpdateCondoData({ 
-            ...condo, 
+        onUpdateCondoData({
+            ...condo,
             reservations: [...reservationsSafe, newReservation] as any
         });
         // ----------------------------------------
-        
+
         setIsModalOpen(false);
         setSelectedAmenityId('');
         setReservationDate(getLocalDateString());
@@ -99,16 +99,16 @@ export const ResidentReservations = ({ resident, condo, onUpdateCondoData }: Res
                     <h3 className="text-xl font-bold text-white mb-4">Áreas Disponibles</h3>
                     <div className="space-y-4">
                         {amenitiesSafe.length > 0 ? amenitiesSafe.map((amenity: any) => (
-                             <details key={amenity.id} className="bg-neutral-900 rounded-lg shadow-md overflow-hidden">
+                            <details key={amenity.id} className="bg-neutral-900 rounded-lg shadow-md overflow-hidden">
                                 <summary className="p-4 flex justify-between items-center cursor-pointer hover:bg-neutral-800/50">
                                     <span className="font-semibold text-white">{amenity.name}</span>
-                                    <Icon name="chevron-down" className="w-5 h-5 transition-transform details-open:rotate-180"/>
+                                    <Icon name="chevron-down" className="w-5 h-5 transition-transform details-open:rotate-180" />
                                 </summary>
                                 <div className="px-4 pb-4 border-t border-neutral-800">
                                     <p className="text-sm text-neutral-400 mt-2">{amenity.description}</p>
                                     <div className="text-sm space-y-1 mt-3">
-                                         <p><Icon name="users" size={16} className="inline mr-2" /> Capacidad: {amenity.capacity} personas</p>
-                                         <p><Icon name="dollar-sign" size={16} className="inline mr-2" /> Costo: RD$ {amenity.fee.toLocaleString()}</p>
+                                        <p><Icon name="users" size={16} className="inline mr-2" /> Capacidad: {amenity.capacity} personas</p>
+                                        <p><Icon name="dollar-sign" size={16} className="inline mr-2" /> Costo: RD$ {amenity.fee.toLocaleString()}</p>
                                     </div>
                                     <h5 className="font-semibold mt-3 mb-1">Reglas:</h5>
                                     <p className="text-xs text-neutral-400 whitespace-pre-wrap">{amenity.rules}</p>
@@ -129,45 +129,45 @@ export const ResidentReservations = ({ resident, condo, onUpdateCondoData }: Res
                         <select
                             id="amenity"
                             value={selectedAmenityId}
-                            onChange={(e) => setSelectedAmenityId(Number(e.target.value))}
+                            onChange={(e) => setSelectedAmenityId(e.target.value)}
                             className="w-full bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-white"
                         >
                             <option value="" disabled>Seleccione un área...</option>
                             {amenitiesSafe.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
                         </select>
                     </FormCommon.Group>
-                    
+
                     <FormCommon.Group label="Fecha de la Reserva" htmlFor="date">
-                        <FormCommon.Input 
-                            type="date" 
-                            id="date" 
-                            value={reservationDate} 
+                        <FormCommon.Input
+                            type="date"
+                            id="date"
+                            value={reservationDate}
                             onChange={e => setReservationDate(e.target.value)}
                             min={getLocalDateString()}
                         />
                     </FormCommon.Group>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormCommon.Group label="Hora de Inicio" htmlFor="startTime">
-                            <FormCommon.Input 
-                                type="time" 
-                                id="startTime" 
-                                value={startTime} 
+                            <FormCommon.Input
+                                type="time"
+                                id="startTime"
+                                value={startTime}
                                 onChange={e => setStartTime(e.target.value)}
                             />
                         </FormCommon.Group>
                         <FormCommon.Group label="Hora de Fin" htmlFor="endTime">
-                            <FormCommon.Input 
-                                type="time" 
-                                id="endTime" 
-                                value={endTime} 
+                            <FormCommon.Input
+                                type="time"
+                                id="endTime"
+                                value={endTime}
                                 onChange={e => setEndTime(e.target.value)}
                             />
                         </FormCommon.Group>
                     </div>
-                    
+
                     {error && <p className="text-red-500 text-sm">{error}</p>}
-                    
+
                     <div className="flex justify-end gap-4 pt-4">
                         <FormCommon.Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>Cancelar</FormCommon.Button>
                         <FormCommon.Button onClick={handleRequestReservation} type="button">Enviar Solicitud</FormCommon.Button>

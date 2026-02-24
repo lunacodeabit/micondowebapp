@@ -31,7 +31,7 @@ export const ResidentIncidentForm = ({ onSuccess, onCancel, resident }: Resident
 
             const reporterIdentifier = `${resident.ownerName} (${resident.apartmentNumber})`;
             const newIncident: Incident = {
-                id: Date.now(),
+                id: Date.now().toString(),
                 date: getLocalDateString(),
                 reportedBy: reporterIdentifier,
                 description: data.description,
@@ -42,14 +42,14 @@ export const ResidentIncidentForm = ({ onSuccess, onCancel, resident }: Resident
             // --- CORRECCIÓN BLINDADA ---
             // Obtenemos la lista vieja de forma segura (si es undefined, es [])
             const currentIncidents = (selectedCondo.incidents as unknown as any[]) || [];
-            
+
             const updatedCondo = {
                 ...selectedCondo,
                 // Guardamos la nueva lista forzando el tipo
                 incidents: [newIncident, ...currentIncidents] as any
             };
             // ---------------------------
-            
+
             updateCondo(updatedCondo);
 
             addToast('Incidente reportado con éxito. La administración lo revisará pronto.', 'success');

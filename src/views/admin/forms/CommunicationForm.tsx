@@ -28,12 +28,12 @@ export const CommunicationForm = ({ onSuccess, onCancel, defaultValues }: Commun
             await new Promise(res => setTimeout(res, 700));
             const newCommunication: Communication = {
                 ...data,
-                id: Date.now(),
+                id: Date.now().toString(),
                 date: new Date().toISOString(),
             };
             const updatedCommunications = [newCommunication, ...selectedCondo.communications];
             updateCondo({ ...selectedCondo, communications: updatedCommunications });
-            
+
             addToast('Comunicado enviado con éxito.', 'success');
             onSuccess();
         } catch (error) {

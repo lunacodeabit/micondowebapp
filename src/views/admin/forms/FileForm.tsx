@@ -23,12 +23,12 @@ export const FileForm = ({ onSuccess, onCancel, defaultFolder }: FileFormProps) 
             folder: defaultFolder,
         }
     });
-    
+
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const { selectedCondo, updateCondo } = useCondo();
     const { addToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
-    
+
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -38,7 +38,7 @@ export const FileForm = ({ onSuccess, onCancel, defaultFolder }: FileFormProps) 
             setValue('fileType', file.type || 'application/octet-stream');
         }
     };
-    
+
     const handleFormSubmit = async (data: FileFormData) => {
         if (!selectedCondo) return;
         if (!selectedFile) {
@@ -56,12 +56,12 @@ export const FileForm = ({ onSuccess, onCancel, defaultFolder }: FileFormProps) 
 
             const newFile: CondoFile = {
                 ...data,
-                id: Date.now(),
+                id: Date.now().toString(),
                 code: String(Date.now()).slice(-6),
                 uploadDate: getLocalDateString(),
                 fileUrl: fileUrl,
             };
-            
+
             const updatedFiles = [...selectedCondo.files, newFile];
             updateCondo({ ...selectedCondo, files: updatedFiles });
 
@@ -80,13 +80,13 @@ export const FileForm = ({ onSuccess, onCancel, defaultFolder }: FileFormProps) 
     return (
         // 2. SINTAXIS CORREGIDA
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-             {/* Hidden inputs to store file data in the form state */}
+            {/* Hidden inputs to store file data in the form state */}
             <input type="hidden" {...register('fileName')} />
             <input type="hidden" {...register('fileType')} />
 
             <FormCommon.Group label="Archivo" htmlFor="file-upload">
                 <div className="flex items-center gap-4">
-                     <label htmlFor="file-upload" className="cursor-pointer flex items-center gap-2 bg-neutral-700 hover:bg-neutral-600 text-white font-bold py-2 px-4 rounded-lg">
+                    <label htmlFor="file-upload" className="cursor-pointer flex items-center gap-2 bg-neutral-700 hover:bg-neutral-600 text-white font-bold py-2 px-4 rounded-lg">
                         <Icon name="upload" size={16} />
                         <span>Seleccionar Archivo</span>
                     </label>
@@ -99,7 +99,7 @@ export const FileForm = ({ onSuccess, onCancel, defaultFolder }: FileFormProps) 
             </FormCommon.Group>
 
             <FormCommon.Group label="Título del archivo" htmlFor="title" error={errors.title?.message}>
-                <FormCommon.Input 
+                <FormCommon.Input
                     id="title"
                     {...register('title', { required: 'El título es requerido' })}
                 />

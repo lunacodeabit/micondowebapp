@@ -68,7 +68,7 @@ export const UnitForm = ({ onSuccess, onCancel, defaultValues }: UnitFormProps) 
                     ...selectedCondo.units,
                     {
                         ...data,
-                        id: Date.now(), // In a real app, the backend would generate this.
+                        id: Date.now().toString(), // In a real app, the backend would generate this.
                         accountHistory: [],
                         managementHistory: [],
                         registeredDate: data.registeredDate || getLocalDateString(),
@@ -107,9 +107,9 @@ export const UnitForm = ({ onSuccess, onCancel, defaultValues }: UnitFormProps) 
                     </FormCommon.Select>
                 </FormCommon.Group>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <FormCommon.Group label="Propietario" htmlFor="ownerName" required error={errors.ownerName?.message}>
+                <FormCommon.Group label="Propietario" htmlFor="ownerName" required error={errors.ownerName?.message}>
                     <FormCommon.Input id="ownerName" {...register('ownerName', { required: 'El nombre del propietario es requerido' })} />
                 </FormCommon.Group>
                 <FormCommon.Group label="Teléfonos" htmlFor="ownerPhones" required error={errors.ownerPhones?.message}>
@@ -127,9 +127,9 @@ export const UnitForm = ({ onSuccess, onCancel, defaultValues }: UnitFormProps) 
             </div>
 
             <FormCommon.Group label="Comentario" htmlFor="comment"><FormCommon.Textarea id="comment" {...register('comment')} /></FormCommon.Group>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                 <FormCommon.Group label="¿Habitado?" htmlFor="isOccupied">
+                <FormCommon.Group label="¿Habitado?" htmlFor="isOccupied">
                     <FormCommon.Select id="isOccupied" {...register('isOccupied', { setValueAs: parseBool })}>
                         <option value="true">Si</option><option value="false">No</option>
                     </FormCommon.Select>
@@ -150,7 +150,7 @@ export const UnitForm = ({ onSuccess, onCancel, defaultValues }: UnitFormProps) 
                     </FormCommon.Select>
                 </FormCommon.Group>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormCommon.Group label="Cuota Mensual" htmlFor="monthlyFee" required error={errors.monthlyFee?.message}>
                     <FormCommon.Input type="number" step="0.01" id="monthlyFee" {...register('monthlyFee', { required: 'La cuota mensual es requerida', valueAsNumber: true })} />
@@ -169,27 +169,27 @@ export const UnitForm = ({ onSuccess, onCancel, defaultValues }: UnitFormProps) 
                     </FormCommon.Select>
                 </FormCommon.Group>
             </div>
-            
+
             <FormSectionHeader title="DISTRIBUCIÓN DE CUOTAS" />
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 items-center">
-                 <span>Mantenimiento</span>
-                 <FormCommon.Select {...register('feeDistribution.maintenance')}><option disabled>Seleccionar</option>{feeRecipients.map(r => <option key={r} value={r}>{r}</option>)}</FormCommon.Select>
-                 <div/>
-                 <span>Gas</span>
-                 <FormCommon.Select {...register('feeDistribution.gas')}><option disabled>Seleccionar</option>{feeRecipients.map(r => <option key={r} value={r}>{r}</option>)}</FormCommon.Select>
-                 <div/>
-                 <span>Cargos</span>
-                 <FormCommon.Select {...register('feeDistribution.charges')}><option disabled>Seleccionar</option>{feeRecipients.map(r => <option key={r} value={r}>{r}</option>)}</FormCommon.Select>
-                 <div/>
-                 <span>Moras</span>
-                 <FormCommon.Select {...register('feeDistribution.lateFees')}><option disabled>Seleccionar</option>{feeRecipients.map(r => <option key={r} value={r}>{r}</option>)}</FormCommon.Select>
-                 <div/>
-                 <span>Envío de CxC</span>
-                 <FormCommon.Select {...register('feeDistribution.accountStatement')}><option disabled>Seleccionar</option>{feeRecipients.map(r => <option key={r} value={r}>{r}</option>)}</FormCommon.Select>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 items-center">
+                <span>Mantenimiento</span>
+                <FormCommon.Select {...register('feeDistribution.maintenance')}><option disabled>Seleccionar</option>{feeRecipients.map(r => <option key={r} value={r}>{r}</option>)}</FormCommon.Select>
+                <div />
+                <span>Gas</span>
+                <FormCommon.Select {...register('feeDistribution.gas')}><option disabled>Seleccionar</option>{feeRecipients.map(r => <option key={r} value={r}>{r}</option>)}</FormCommon.Select>
+                <div />
+                <span>Cargos</span>
+                <FormCommon.Select {...register('feeDistribution.charges')}><option disabled>Seleccionar</option>{feeRecipients.map(r => <option key={r} value={r}>{r}</option>)}</FormCommon.Select>
+                <div />
+                <span>Moras</span>
+                <FormCommon.Select {...register('feeDistribution.lateFees')}><option disabled>Seleccionar</option>{feeRecipients.map(r => <option key={r} value={r}>{r}</option>)}</FormCommon.Select>
+                <div />
+                <span>Envío de CxC</span>
+                <FormCommon.Select {...register('feeDistribution.accountStatement')}><option disabled>Seleccionar</option>{feeRecipients.map(r => <option key={r} value={r}>{r}</option>)}</FormCommon.Select>
             </div>
-            
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                 <FormCommon.Group label="Miembro Junta Admin." htmlFor="isBoardMember">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                <FormCommon.Group label="Miembro Junta Admin." htmlFor="isBoardMember">
                     <FormCommon.Select id="isBoardMember" {...register('isBoardMember', { setValueAs: parseBool })}>
                         <option value="false">NO</option><option value="true">SI</option>
                     </FormCommon.Select>
@@ -197,19 +197,19 @@ export const UnitForm = ({ onSuccess, onCancel, defaultValues }: UnitFormProps) 
                 <FormCommon.Group label="Nombre Miembro JA" htmlFor="boardMemberName"><FormCommon.Input id="boardMemberName" {...register('boardMemberName')} /></FormCommon.Group>
             </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormCommon.Group label="¿Acuerdo de Pago?" htmlFor="hasPaymentAgreement">
                     <FormCommon.Select id="hasPaymentAgreement" {...register('hasPaymentAgreement', { setValueAs: parseBool })}>
                         <option value="false">NO</option><option value="true">SI</option>
                     </FormCommon.Select>
                 </FormCommon.Group>
                 <FormCommon.Group label="¿Apto en Legal?" htmlFor="isUnderLegalAction">
-                     <FormCommon.Select id="isUnderLegalAction" {...register('isUnderLegalAction', { setValueAs: parseBool })}>
+                    <FormCommon.Select id="isUnderLegalAction" {...register('isUnderLegalAction', { setValueAs: parseBool })}>
                         <option value="false">NO</option><option value="true">SI</option>
                     </FormCommon.Select>
                 </FormCommon.Group>
                 <FormCommon.Group label="Estado" htmlFor="status">
-                     <FormCommon.Select id="status" {...register('status')}>
+                    <FormCommon.Select id="status" {...register('status')}>
                         <option value="Activo">Activo</option>
                         <option value="Inactivo">Inactivo</option>
                     </FormCommon.Select>
