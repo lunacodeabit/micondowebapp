@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useCondo } from './context/CondoContext';
 
@@ -30,6 +30,7 @@ import { EliteConsole } from './views/mockups/EliteConsole';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export const AppRouter: React.FC = () => {
+    const navigate = useNavigate();
     const { userRole, residentData, logout } = useAuth();
     const { condos, selectedCondo, selectCondo, addCondo, isLoading: condoLoading } = useCondo();
 
@@ -87,7 +88,7 @@ export const AppRouter: React.FC = () => {
                         <AdminHome
                             condos={condos}
                             onLogout={handleLogout}
-                            onNavigateToCondos={() => { }} // This will be handled by Link or navigate
+                            onNavigateToCondos={() => navigate('/admin/condos')}
                         />
                     </ProtectedRoute>
                 }
@@ -101,7 +102,7 @@ export const AppRouter: React.FC = () => {
                             condos={condos}
                             onSelectCondo={selectCondo}
                             onLogout={handleLogout}
-                            onBack={() => { }} // Handled by navigation
+                            onBack={() => navigate('/admin')}
                             onAddCondo={addCondo}
                         />
                     </ProtectedRoute>
