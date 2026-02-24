@@ -41,6 +41,48 @@ export async function logout() {
 }
 
 /**
+ * Sign up with email/password
+ */
+export async function signUpWithEmail(email: string, password: string, fullName: string, role: UserRole = 'resident') {
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {
+                full_name: fullName,
+                role: role
+            }
+        }
+    });
+    if (error) throw error;
+    return data;
+}
+
+/**
+ * Reset password
+ */
+export async function resetPassword(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) throw error;
+}
+
+/**
+ * Sign in with Google
+ */
+export async function loginWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+        }
+    });
+    if (error) throw error;
+    return data;
+}
+
+/**
  * Get current session (includes user)
  */
 export async function getSession(): Promise<Session | null> {

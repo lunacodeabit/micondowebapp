@@ -29,14 +29,14 @@ export const AgingReceivablesReport = ({ agingData, totals }: AgingReceivablesRe
 
     const formatCurrency = (value: number) => {
         if (value === 0) return '0.00';
-        return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return value.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
     return (
         <div>
             <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="summary-box col-span-1">
-                     <table>
+                    <table>
                         <thead>
                             <tr><th colSpan={2} className="text-center">RESUMEN GENERAL DE DEUDA</th></tr>
                         </thead>
@@ -47,7 +47,7 @@ export const AgingReceivablesReport = ({ agingData, totals }: AgingReceivablesRe
                             <tr><td>Deuda de 91+ días:</td><td className="text-right">{formatCurrency(totals['91+'])}</td></tr>
                         </tbody>
                         <tfoot>
-                             <tr><td>Total Adeudado:</td><td className="text-right">{formatCurrency(totals.total)}</td></tr>
+                            <tr><td>Total Adeudado:</td><td className="text-right">{formatCurrency(totals.total)}</td></tr>
                         </tfoot>
                     </table>
                 </div>

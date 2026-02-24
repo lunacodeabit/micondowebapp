@@ -56,9 +56,9 @@ export const ResidentsContent = () => {
             };
 
             await updateUnitInCondo(selectedCondo.id, selectedUnit.id, updates);
-            
+
             addToast('Residente actualizado con éxito.', 'success');
-            setTimeout(() => handleCloseModal(), 500); 
+            setTimeout(() => handleCloseModal(), 500);
         } catch (error) {
             console.error("Error actualizando residente:", error);
             addToast('Error al actualizar el residente.', 'error');
@@ -69,11 +69,11 @@ export const ResidentsContent = () => {
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-white">Gestionar Residentes</h1>
-            
+
             <p className="text-neutral-400">
-                Aquí puede gestionar las credenciales de los residentes. Para vincular una cuenta, 
-                primero cree el usuario en la <span className="font-semibold text-yellow-500">Consola de Firebase (Authentication)</span> y luego 
-                pegue el <span className="font-semibold text-yellow-500">User UID</span> aquí.
+                Aquí puede gestionar las credenciales de los residentes. Para vincular una cuenta,
+                primero cree el usuario en el <span className="font-semibold text-yellow-500">Panel de Supabase (Authentication)</span> y luego
+                pegue el <span className="font-semibold text-yellow-500">ID de Usuario</span> aquí.
             </p>
 
             <div className="bg-neutral-900 border border-neutral-800 rounded-lg shadow-lg">
@@ -108,7 +108,7 @@ export const ResidentsContent = () => {
                                         )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
-                                        <button 
+                                        <button
                                             onClick={() => handleOpenModal(unit)}
                                             className="text-blue-500 hover:text-blue-400 transition-colors"
                                         >
@@ -132,16 +132,16 @@ export const ResidentsContent = () => {
                                 <Icon name="x" size={24} />
                             </button>
                         </div>
-                        
+
                         <form onSubmit={handleSave} className="space-y-4">
                             <p className="text-sm text-neutral-400">
-                                1. Cree el usuario en la Consola de Firebase.
+                                1. Cree el usuario en el Panel de Supabase.
                                 <br />
-                                2. Ingrese el email (para referencia) y el UID (para vincular).
+                                2. Ingrese el email (para referencia) y el ID (para vincular).
                             </p>
-                            
+
                             <FormCommon.Group label="Email del Residente" htmlFor="email" required>
-                                <FormCommon.Input 
+                                <FormCommon.Input
                                     id="email"
                                     type="email"
                                     placeholder="residente@email.com"
@@ -151,29 +151,29 @@ export const ResidentsContent = () => {
                                 />
                             </FormCommon.Group>
 
-                            <FormCommon.Group label="User UID de Firebase" htmlFor="uid">
-                                <FormCommon.Input 
+                            <FormCommon.Group label="ID de Usuario de Supabase" htmlFor="uid">
+                                <FormCommon.Input
                                     id="uid"
                                     type="text"
-                                    placeholder="Pegue el UID de Firebase Auth aquí"
+                                    placeholder="Pegue el ID de Supabase Auth aquí"
                                     value={newUid}
                                     onChange={(e) => setNewUid(e.target.value)}
                                 />
-                                <FormCommon.HelpText>El UID es opcional pero recomendado para el login.</FormCommon.HelpText>
+                                <FormCommon.HelpText>El ID es opcional pero recomendado para el login.</FormCommon.HelpText>
                             </FormCommon.Group>
 
                             <FormCommon.Group label="Asignar Contraseña (Ignorado por ahora)" htmlFor="password">
-                                <FormCommon.Input 
+                                <FormCommon.Input
                                     id="password"
                                     type="text"
                                     placeholder="Función no implementada (inseguro)"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    disabled={true} 
+                                    disabled={true}
                                 />
                                 <FormCommon.HelpText>La creación de contraseñas debe hacerse en un servidor (Cloud Function) por seguridad.</FormCommon.HelpText>
                             </FormCommon.Group>
-                            
+
                             <div className="flex justify-end gap-4 pt-4">
                                 <FormCommon.Button type="button" variant="secondary" onClick={handleCloseModal} disabled={isLoading}>
                                     Cancelar

@@ -36,11 +36,11 @@ const IncomeAndExpenseReport = ({ data }: { data: { incomes: any[], expenses: an
                             <tr><th colSpan={2} className="text-center">RESUMEN DEL MES</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td>Total Ingresos:</td><td className="text-right">{data.totalIncome.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td></tr>
-                            <tr><td>Total Egresos:</td><td className="text-right">{data.totalExpense.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td></tr>
+                            <tr><td>Total Ingresos:</td><td className="text-right">{data.totalIncome.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' }).replace('DOP', 'RD$')}</td></tr>
+                            <tr><td>Total Egresos:</td><td className="text-right">{data.totalExpense.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' }).replace('DOP', 'RD$')}</td></tr>
                         </tbody>
                         <tfoot>
-                             <tr><td>Resultado Neto:</td><td className="text-right">{data.netResult.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td></tr>
+                            <tr><td>Resultado Neto:</td><td className="text-right">{data.netResult.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' }).replace('DOP', 'RD$')}</td></tr>
                         </tfoot>
                     </table>
                 </div>
@@ -52,16 +52,16 @@ const IncomeAndExpenseReport = ({ data }: { data: { incomes: any[], expenses: an
                     <tr><th>Fecha</th><th>Descripción</th><th className="text-right">Monto</th></tr>
                 </thead>
                 <tbody>
-                    {data.incomes.map(t => <tr key={t.id}><td>{formatDate(t.date)}</td><td>{t.description}</td><td className="text-right">{t.amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td></tr>)}
+                    {data.incomes.map(t => <tr key={t.id}><td>{formatDate(t.date)}</td><td>{t.description}</td><td className="text-right">{t.amount.toLocaleString('es-DO', { style: 'currency', currency: 'DOP' }).replace('DOP', 'RD$')}</td></tr>)}
                 </tbody>
             </table>
             <div className="section-header mt-4">EGRESOS</div>
-             <table className="data-table">
+            <table className="data-table">
                 <thead>
                     <tr><th>Fecha</th><th>Descripción</th><th>Categoría</th><th className="text-right">Monto</th></tr>
                 </thead>
                 <tbody>
-                     {data.expenses.map(t => <tr key={t.id}><td>{formatDate(t.date)}</td><td>{t.description}</td><td>{t.category}</td><td className="text-right">{Math.abs(t.amount).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td></tr>)}
+                    {data.expenses.map(t => <tr key={t.id}><td>{formatDate(t.date)}</td><td>{t.description}</td><td>{t.category}</td><td className="text-right">{Math.abs(t.amount).toLocaleString('es-DO', { style: 'currency', currency: 'DOP' }).replace('DOP', 'RD$')}</td></tr>)}
                 </tbody>
             </table>
         </div>
@@ -72,7 +72,7 @@ export const ReportsContent = () => {
     const { selectedCondo } = useCondo();
     const [activeReport, setActiveReport] = useState('income_expense');
     const [reportMonth, setReportMonth] = useState(new Date().toISOString().slice(0, 7));
-    
+
     const availableMonths = useMemo(() => {
         if (!selectedCondo) return [];
         // AIRBAG
@@ -81,14 +81,14 @@ export const ReportsContent = () => {
         finances.forEach((t: any) => months.add(t.date.slice(0, 7)));
         return Array.from(months).sort().reverse();
     }, [selectedCondo]);
-    
+
     // --- Data Calculation ---
     const incomeExpenseData = useMemo(() => {
         if (!selectedCondo) return { incomes: [], expenses: [], totalIncome: 0, totalExpense: 0, netResult: 0 };
-        
+
         // AIRBAG
         const finances = (selectedCondo.finances as unknown as any[]) || [];
-        
+
         const incomes = finances.filter((t: any) => t.type === 'Ingreso' && t.date.startsWith(reportMonth));
         const expenses = finances.filter((t: any) => t.type === 'Egreso' && t.date.startsWith(reportMonth));
         const totalIncome = incomes.reduce((sum: number, t: any) => sum + t.amount, 0);
@@ -98,11 +98,11 @@ export const ReportsContent = () => {
     }, [selectedCondo, reportMonth]);
 
     const agingReportData = useMemo(() => {
-        if (!selectedCondo) return { agingData: [], totals: { total: 0, current: 0, '31-60': 0, '61-90': 0, '91+': 0 }};
-        
+        if (!selectedCondo) return { agingData: [], totals: { total: 0, current: 0, '31-60': 0, '61-90': 0, '91+': 0 } };
+
         const asOfDate = new Date();
         const data: UnitAgingData[] = [];
-        
+
         // AIRBAG
         const units = (selectedCondo.units as unknown as any[]) || [];
 
@@ -131,8 +131,8 @@ export const ReportsContent = () => {
         if (!selectedCondo) return;
 
         // Safe access to jspdf global
-        const { jsPDF } = (window as any).jspdf || { jsPDF: class {} };
-        
+        const { jsPDF } = (window as any).jspdf || { jsPDF: class { } };
+
         if (!(window as any).jspdf) {
             alert("La librería PDF no está cargada.");
             return;
@@ -155,7 +155,7 @@ export const ReportsContent = () => {
             doc.setFontSize(14);
             doc.text(reportTitle, 14, finalY);
             finalY += 10;
-            
+
             // Summary Table
             doc.autoTable({
                 startY: finalY,
@@ -168,7 +168,7 @@ export const ReportsContent = () => {
                 headStyles: { fillColor: [22, 160, 133] },
             });
             finalY = doc.lastAutoTable.finalY + 10;
-            
+
             // Incomes Table
             doc.autoTable({
                 startY: finalY,
@@ -182,7 +182,7 @@ export const ReportsContent = () => {
                 columnStyles: { 2: { halign: 'right' } }
             });
             finalY = doc.lastAutoTable.finalY + 10;
-            
+
             // Expenses Table
             doc.autoTable({
                 startY: finalY,
@@ -209,7 +209,7 @@ export const ReportsContent = () => {
                 head: [['RESUMEN GENERAL DE DEUDA']],
                 headStyles: { fillColor: [41, 128, 185] },
             });
-             doc.autoTable({
+            doc.autoTable({
                 startY: doc.lastAutoTable.finalY,
                 body: [
                     ['Deuda Corriente (0-30 días):', { content: formatCurrency(totals.current), styles: { halign: 'right' } }],
@@ -245,11 +245,11 @@ export const ReportsContent = () => {
                     { content: formatCurrency(totals['61-90']), styles: { halign: 'right', fontStyle: 'bold' } },
                     { content: formatCurrency(totals['91+']), styles: { halign: 'right', fontStyle: 'bold' } },
                 ]],
-                footStyles: { fontStyle: 'bold', fillColor: [230, 230, 230], textColor: [0,0,0] },
+                footStyles: { fontStyle: 'bold', fillColor: [230, 230, 230], textColor: [0, 0, 0] },
                 didParseCell: function (data: any) {
-                    if(data.row.section === 'body') {
+                    if (data.row.section === 'body') {
                         data.cell.styles.halign = 'right';
-                         if (data.column.index <= 1) {
+                        if (data.column.index <= 1) {
                             data.cell.styles.halign = 'left';
                         }
                     }
@@ -299,8 +299,8 @@ export const ReportsContent = () => {
                         </select>
 
                         <div className="mt-4 report-filter-bar">
-                             <h4 className="font-bold mb-2">Filtros</h4>
-                             {activeReport === 'income_expense' && (
+                            <h4 className="font-bold mb-2">Filtros</h4>
+                            {activeReport === 'income_expense' && (
                                 <div>
                                     <label htmlFor="month" className="block text-sm font-medium text-neutral-400 mb-1">Mes</label>
                                     <select

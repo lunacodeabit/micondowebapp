@@ -29,10 +29,10 @@ export const LandingPage = () => {
                             </div>
                         </div>
                         <nav className="hidden xl:flex items-center gap-10 text-[11px] font-black uppercase tracking-[0.2em] text-neutral-500">
-                            <span className="text-white cursor-pointer hover:opacity-80 transition-opacity border-b-2 border-purple-500 pb-1">Platform</span>
-                            <span className="cursor-pointer hover:text-white transition-colors">Ecosystem</span>
-                            <span className="cursor-pointer hover:text-white transition-colors">Intelligence</span>
-                            <span className="cursor-pointer hover:text-white transition-colors">Security</span>
+                            <span className="text-white cursor-pointer hover:opacity-80 transition-opacity border-b-2 border-purple-500 pb-1">Plataforma</span>
+                            <span className="cursor-pointer hover:text-white transition-colors">Ecosistema</span>
+                            <span className="cursor-pointer hover:text-white transition-colors">Inteligencia</span>
+                            <span className="cursor-pointer hover:text-white transition-colors">Seguridad</span>
                         </nav>
                     </div>
                     <div className="flex items-center gap-6">
@@ -40,13 +40,13 @@ export const LandingPage = () => {
                             onClick={() => navigate('/login')}
                             className="hidden md:block text-[11px] font-black uppercase tracking-widest text-neutral-400 hover:text-white transition-colors"
                         >
-                            Investor Portal
+                            Portal de Inversores
                         </button>
                         <button
                             onClick={() => navigate('/login')}
                             className="bg-white/10 border border-white/10 px-6 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest text-white hover:bg-white/20 transition-all"
                         >
-                            Sign In
+                            Iniciar Sesión
                         </button>
                     </div>
                 </header>
@@ -59,7 +59,7 @@ export const LandingPage = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className="text-[11px] font-black uppercase tracking-[0.5em] text-neutral-500 mb-8"
                         >
-                            Next-Gen Property OS
+                            Sitema Operativo de Próxima Generación
                         </motion.p>
                         <motion.h2
                             initial={{ opacity: 0, y: 20 }}
@@ -67,8 +67,8 @@ export const LandingPage = () => {
                             transition={{ delay: 0.1 }}
                             className="text-7xl lg:text-[100px] font-black tracking-tighter leading-[0.85] mb-10 text-white"
                         >
-                            ORCHESTRATE YOUR <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-white to-neutral-800">CONDOMINIUM.</span>
+                            ORQUESTA TU <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-white to-neutral-800">CONDOMINIO.</span>
                         </motion.h2>
                         <motion.div
                             initial={{ opacity: 0 }}
@@ -77,14 +77,14 @@ export const LandingPage = () => {
                             className="flex flex-col md:flex-row md:items-center gap-8"
                         >
                             <p className="text-lg text-neutral-400 font-medium tracking-tight max-w-xl leading-relaxed">
-                                Autonomous management for high-end residential real estate. Unified control, financial precision, and resident satisfaction at scale.
+                                Gestión autónoma para activos inmobiliarios de alta gama. Control unificado, precisión financiera y satisfacción del residente a escala.
                             </p>
                             <div className="hidden md:block h-10 w-px bg-white/10"></div>
                             <button
                                 onClick={() => navigate('/login')}
                                 className="bg-white text-black px-10 py-5 rounded-[20px] font-black text-xs uppercase tracking-widest shadow-[0_20px_50px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95 transition-all text-center"
                             >
-                                Launch Ecosystem Dashboard
+                                Librar Dashboard del Ecosistema
                             </button>
                         </motion.div>
                     </div>
@@ -98,12 +98,12 @@ export const LandingPage = () => {
                         </div>
                         <div className="flex justify-between items-center mb-16 relative z-10">
                             <div>
-                                <h3 className="text-sm font-black uppercase tracking-widest text-white mb-2">Management Intelligence</h3>
-                                <p className="text-[11px] font-bold text-neutral-500">Real-time sync across all residential units</p>
+                                <h3 className="text-sm font-black uppercase tracking-widest text-white mb-2">Inteligencia de Gestión</h3>
+                                <p className="text-[11px] font-bold text-neutral-500">Sincronización en tiempo real en todas las unidades residenciales</p>
                             </div>
                             <div className="flex gap-4">
                                 <div className="px-6 py-3 bg-black/40 border border-white/5 rounded-2xl flex items-baseline gap-3">
-                                    <span className="text-[10px] font-black text-neutral-600 uppercase tracking-widest">Efficiency</span>
+                                    <span className="text-[10px] font-black text-neutral-600 uppercase tracking-widest">Eficiencia</span>
                                     <span className="text-sm font-black text-green-500">+100%</span>
                                 </div>
                             </div>
@@ -111,16 +111,16 @@ export const LandingPage = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16 relative z-10">
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-4">Inventory Integrity</p>
-                                <h4 className="text-5xl font-black tracking-tighter text-white select-none">Units Cap: 4k</h4>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-4">Integridad de Inventario</p>
+                                <h4 className="text-5xl font-black tracking-tighter text-white select-none">Cap: 4k Unidades</h4>
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-4">Financial Flow</p>
-                                <h4 className="text-5xl font-black tracking-tighter text-neutral-300">99.2% Pay</h4>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-4">Flujo Financiero</p>
+                                <h4 className="text-5xl font-black tracking-tighter text-neutral-300">99.2% Pagos</h4>
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-4">Elisa AI Logic</p>
-                                <h4 className="text-5xl font-black tracking-tighter text-purple-500">Autonomous</h4>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-4">Lógica Elisa AI</p>
+                                <h4 className="text-5xl font-black tracking-tighter text-purple-500">Autónoma</h4>
                             </div>
                         </div>
 
@@ -142,12 +142,12 @@ export const LandingPage = () => {
                         <div className="bg-[#121216]/50 backdrop-blur-xl border border-white/5 rounded-[40px] p-10 flex flex-col justify-between shadow-2xl relative overflow-hidden group">
                             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent"></div>
                             <div className="relative z-10">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-neutral-500 mb-8">System Pulse</h3>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-neutral-500 mb-8">Pulso del Sistema</h3>
                                 <div className="space-y-6">
                                     {[
-                                        { label: 'Blockchain Security', p: 100, color: 'bg-white' },
-                                        { label: 'AI Resolution Cap', p: 84, color: 'bg-purple-500' },
-                                        { label: 'Network Uptime', p: 99, color: 'bg-blue-500' }
+                                        { label: 'Seguridad Blockchain', p: 100, color: 'bg-white' },
+                                        { label: 'Resolución por AI', p: 84, color: 'bg-purple-500' },
+                                        { label: 'Tiempo en Línea', p: 99, color: 'bg-blue-500' }
                                     ].map((row, i) => (
                                         <div key={i}>
                                             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest mb-3">
@@ -163,8 +163,8 @@ export const LandingPage = () => {
                             </div>
                             <div className="mt-12 bg-black/40 border border-white/5 rounded-[24px] p-6 relative z-10 flex items-center justify-between group-hover:border-white/20 transition-all cursor-pointer" onClick={() => navigate('/login')}>
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Autonomous Node</p>
-                                    <p className="text-xs font-bold text-white mt-1">Ready for connection</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Nodo Autónomo</p>
+                                    <p className="text-xs font-bold text-white mt-1">Listo para conexión</p>
                                 </div>
                                 <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
                                     <div className="w-2 h-2 bg-purple-500 rounded-full animate-ping"></div>
@@ -175,10 +175,10 @@ export const LandingPage = () => {
                         <div className="bg-gradient-to-tr from-purple-700 to-[#121216] border border-white/5 rounded-[40px] p-10 shadow-lg relative overflow-hidden group cursor-pointer" onClick={() => navigate('/login')}>
                             <div className="absolute top-[-40px] right-[-40px] w-48 h-48 bg-white/5 blur-3xl rounded-full group-hover:bg-white/10 transition-all"></div>
                             <div className="relative z-10">
-                                <h4 className="text-3xl font-black tracking-tighter text-white mb-4 line-clamp-2">Autonomous <br /> Elite Care.</h4>
-                                <p className="text-xs font-medium text-white/50 leading-relaxed mb-10">Our AI infrastructure handles 99.8% of daily property events with surgical precision.</p>
+                                <h4 className="text-3xl font-black tracking-tighter text-white mb-4 line-clamp-2">Cuidado de Elite <br /> Autónomo.</h4>
+                                <p className="text-xs font-medium text-white/50 leading-relaxed mb-10">Nuestra infraestructura de AI gestiona el 99.8% de los eventos diarios de la propiedad con precisión quirúrgica.</p>
                                 <button className="w-full bg-white text-black py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl hover:bg-neutral-100 transition-colors">
-                                    Enter Portal
+                                    Entrar al Portal
                                 </button>
                             </div>
                         </div>
@@ -187,11 +187,11 @@ export const LandingPage = () => {
 
                 <footer className="mt-24 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 text-[10px] font-black uppercase tracking-[0.4em] text-neutral-700">
                     <div className="flex gap-12">
-                        <span className="hover:text-neutral-300 cursor-pointer transition-colors text-neutral-500">Institutional</span>
-                        <span className="hover:text-neutral-300 cursor-pointer transition-colors text-neutral-500">Privacy Policy</span>
-                        <span className="hover:text-neutral-300 cursor-pointer transition-colors text-neutral-500">Infrastructure Security</span>
+                        <span className="hover:text-neutral-300 cursor-pointer transition-colors text-neutral-500">Institucional</span>
+                        <span className="hover:text-neutral-300 cursor-pointer transition-colors text-neutral-500">Política de Privacidad</span>
+                        <span className="hover:text-neutral-300 cursor-pointer transition-colors text-neutral-500">Seguridad de Infraestructura</span>
                     </div>
-                    <span className="text-neutral-800">MiCondo Ecosystem OS — 2026</span>
+                    <span className="text-neutral-800">MiCondo Ecosistema OS — 2026</span>
                 </footer>
             </div>
         </div>

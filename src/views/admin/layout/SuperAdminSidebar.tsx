@@ -29,7 +29,7 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
   metrics,
 }) => {
   const navItems: NavItem[] = [
-    { id: "dashboard", label: "Dashboard", icon: "layout-dashboard" },
+    { id: "dashboard", label: "Inicio", icon: "layout-dashboard" },
     {
       id: "companies",
       label: "Compañías",
@@ -49,7 +49,7 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
       badge: metrics.pendingPayments,
       badgeColor: "bg-orange-500",
     },
-    { id: "communications", label: "Anuncios", icon: "megaphone" },
+    { id: "communications", label: "Comunicados", icon: "megaphone" },
     {
       id: "messages",
       label: "Mensajes",

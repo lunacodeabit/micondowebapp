@@ -349,10 +349,10 @@ export const PLAN_PRICING: Record<string, { minCondos: number; maxCondos: number
 
 // Addons disponibles
 export const AVAILABLE_ADDONS: AddonConfig[] = [
-  { id: "whatsapp", name: "SMS/WhatsApp", description: "Notificaciones por SMS y WhatsApp a residentes", monthlyPrice: 500 },
-  { id: "multiuser", name: "Multi-usuario", description: "Usuarios adicionales para la administración", monthlyPrice: 500 },
-  { id: "storage", name: "Almacenamiento Extra", description: "10GB adicionales para documentos y fotos", monthlyPrice: 300 },
-  { id: "prioritySupport", name: "Soporte Prioritario", description: "Respuesta en menos de 2 horas", monthlyPrice: 2000 },
+  { id: "whatsapp", name: "SMS/WhatsApp Bot", description: "Notificaciones automáticas y estados de cuenta vía WhatsApp", monthlyPrice: 1500 },
+  { id: "multiuser", name: "Multi-usuario", description: "Usuarios adicionales para el equipo administrativo", monthlyPrice: 500 },
+  { id: "storage", name: "Almacenamiento Extra", description: "10GB adicionales para documentos, actas y fotos", monthlyPrice: 500 },
+  { id: "prioritySupport", name: "Soporte Prioritario 24/7", description: "Atención preferencial y respuesta en menos de 2 horas", monthlyPrice: 2000 },
 ];
 
 export interface Company {
@@ -401,7 +401,7 @@ export interface SaasAnnouncement {
   title: string;
   content: string;
   type: "info" | "warning" | "update" | "maintenance";
-  targetAudience: "all" | "active" | "inactive";
+  targetAudience: "all" | "active" | "inactive" | "admin" | "resident";
   publishDate: string;
   expirationDate?: string;
   isActive: boolean;

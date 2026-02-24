@@ -31,9 +31,13 @@ interface AuthContextType {
   userRole: UserRole;
   companyIsActive: boolean;
 
-  residentData: { condoId: string; unitId: number } | null;
+  residentData: { condoId: string; unitId: string } | null;
   // Company ID for admin users (used when creating condos)
   adminCompanyId: string | null;
+
+  signUp: (email: string, pass: string, name: string) => Promise<any>;
+  forgotPassword: (email: string) => Promise<void>;
+  googleLogin: () => Promise<any>;
 
   // DEV MODE: Acceso rápido sin autenticación
   devLogin: (role: UserRole) => void;
@@ -66,13 +70,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [companyIsActive, setCompanyIsActive] = useState(false);
   const [residentData, setResidentData] = useState<{
     condoId: string;
-    unitId: number;
+    unitId: string;
   } | null>(null);
   // Store the company ID for admin users
   const [adminCompanyId, setAdminCompanyId] = useState<string | null>(null);
 
   const login = async (email: string, pass: string) => {
     return loginWithEmail(email, pass);
+  };
+
+  const signUp = async (email: string, pass: string, name: string) => {
+    // In a real flow, you might want to call authService.signUpWithEmail
+    // which also handles profile creation via Supabase Triggers or manual insert
+    const { signUpWithEmail } = await import("../services/authService");
+    return signUpWithEmail(email, pass, name);
+  };
+
+  const forgotPassword = async (email: string) => {
+    const { resetPassword } = await import("../services/authService");
+    return resetPassword(email);
+  };
+
+  const googleLogin = async () => {
+    const { loginWithGoogle } = await import("../services/authService");
+    return loginWithGoogle();
   };
 
   const logout = async () => {
@@ -112,7 +133,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUserRole("resident");
       setCompanyIsActive(true);
       setAdminCompanyId(null);
-      setResidentData({ condoId: "dev-condo-id", unitId: 101 }); // Datos simulados
+      setResidentData({ condoId: "1", unitId: "1" }); // Datos simulados con string ID que coinciden con mockData.ts
     }
 
     setIsDevAuthenticated(true);
@@ -257,6 +278,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     userRole,
     residentData,
     adminCompanyId,
+    signUp,
+    forgotPassword,
+    googleLogin,
     // DEV MODE
     devLogin,
     isDevMode: DEV_MODE,

@@ -472,11 +472,11 @@ const CompanyForm = ({
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
-            <option value="Trial">🆓 Trial (14 días gratis)</option>
-            <option value="Starter">⭐ Starter (1 condo)</option>
-            <option value="Growth">🚀 Growth (2-4 condos)</option>
-            <option value="Pro">💎 Pro (5-9 condos)</option>
-            <option value="Enterprise">🏢 Enterprise (10+ condos)</option>
+            <option value="Trial">🆓 Prueba Gratis (14 días)</option>
+            <option value="Starter">⭐ Inicial (1 condo)</option>
+            <option value="Growth">🚀 Crecimiento (2-4 condos)</option>
+            <option value="Pro">💎 Profesional (5-9 condos)</option>
+            <option value="Enterprise">🏢 Corporativo (10+ condos)</option>
           </select>
         </div>
         <div className="mb-4">
@@ -1950,6 +1950,8 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
                 <option value="all">Todos los clientes</option>
                 <option value="active">Solo activos</option>
                 <option value="inactive">Solo inactivos</option>
+                <option value="admin">Solo Administradores</option>
+                <option value="resident">Solo Residentes</option>
               </select>
             </div>
           </div>

@@ -1,5 +1,6 @@
 ﻿import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
+import { initialCondos } from '../data/mockData';
 
 import type { Condo, CondoFormData, Unit } from '../types';
 import { recalculateBalances } from '../utils/finance';
@@ -32,10 +33,9 @@ export const CondoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // --- SUPABASE: FUNCIÓN ASÍNCRONA PARA LEER DATOS ---
     // Replaces Firestore collection queries with Supabase .from().select()
     const fetchCondos = useCallback(async () => {
-        // En modo desarrollo con autenticación simulada, no intentar Supabase
+        // En modo desarrollo con autenticación simulada, usar mock data
         if (DEV_MODE && isDevAuthenticated) {
-            // console.log('🔧 DEV MODE: Saltando carga de Supabase, usando datos vacíos');
-            setCondos([]);
+            setCondos(initialCondos);
             setIsLoading(false);
             return;
         }

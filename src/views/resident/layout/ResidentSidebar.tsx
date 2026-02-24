@@ -39,44 +39,70 @@ export const ResidentSidebar = ({
                 aria-hidden="true"
             ></div>
 
-            <aside className={`fixed lg:relative inset-y-0 left-0 z-40 bg-neutral-900 flex flex-col p-4 border-r border-neutral-800 transition-transform duration-300 ease-in-out w-64
+            <aside className={`fixed lg:relative inset-y-0 left-0 z-40 bg-neutral-900/80 backdrop-blur-xl flex flex-col p-4 border-r border-neutral-800/50 transition-transform duration-300 ease-in-out w-72
                 ${isOpenOnMobile ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
             >
-                <div className="flex items-center mb-6 p-2">
-                    <Icon name="home" className="w-8 h-8 text-blue-500 flex-shrink-0" />
-                    <div className="ml-3 overflow-hidden">
-                        <h2 className="text-md font-bold text-white whitespace-nowrap truncate">{residentName}</h2>
-                        <p className="text-sm text-neutral-400">Unidad {unitNumber}</p>
+                {/* Logo Section */}
+                <div className="flex items-center gap-4 mb-10 p-3">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-2xl shadow-blue-500/20">
+                        <Icon name="home" className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="overflow-hidden">
+                        <h2 className="text-lg font-black text-white tracking-tighter leading-none mb-1">WISE RESIDENT</h2>
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest">Portal Oficial</span>
+                        </div>
                     </div>
                 </div>
 
-                <nav className="flex-1 space-y-2">
-                    {/* Fix: Inlined NavLink component to resolve TypeScript error with the 'key' prop. */}
-                    {navItems.map((item) => (
-                        <a
-                            key={item.id}
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); setActiveTab(item.id); onCloseMobile(); }}
-                            className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === item.id
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
-                                }`}
-                        >
-                            <Icon name={item.icon} className="w-5 h-5 flex-shrink-0" />
-                            <span className="whitespace-nowrap ml-3">{item.label}</span>
-                        </a>
-                    ))}
+                {/* Profile Section */}
+                <div className="bg-neutral-800/30 border border-neutral-800/50 rounded-2xl p-4 mb-8 flex items-center gap-4 group transition-all duration-300 hover:border-blue-500/30">
+                    <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center border border-neutral-700 overflow-hidden">
+                        <img src={`https://ui-avatars.com/api/?name=${residentName}&background=2563eb&color=fff`} alt="Avatar" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="overflow-hidden flex-1">
+                        <p className="text-xs font-black text-white truncate">{residentName}</p>
+                        <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest leading-none">Unidad {unitNumber}</p>
+                    </div>
+                </div>
+
+                <nav className="flex-1 space-y-1.5">
+                    {navItems.map((item) => {
+                        const isActive = activeTab === item.id;
+                        return (
+                            <a
+                                key={item.id}
+                                href="#"
+                                onClick={(e) => { e.preventDefault(); setActiveTab(item.id); onCloseMobile(); }}
+                                className={`
+                                    flex items-center gap-4 px-4 py-3 text-sm font-bold rounded-xl transition-all duration-300 group
+                                    ${isActive
+                                        ? 'bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-white border border-blue-500/30'
+                                        : 'text-neutral-500 hover:text-white hover:bg-neutral-800/50'
+                                    }
+                                `}
+                            >
+                                <Icon
+                                    name={item.icon}
+                                    className={`w-5 h-5 transition-all duration-300 ${isActive ? 'text-blue-400 group-hover:scale-110' : 'text-neutral-600 group-hover:text-blue-400'}`}
+                                />
+                                <span className={`whitespace-nowrap uppercase tracking-widest text-[11px] font-black ${isActive ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'}`}>
+                                    {item.label}
+                                </span>
+                            </a>
+                        );
+                    })}
                 </nav>
 
-                <div className="mt-auto pt-2 border-t border-neutral-800">
-                    <a
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); onLogout(); }}
-                        className="flex w-full items-center px-4 py-2 text-sm font-medium rounded-md text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
+                <div className="pt-4 border-t border-neutral-800/50">
+                    <button
+                        onClick={onLogout}
+                        className="flex w-full items-center gap-4 px-4 py-3 text-sm font-bold rounded-xl text-neutral-500 hover:text-red-400 hover:bg-red-500/5 transition-all group"
                     >
-                        <Icon name="log-out" className="w-5 h-5 flex-shrink-0" />
-                        <span className="whitespace-nowrap ml-3">Cerrar Sesión</span>
-                    </a>
+                        <Icon name="log-out" className="w-5 h-5 text-neutral-600 group-hover:text-red-400" />
+                        <span className="whitespace-nowrap uppercase tracking-widest text-[11px] font-black opacity-60 group-hover:opacity-100">Cerrar Sesión</span>
+                    </button>
                 </div>
             </aside>
         </>
