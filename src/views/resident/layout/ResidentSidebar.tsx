@@ -39,35 +39,32 @@ export const ResidentSidebar = ({
                 aria-hidden="true"
             ></div>
 
-            <aside className={`fixed lg:relative inset-y-0 left-0 z-40 bg-neutral-900/80 backdrop-blur-xl flex flex-col p-4 border-r border-neutral-800/50 transition-transform duration-300 ease-in-out w-72
+            <aside className={`fixed lg:relative inset-y-0 left-0 z-40 bg-white dark:bg-[#111827] border-r border-neutral-200/80 dark:border-neutral-800 shadow-[1px_0_10px_rgba(0,0,0,0.02)] flex flex-col p-4 transition-colors duration-200 ease-in-out w-72
                 ${isOpenOnMobile ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
             >
                 {/* Logo Section */}
-                <div className="flex items-center gap-4 mb-10 p-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-2xl shadow-blue-500/20">
-                        <Icon name="home" className="w-6 h-6 text-white" />
+                <div className="flex items-center gap-3 mb-6 p-2">
+                    <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm text-white font-extrabold text-sm">
+                        <Icon name="home" className="w-5 h-5 text-white" />
                     </div>
-                    <div className="overflow-hidden">
-                        <h2 className="text-lg font-black text-white tracking-tighter leading-none mb-1">WISE RESIDENT</h2>
-                        <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                            <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest">Portal Oficial</span>
-                        </div>
+                    <div>
+                        <h2 className="text-sm font-black text-neutral-900 dark:text-white tracking-tight leading-tight">MiCondo</h2>
+                        <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Portal de Residente</p>
                     </div>
                 </div>
 
                 {/* Profile Section */}
-                <div className="bg-neutral-800/30 border border-neutral-800/50 rounded-2xl p-4 mb-8 flex items-center gap-4 group transition-all duration-300 hover:border-blue-500/30">
-                    <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center border border-neutral-700 overflow-hidden">
-                        <img src={`https://ui-avatars.com/api/?name=${residentName}&background=2563eb&color=fff`} alt="Avatar" className="w-full h-full object-cover" />
+                <div className="bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/60 rounded-xl p-3.5 mb-6 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                        {residentName.slice(0, 2).toUpperCase()}
                     </div>
                     <div className="overflow-hidden flex-1">
-                        <p className="text-xs font-black text-white truncate">{residentName}</p>
-                        <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest leading-none">Unidad {unitNumber}</p>
+                        <p className="text-xs font-bold text-neutral-900 dark:text-white truncate leading-tight">{residentName}</p>
+                        <p className="text-[10px] text-neutral-500 dark:text-neutral-400 font-medium">Apto {unitNumber} • Propietario</p>
                     </div>
                 </div>
 
-                <nav className="flex-1 space-y-1.5">
+                <nav className="flex-1 space-y-1">
                     {navItems.map((item) => {
                         const isActive = activeTab === item.id;
                         return (
@@ -76,32 +73,30 @@ export const ResidentSidebar = ({
                                 href="#"
                                 onClick={(e) => { e.preventDefault(); setActiveTab(item.id); onCloseMobile(); }}
                                 className={`
-                                    flex items-center gap-4 px-4 py-3 text-sm font-bold rounded-xl transition-all duration-300 group
+                                    flex items-center gap-3 px-3.5 py-2 text-xs font-medium rounded-xl transition-all duration-200
                                     ${isActive
-                                        ? 'bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-white border border-blue-500/30'
-                                        : 'text-neutral-500 hover:text-white hover:bg-neutral-800/50'
+                                        ? 'bg-blue-50 dark:bg-blue-600/15 text-blue-600 dark:text-blue-400 font-semibold'
+                                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100/70 dark:hover:bg-neutral-800/60'
                                     }
                                 `}
                             >
                                 <Icon
                                     name={item.icon}
-                                    className={`w-5 h-5 transition-all duration-300 ${isActive ? 'text-blue-400 group-hover:scale-110' : 'text-neutral-600 group-hover:text-blue-400'}`}
+                                    className={`w-4 h-4 transition-transform duration-200 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-400 dark:text-neutral-500'}`}
                                 />
-                                <span className={`whitespace-nowrap uppercase tracking-widest text-[11px] font-black ${isActive ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'}`}>
-                                    {item.label}
-                                </span>
+                                <span>{item.label}</span>
                             </a>
                         );
                     })}
                 </nav>
 
-                <div className="pt-4 border-t border-neutral-800/50">
+                <div className="pt-3 border-t border-neutral-200/80 dark:border-neutral-800">
                     <button
                         onClick={onLogout}
-                        className="flex w-full items-center gap-4 px-4 py-3 text-sm font-bold rounded-xl text-neutral-500 hover:text-red-400 hover:bg-red-500/5 transition-all group"
+                        className="flex w-full items-center gap-3 px-3.5 py-2 text-xs font-medium rounded-xl text-neutral-500 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all"
                     >
-                        <Icon name="log-out" className="w-5 h-5 text-neutral-600 group-hover:text-red-400" />
-                        <span className="whitespace-nowrap uppercase tracking-widest text-[11px] font-black opacity-60 group-hover:opacity-100">Cerrar Sesión</span>
+                        <Icon name="log-out" className="w-4 h-4" />
+                        <span>Cerrar Sesión</span>
                     </button>
                 </div>
             </aside>

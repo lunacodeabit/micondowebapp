@@ -16,38 +16,40 @@ type CondoSelectorProps = {
 const CustomerCard = ({ condo, onSelect }: { condo: Condo; onSelect: () => void }) => (
     <button
         onClick={onSelect}
-        className="group relative bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/50 p-6 rounded-3xl text-left transition-all duration-500 hover:border-orange-500/30 hover:shadow-[0_0_40px_rgba(249,115,22,0.05)] overflow-hidden anime-fade-in"
+        className="group bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 hover:border-blue-400 dark:hover:border-blue-500/50 p-6 rounded-2xl text-left transition-all duration-200 shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.3)] hover:shadow-md cursor-pointer flex items-center justify-between gap-4"
     >
-        {/* Hover Highlight */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-        <div className="flex items-start gap-5 relative z-10">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-neutral-700 flex items-center justify-center shadow-lg group-hover:scale-105 group-hover:border-orange-500/50 transition-all duration-500">
-                <Icon name="building-2" className="w-8 h-8 text-neutral-400 group-hover:text-orange-400 transition-colors" />
+        <div className="flex items-center gap-4 min-w-0 flex-1">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0 group-hover:scale-105 transition-transform">
+                <Icon name="building-2" className="w-7 h-7" />
             </div>
 
-            <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-1">
-                    <h2 className="text-xl font-black text-white tracking-tight truncate group-hover:text-orange-400 transition-colors">
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2.5 mb-1">
+                    <h2 className="text-base font-bold text-neutral-900 dark:text-white tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {condo.name}
                     </h2>
-                    <span className="px-2 py-0.5 bg-neutral-800 rounded-md text-[9px] font-black text-neutral-500 uppercase tracking-widest border border-neutral-700">
+                    <span className="px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 text-[10px] font-bold rounded-md border border-neutral-200/60 dark:border-neutral-700">
                         {condo.code || "CLI"}
                     </span>
                 </div>
-                <p className="text-sm text-neutral-500 truncate font-medium">{condo.address}</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate font-medium">
+                    {condo.address || 'Santo Domingo, República Dominicana'}
+                </p>
 
-                <div className="mt-4 flex items-center gap-4">
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-                        <Icon name="users" className="w-3 h-3 text-neutral-600" />
+                <div className="mt-2.5 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/50">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         <span>{condo.units?.length || 0} Unidades</span>
-                    </div>
+                    </span>
+                    <span className="text-[11px] text-neutral-400 dark:text-neutral-500 font-medium">
+                        • Gestión Operativa
+                    </span>
                 </div>
             </div>
+        </div>
 
-            <div className="w-10 h-10 rounded-full bg-neutral-800/50 flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-0 translate-x-4 transition-all duration-500 border border-neutral-700">
-                <Icon name="chevron-right" className="w-5 h-5 text-orange-500" />
-            </div>
+        <div className="w-10 h-10 rounded-xl bg-neutral-50 dark:bg-neutral-800 text-neutral-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/40 flex items-center justify-center transition-all group-hover:translate-x-1 flex-shrink-0 border border-neutral-200/60 dark:border-neutral-700">
+            <Icon name="chevron-right" className="w-5 h-5" />
         </div>
     </button>
 );
@@ -58,32 +60,32 @@ export const CondoSelector = ({ condos, onSelectCondo, onLogout, onBack }: Condo
     return (
         <AdminMainLayout activeTab="condos" onTabChange={(tab) => { if (tab === 'dashboard') onBack(); }}>
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6 anime-fade-in">
-                <div className="space-y-2">
-                    <div className="flex items-center gap-3 text-[11px] font-black text-orange-500 uppercase tracking-[3px]">
-                        <Icon name="building" className="w-4 h-4 shadow-xl shadow-orange-500/50" />
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 pb-4 border-b border-neutral-200/80 dark:border-neutral-800">
+                <div>
+                    <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">
+                        <Icon name="building-2" className="w-4 h-4" />
                         <span>Gestión de Clientes</span>
                     </div>
-                    <h1 className="text-6xl font-black text-white tracking-tighter leading-none">
-                        Tus Clientes <br />
-                        <span className="text-neutral-500">Activos</span>
+                    <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white tracking-tight">
+                        Tus Clientes
+                        <span className="text-neutral-400 dark:text-neutral-500 font-medium ml-2">Activos ({condos.length})</span>
                     </h1>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                        Selecciona un condominio para acceder a su panel administrativo o registra un nuevo edificio.
+                    </p>
                 </div>
 
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="group relative px-8 py-4 bg-white rounded-2xl overflow-hidden shadow-2xl hover:scale-[1.02] active:scale-95 transition-all duration-300"
+                    className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-xl text-xs flex items-center gap-2 transition-all shadow-sm"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 via-orange-500/10 to-orange-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                    <div className="flex items-center gap-3 relative z-10">
-                        <Icon name="plus" className="w-5 h-5 text-black" />
-                        <span className="text-black font-black uppercase tracking-widest text-xs">Crear Nuevo Cliente</span>
-                    </div>
+                    <Icon name="plus" className="w-4 h-4" />
+                    <span>Crear Nuevo Cliente</span>
                 </button>
             </div>
 
             {/* Grid Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-12">
                 {condos.map(condo => (
                     <CustomerCard
                         key={condo.id}

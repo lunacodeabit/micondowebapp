@@ -11,26 +11,24 @@ type FormFieldProps = {
 
 const RequiredIndicator = () => <span className="text-red-500">♦</span>;
 
-// NOTA: 'export' ha sido eliminado de aquí
 const FormField = ({ label, htmlFor, children, error, required }: FormFieldProps) => (
     <div>
-        <label htmlFor={htmlFor} className="flex justify-between items-center text-sm font-medium text-neutral-400 mb-1">
+        <label htmlFor={htmlFor} className="flex justify-between items-center text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5 uppercase tracking-wide">
             <span>{label}</span>
             {required && <RequiredIndicator />}
         </label>
         {children}
-        {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+        {error && <p className="mt-1 text-xs text-rose-500 font-semibold">{error}</p>}
     </div>
 );
 
 type FormInputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
-// NOTA: 'export' ha sido eliminado de aquí
 const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>((props, ref) => (
     <input
         {...props}
         ref={ref}
-        className="w-full bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-white placeholder-neutral-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        className="w-full bg-white dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl px-3.5 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 focus:outline-none transition-all shadow-2xs"
     />
 ));
 
@@ -38,12 +36,11 @@ type FormSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
     children: React.ReactNode;
 };
 
-// NOTA: 'export' ha sido eliminado de aquí
 const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(({ children, ...props }, ref) => (
      <select
         {...props}
         ref={ref}
-        className="w-full bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        className="w-full bg-white dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl px-3.5 py-2.5 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 focus:outline-none transition-all shadow-2xs"
     >
         {children}
     </select>
@@ -51,13 +48,12 @@ const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(({ child
 
 type FormTextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
-// NOTA: 'export' ha sido eliminado de aquí
 const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>((props, ref) => (
     <textarea
         {...props}
         ref={ref}
         rows={4}
-        className="w-full bg-neutral-800 border border-neutral-700 rounded-md px-3 py-2 text-white placeholder-neutral-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        className="w-full bg-white dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-xl px-3.5 py-2.5 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 focus:outline-none transition-all shadow-2xs"
     />
 ));
 
@@ -67,17 +63,16 @@ type FormButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
     isLoading?: boolean;
 };
 
-// NOTA: 'export' ha sido eliminado de aquí
 const FormButton = ({ children, variant = 'primary', isLoading = false, ...props }: FormButtonProps) => {
-    const baseClasses = "w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:opacity-50";
+    const baseClasses = "w-full flex justify-center items-center py-2.5 px-5 rounded-xl text-xs font-bold transition-all duration-200 shadow-sm disabled:opacity-50";
     const variantClasses = variant === 'primary' 
-        ? "text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
-        : "text-neutral-300 bg-neutral-700 hover:bg-neutral-600 focus:ring-neutral-500";
+        ? "text-white bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-sm"
+        : "text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700";
 
     return (
         <button {...props} className={`${baseClasses} ${variantClasses}`} disabled={isLoading || props.disabled}>
             {isLoading ? (
-                <Icon name="loader-2" className="animate-spin" />
+                <Icon name="loader-2" className="animate-spin w-4 h-4" />
             ) : (
                 children
             )}

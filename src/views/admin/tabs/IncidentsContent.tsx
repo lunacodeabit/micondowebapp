@@ -50,47 +50,47 @@ export const IncidentsContent = ({ initialAction, clearInitialAction }: Incident
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">Gestión de Incidentes</h2>
-                 <button onClick={() => setIsReportModalOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Gestión de Incidentes</h2>
+                 <button onClick={() => setIsReportModalOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-xs">
                     <Icon name="plus" size={18} />
                     <span>Reportar Incidente</span>
                 </button>
             </div>
 
             <div className="mb-4">
-                <div className="flex space-x-1 bg-neutral-800 p-1 rounded-lg max-w-sm">
+                <div className="flex space-x-1 bg-neutral-100 dark:bg-neutral-800/80 p-1 rounded-lg max-w-sm border border-neutral-200/80 dark:border-neutral-700/60">
                     {['Abierto', 'En Progreso', 'Cerrado', 'Todos'].map(f => (
-                        <button key={f} onClick={() => setFilter(f)} className={`w-full px-3 py-1 text-sm font-medium rounded-md ${filter === f ? 'bg-blue-600 text-white' : 'text-neutral-300 hover:bg-neutral-700'}`}>
+                        <button key={f} onClick={() => setFilter(f)} className={`w-full px-3 py-1 text-xs font-semibold rounded-md transition-all ${filter === f ? 'bg-blue-600 text-white shadow-xs' : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-700/50'}`}>
                             {f}
                         </button>
                     ))}
                 </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
                 {filteredIncidents.length > 0 ? filteredIncidents.map(incident => (
-                    <details key={incident.id} className="bg-neutral-900 rounded-lg shadow-md overflow-hidden">
-                        <summary className="p-4 flex justify-between items-center cursor-pointer hover:bg-neutral-800/50">
+                    <details key={incident.id} className="bg-white dark:bg-[#161b26] rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs overflow-hidden group">
+                        <summary className="p-4 flex justify-between items-center cursor-pointer hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40 transition-colors">
                             <div>
-                                <p className="font-semibold text-white">Reportado por: {incident.reportedBy}</p>
-                                <p className="text-sm text-neutral-400">{incident.description.substring(0, 80)}...</p>
+                                <p className="font-semibold text-sm text-neutral-900 dark:text-white">Reportado por: {incident.reportedBy}</p>
+                                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{incident.description.substring(0, 80)}...</p>
                             </div>
                             <div className="flex items-center gap-4">
                                 <StatusBadge status={incident.status} />
-                                <span className="text-sm text-neutral-500">{formatDate(incident.date)}</span>
-                                <Icon name="chevron-down" className="w-5 h-5 transition-transform details-open:rotate-180"/>
+                                <span className="text-xs text-neutral-500 dark:text-neutral-400">{formatDate(incident.date)}</span>
+                                <Icon name="chevron-down" className="w-4 h-4 text-neutral-400 transition-transform group-open:rotate-180"/>
                             </div>
                         </summary>
-                        <div className="px-4 pb-4 border-t border-neutral-800">
-                            <p className="mt-2"><strong>Descripción Completa:</strong> {incident.description}</p>
-                            <p className="mt-2"><strong>Resolución:</strong> {incident.resolution || 'N/A'}</p>
-                            <button onClick={() => handleOpenModal(incident)} className="mt-4 text-sm text-blue-500 hover:text-blue-400">
+                        <div className="px-4 pb-4 pt-2 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-2">
+                            <p className="text-neutral-700 dark:text-neutral-300"><strong className="text-neutral-900 dark:text-white">Descripción Completa:</strong> {incident.description}</p>
+                            <p className="text-neutral-700 dark:text-neutral-300"><strong className="text-neutral-900 dark:text-white">Resolución:</strong> {incident.resolution || 'N/A'}</p>
+                            <button onClick={() => handleOpenModal(incident)} className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
                                 Actualizar Estado/Resolución
                             </button>
                         </div>
                     </details>
                 )) : (
-                     <div className="bg-neutral-900 rounded-lg shadow-md p-8 text-center text-neutral-400">
+                     <div className="bg-white dark:bg-[#161b26] rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs p-8 text-center text-xs text-neutral-500 dark:text-neutral-400">
                         No hay incidentes para mostrar en esta categoría.
                     </div>
                 )}

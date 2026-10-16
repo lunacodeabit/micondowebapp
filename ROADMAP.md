@@ -1,6 +1,6 @@
 # 🗺️ MI CONDO - Development Roadmap
 
-> **Última actualización**: 2024-12-18
+> **Última actualización**: 2026-04-10
 > Este documento sirve como guía del progreso y próximos pasos del proyecto.
 
 ---
@@ -9,10 +9,10 @@
 
 | Área | Progreso | Notas |
 |------|----------|-------|
-| **SuperAdmin Panel** | 🟢 85% | Casi completo, falta Stripe |
-| **Admin Panel** | 🟡 40% | Estructura básica, falta pulir |
+| **SuperAdmin Panel** | 🟢 90% | Casi completo, facturación manual activa |
+| **Admin Panel** | 🟡 75% | 14 tabs funcionales, UI pulida |
 | **Resident Portal** | 🔴 10% | Solo autenticación básica |
-| **Infrastructure** | 🟡 60% | Firebase OK, falta testing |
+| **Infrastructure** | 🟢 80% | Supabase migrado, Vitest configurado |
 
 ---
 
@@ -61,24 +61,30 @@
 
 ### Prioridad Alta 🔴
 
-#### 1. Email Service (Bloqueado)
-- [ ] Configurar Firebase Trigger Email extension
-- [ ] O implementar SendGrid como alternativa
+#### 1. Email Service (Listo para activar)
+- [x] Templates de email premium (6 tipos)
+- [x] Supabase Edge Function para envío (Resend API)
+- [x] Servicio de notificaciones integrado
+- [x] Wired a confirmación de pago en SuperAdmin
+- [ ] Activar: crear cuenta Resend + deploy Edge Function
 - [ ] Conectar con sistema de anuncios
-- [ ] Emails automáticos de pago vencido
+- [ ] Emails automáticos de pago vencido (cron)
 
-#### 2. Stripe Integration
-- [ ] Crear cuenta de Stripe
-- [ ] Configurar productos/precios en Stripe Dashboard
-- [ ] Implementar Checkout Session
-- [ ] Webhooks para pagos automáticos
-- [ ] Portal de cliente para gestión de suscripción
-- [ ] Actualizar estado automáticamente post-pago
+#### 2. Facturación por Transferencia Bancaria
+> **Nota**: En RD es común transferencias bancarias. NO usaremos Stripe.
+- [x] Registro manual de pagos por SuperAdmin
+- [x] Métodos: Transferencia, Depósito, Efectivo, Cheque
+- [x] Generación de recibos PDF
+- [x] Email de confirmación automático
+- [ ] Flujo de confirmación de transferencia (comprobante)
+- [ ] Datos bancarios configurables por SuperAdmin
+- [ ] Notificación automática de pago vencido
 
-#### 3. Testing Framework
-- [ ] Configurar Vitest
-- [ ] Tests unitarios para billing utils
-- [ ] Tests de componentes críticos
+#### 3. Testing Framework ✅
+- [x] Vitest configurado con jsdom
+- [x] 41 tests unitarios (billing, finance, date utils)
+- [x] Scripts: test, test:watch, test:coverage
+- [ ] Tests de componentes React
 - [ ] Cobertura mínima 70%
 
 ---

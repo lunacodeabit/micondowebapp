@@ -61,34 +61,26 @@
 
 ## 📅 PRÓXIMA SEMANA
 
-### Stripe Integration (pay-001)
-**Prioridad**: Crítica
-**Tiempo estimado**: 4-6 horas
+### ~~Stripe Integration~~ → Transferencias Bancarias (pay-001)
+**Estado**: ✅ Resuelto — En RD se usan transferencias bancarias, NO Stripe.
 
-**Pasos**:
-1. [ ] Crear cuenta Stripe (si no existe)
-2. [ ] Obtener API keys (test mode)
-3. [ ] Instalar `@stripe/stripe-js` y `stripe`
-4. [ ] Crear endpoint de checkout
-5. [ ] Implementar webhook para confirmación de pagos
-6. [ ] Integrar botón de pago en Billing Portal
-7. [ ] Probar flujo completo en test mode
+**Implementado**:
+- [x] Registro manual de pagos por SuperAdmin (Transferencia, Depósito, Efectivo, Cheque)
+- [x] Generación de recibos PDF
+- [x] Email de confirmación automático (via Supabase Edge Function + Resend)
+- [x] Métodos de pago actualizados en UI
 
-**Archivos a crear/modificar**:
-- `src/utils/stripe.ts` (nuevo)
-- `functions/src/stripeWebhook.ts` (nuevo)
-- `src/views/admin/SuperAdminDashboard.tsx` (modificar)
+**Pendiente**:
+- [ ] Flujo de comprobante de transferencia (upload + verificación)
+- [ ] Datos bancarios configurables en Settings
 
-### Testing Setup (test-001)
-**Prioridad**: Alta
-**Tiempo estimado**: 2-3 horas
+### Testing Setup (test-001) ✅
+**Estado**: Completado
 
-**Pasos**:
-1. [ ] Instalar Vitest: `npm install -D vitest @testing-library/react`
-2. [ ] Crear `vitest.config.ts`
-3. [ ] Crear tests para `src/utils/billing.ts`
-4. [ ] Crear tests para `src/utils/finance.ts`
-5. [ ] Añadir script `npm run test` a package.json
+**Implementado**:
+- [x] Vitest configurado con jsdom
+- [x] 41 tests unitarios (billing, finance, date)
+- [x] Scripts: `npm test`, `npm run test:watch`, `npm run test:coverage`
 
 ---
 
@@ -123,8 +115,8 @@
 ### Checklist Pre-Launch
 - [ ] Firestore rules actualizadas y desplegadas
 - [ ] Storage rules actualizadas y desplegadas
-- [ ] Variables de entorno en Firebase/Vercel
-- [ ] Stripe en modo producción
+- [ ] Variables de entorno en Supabase/Vercel
+- [ ] Email service activado (Resend)
 - [ ] Dominio configurado
 - [ ] SSL verificado
 - [ ] Error monitoring (Sentry)
@@ -182,11 +174,11 @@ C:\dev\micondo
 ```
 "Continúa con el siguiente paso del roadmap"
 
-"Implementa Stripe integration para MI CONDO"
+"Activa email notifications: deploy Edge Function + configurar Resend"
 
-"Crea tests unitarios para utils/billing.ts"
+"Crea tests de componentes React con @testing-library/react"
 
-"Configura SendGrid para envío de emails transaccionales"
+"Implementa flujo de comprobante de transferencia bancaria"
 
 "Revisa DEV_MEMORY.md y continúa donde quedamos"
 ```

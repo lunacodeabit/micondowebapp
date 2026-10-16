@@ -1,7 +1,7 @@
 import { supabase } from '../supabaseClient';
 
 // =============================================
-// EMAIL SERVICE - Firebase Trigger Email Extension
+// EMAIL SERVICE - Supabase Edge Function + Resend
 // =============================================
 
 // Tipos de email
@@ -20,28 +20,26 @@ export interface EmailData {
   text?: string;
 }
 
-// Colección donde Firebase Extension escucha
-const MAIL_COLLECTION = 'mail';
-
 /**
- * Envía un email usando Firebase Trigger Email Extension
+ * Envía un email via Supabase Edge Function (Resend)
  * @param emailData - Datos del email (to, subject, html)
- * @returns ID del documento creado
+ * @returns ID del email enviado
  */
 export const sendEmail = async (emailData: EmailData): Promise<string> => {
   try {
-    const { data, error } = await supabase.from(MAIL_COLLECTION).insert({
-      to: emailData.to,
-      message: {
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: {
+        to: emailData.to,
         subject: emailData.subject,
         html: emailData.html,
         text: emailData.text || '',
       },
-      created_at: new Date().toISOString(),
-    }).select('id').single();
+    });
 
     if (error) throw error;
-    console.log('Email queued with ID:', data.id);
+    if (data?.error) throw new Error(data.error);
+
+    console.log('Email sent:', data.id);
     return data.id;
   } catch (error) {
     console.error('Error sending email:', error);
@@ -170,7 +168,8 @@ export const getPaymentReminderEmail = (data: {
           <ul>
             <li>Transferencia bancaria</li>
             <li>Depósito en cuenta</li>
-            <li>Pago en línea</li>
+            <li>Efectivo</li>
+            <li>Cheque</li>
           </ul>
           
           <p>Si ya realizó su pago, por favor ignore este mensaje.</p>
@@ -310,6 +309,49 @@ export const getAccountSuspendedEmail = (data: {
           </ol>
           
           <p>Todos sus datos están seguros y serán restaurados una vez regularice su situación.</p>
+        </div>
+        ${emailFooter}
+      </div>
+    </body>
+    </html>
+  `,
+});
+
+/**
+ * Template: Aviso de Período de Gracia
+ */
+export const getGracePeriodWarningEmail = (data: {
+  companyName: string;
+  daysLeft: number;
+  amount: number;
+}): EmailData => ({
+  to: '',
+  subject: `⏰ Período de Gracia - ${data.daysLeft} días restantes | MI CONDO`,
+  html: `
+    <!DOCTYPE html>
+    <html>
+    <head>${emailStyles}</head>
+    <body>
+      <div class="container">
+        ${emailHeader}
+        <div class="content">
+          <h2 style="color: #F39C12;">⏰ Período de Gracia Activo</h2>
+          <p>Estimado cliente de <strong>${data.companyName}</strong>,</p>
+          <p>Su suscripción ha vencido y se encuentra en período de gracia. Le quedan <strong>${data.daysLeft} días</strong> para regularizar su pago antes de que su cuenta sea suspendida.</p>
+          
+          <div class="highlight-box" style="border-color: #F39C12;">
+            <p style="margin: 0; color: #666;">Monto pendiente</p>
+            <p class="amount" style="color: #F39C12;">RD$ ${data.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+            <p style="margin: 5px 0 0; color: #E74C3C;"><strong>${data.daysLeft} días restantes</strong></p>
+          </div>
+          
+          <p>Por favor realice su pago a la brevedad para evitar la interrupción del servicio.</p>
+          
+          <p><strong>Métodos de pago:</strong></p>
+          <ul>
+            <li>Transferencia bancaria</li>
+            <li>Depósito en cuenta</li>
+          </ul>
         </div>
         ${emailFooter}
       </div>

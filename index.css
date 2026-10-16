@@ -6,6 +6,10 @@ html {
     font-family: 'Inter', sans-serif; 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    color-scheme: light;
+}
+
+html.dark {
     color-scheme: dark;
 }
 
@@ -13,20 +17,30 @@ html {
   html { font-family: 'Inter var', sans-serif; }
 }
 
-/* Custom scrollbar for a cleaner look in dark mode */
+/* Custom scrollbar for clean light mode */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #171717; /* neutral-900 */
+  background: #f1f2f5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #404040; /* neutral-700 */
+  background: #cbd5e1;
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #525252; /* neutral-600 */
+  background: #94a3b8;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #0b0f17;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #27272a;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
 }
 
 /* Custom scrollbar for modals */

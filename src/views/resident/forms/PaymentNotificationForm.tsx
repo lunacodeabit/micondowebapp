@@ -101,15 +101,15 @@ export const PaymentNotificationForm = ({ onSuccess, onCancel, resident }: Payme
 
             <FormCommon.Group label="Adjuntar Comprobante" htmlFor="proof-upload">
                 <div className="flex items-center gap-4">
-                    <label htmlFor="proof-upload" className="cursor-pointer flex items-center gap-2 bg-neutral-700 hover:bg-neutral-600 text-white font-bold py-2 px-4 rounded-lg">
+                    <label htmlFor="proof-upload" className="cursor-pointer flex items-center gap-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-colors">
                         <Icon name="upload-cloud" size={16} />
                         <span>Seleccionar Archivo</span>
                     </label>
                     <input id="proof-upload" type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFileChange} />
-                    {fileName && <span className="text-neutral-300 text-sm truncate">{fileName}</span>}
+                    {fileName && <span className="text-neutral-700 dark:text-neutral-300 text-xs font-mono truncate">{fileName}</span>}
                 </div>
                 {!proofFile && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-rose-500 text-xs mt-1 font-medium">
                         El comprobante es requerido.
                     </p>
                 )}

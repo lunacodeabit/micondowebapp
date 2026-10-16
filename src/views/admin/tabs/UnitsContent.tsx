@@ -57,17 +57,17 @@ const UnitAccountHistory = ({ unit }: { unit: Unit }) => {
     };
 
     return (
-        <div className="mt-4 p-4 bg-neutral-800 rounded-lg">
-            <h4 className="text-lg font-semibold mb-2">Historial de Cuenta</h4>
-            <table className="min-w-full text-sm">
+        <div className="mt-4 p-4 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-200/80 dark:border-neutral-700/60">
+            <h4 className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">Historial de Cuenta</h4>
+            <table className="min-w-full text-xs">
                 <thead>
-                    <tr>
-                        <th className="text-left py-2 px-3">Fecha</th>
-                        <th className="text-left py-2 px-3">Descripción</th>
-                        <th className="text-right py-2 px-3">Monto</th>
+                    <tr className="border-b border-neutral-200/80 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400">
+                        <th className="text-left py-2 px-3 font-semibold">Fecha</th>
+                        <th className="text-left py-2 px-3 font-semibold">Descripción</th>
+                        <th className="text-right py-2 px-3 font-semibold">Monto</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-neutral-200/60 dark:divide-neutral-700/50">
                     {history.map((item: any) => (
                         <tr key={item.id}>
                             <td className="py-1 px-3">{formatDate(item.date)}</td>
@@ -275,30 +275,30 @@ export const UnitsContent = () => {
     return (
         <div>
             <div className="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
-                <h2 className="text-2xl font-bold text-white">Unidades y Propietarios</h2>
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Unidades y Propietarios</h2>
                 <div className="flex flex-col md:flex-row md:items-center gap-4">
                     <div className="relative">
-                        <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
+                        <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" size={18} />
                         <input
                             type="text"
                             placeholder="Buscar unidad o propietario..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pl-10 pr-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            className="w-full bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 rounded-lg pl-10 pr-4 py-2 text-neutral-900 dark:text-white placeholder-neutral-400 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-2xs"
                         />
                     </div>
                     <div className="flex items-center gap-2 md:gap-4">
                         {selectedCondo.settings?.lateFees?.apply && (
-                            <button onClick={handleApplyLateFees} title="Aplicar cargos por mora a unidades con balance vencido" className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">
+                            <button onClick={handleApplyLateFees} title="Aplicar cargos por mora a unidades con balance vencido" className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-xs">
                                 <Icon name="percent-circle" size={18} />
                                 <span>Aplicar Moras</span>
                             </button>
                         )}
-                        <button onClick={handleGenerateMonthlyFees} title="Generar cargos de mantenimiento para el mes actual a todas las unidades activas" className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">
+                        <button onClick={handleGenerateMonthlyFees} title="Generar cargos de mantenimiento para el mes actual a todas las unidades activas" className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-xs">
                             <Icon name="file-plus-2" size={18} />
                             <span>Generar Cargos</span>
                         </button>
-                        <button onClick={() => handleOpenModal()} className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                        <button onClick={() => handleOpenModal()} className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-xs">
                             <Icon name="plus" size={18} />
                             <span>Añadir Unidad</span>
                         </button>
@@ -307,37 +307,37 @@ export const UnitsContent = () => {
             </div>
 
             {/* Desktop Table View */}
-            <div className="hidden md:block bg-neutral-900 rounded-lg shadow-md overflow-x-auto">
+            <div className="hidden md:block bg-white dark:bg-[#161b26] rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs overflow-x-auto">
                 <table className="min-w-full">
-                    <thead className="bg-neutral-800">
+                    <thead className="bg-neutral-50 dark:bg-neutral-800/60 border-b border-neutral-200/80 dark:border-neutral-800">
                         <tr>
                             {['Apto', 'Propietario', 'Cuota Mensual', 'Balance', 'Miembro Desde', 'Estado', 'Acciones'].map(h => (
-                                <th key={h} className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">{h}</th>
+                                <th key={h} className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{h}</th>
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-neutral-800">
+                    <tbody className="divide-y divide-neutral-200/80 dark:divide-neutral-800">
                         {filteredUnits.map((unit: any) => {
                             const history = (unit.accountHistory as unknown as any[]) || [];
                             const balance = history.reduce((acc: number, item: any) => acc + (item.type === 'Cargo' ? item.amount : -item.amount), 0);
                             return (
                                 <React.Fragment key={unit.id}>
-                                    <tr className="hover:bg-neutral-800/50 group">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{unit.apartmentNumber}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{unit.ownerName}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">RD$ {unit.monthlyFee.toLocaleString()}</td>
-                                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-bold ${balance > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                                    <tr className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40 group transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-neutral-900 dark:text-white">{unit.apartmentNumber}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700 dark:text-neutral-300">{unit.ownerName}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700 dark:text-neutral-300">RD$ {unit.monthlyFee.toLocaleString()}</td>
+                                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-bold ${balance > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                                             RD$ {balance.toLocaleString()}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{formatDate(unit.registeredDate)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">{formatDate(unit.registeredDate)}</td>
                                         <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={unit.status} /></td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm space-x-4">
-                                            <button onClick={() => handleOpenModal(unit)} className="text-blue-500 hover:text-blue-400">Editar</button>
-                                            <button onClick={() => generateInvoicePDF(unit, selectedCondo)} className="text-green-500 hover:text-green-400">Aviso</button>
-                                            <button onClick={() => handleGenerateStatement(unit)} className="text-yellow-500 hover:text-yellow-400">Estado</button>
+                                            <button onClick={() => handleOpenModal(unit)} className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold">Editar</button>
+                                            <button onClick={() => generateInvoicePDF(unit, selectedCondo)} className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-semibold">Aviso</button>
+                                            <button onClick={() => handleGenerateStatement(unit)} className="text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 font-semibold">Estado</button>
                                         </td>
                                     </tr>
-                                    <tr className="hidden group-hover:table-row bg-neutral-800">
+                                    <tr className="hidden group-hover:table-row bg-neutral-50/50 dark:bg-neutral-800/30">
                                         <td colSpan={7} className="p-0">
                                             <UnitAccountHistory unit={unit} />
                                         </td>
@@ -355,22 +355,22 @@ export const UnitsContent = () => {
                     const history = (unit.accountHistory as unknown as any[]) || [];
                     const balance = history.reduce((acc: number, item: any) => acc + (item.type === 'Cargo' ? item.amount : -item.amount), 0);
                     return (
-                        <div key={unit.id} className="bg-neutral-900 rounded-lg shadow-md p-4">
+                        <div key={unit.id} className="bg-white dark:bg-[#161b26] rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs p-4">
                             <div className="flex justify-between items-start mb-2">
                                 <div>
-                                    <h3 className="font-bold text-lg text-white">{unit.apartmentNumber}</h3>
-                                    <p className="text-sm text-neutral-300">{unit.ownerName}</p>
+                                    <h3 className="font-bold text-base text-neutral-900 dark:text-white">{unit.apartmentNumber}</h3>
+                                    <p className="text-sm text-neutral-600 dark:text-neutral-300">{unit.ownerName}</p>
                                 </div>
                                 <StatusBadge status={unit.status} />
                             </div>
-                            <div className="text-sm space-y-1 mb-4 border-b border-neutral-800 pb-3">
-                                <p className="text-neutral-400">Cuota: <span className="text-neutral-200 font-medium">RD$ {unit.monthlyFee.toLocaleString()}</span></p>
-                                <p className="text-neutral-400">Balance: <span className={`font-bold ${balance > 0 ? 'text-red-400' : 'text-green-400'}`}>RD$ {balance.toLocaleString()}</span></p>
+                            <div className="text-sm space-y-1 mb-4 border-b border-neutral-100 dark:border-neutral-800 pb-3">
+                                <p className="text-neutral-500 dark:text-neutral-400">Cuota: <span className="text-neutral-900 dark:text-neutral-200 font-medium">RD$ {unit.monthlyFee.toLocaleString()}</span></p>
+                                <p className="text-neutral-500 dark:text-neutral-400">Balance: <span className={`font-bold ${balance > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>RD$ {balance.toLocaleString()}</span></p>
                             </div>
                             <div className="flex justify-start items-center gap-4">
-                                <button onClick={() => handleOpenModal(unit)} className="text-blue-500 hover:text-blue-400 text-sm font-semibold">Editar</button>
-                                <button onClick={() => generateInvoicePDF(unit, selectedCondo)} className="text-green-500 hover:text-green-400 text-sm font-semibold">Aviso</button>
-                                <button onClick={() => handleGenerateStatement(unit)} className="text-yellow-500 hover:text-yellow-400 text-sm font-semibold">Estado</button>
+                                <button onClick={() => handleOpenModal(unit)} className="text-blue-600 hover:text-blue-700 dark:text-blue-400 text-sm font-semibold">Editar</button>
+                                <button onClick={() => generateInvoicePDF(unit, selectedCondo)} className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 text-sm font-semibold">Aviso</button>
+                                <button onClick={() => handleGenerateStatement(unit)} className="text-amber-600 hover:text-amber-700 dark:text-amber-400 text-sm font-semibold">Estado</button>
                             </div>
                         </div>
                     );

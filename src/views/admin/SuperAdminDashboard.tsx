@@ -17,6 +17,8 @@ import {
   type BillingInfo,
 } from "../../utils/billing";
 import { ElisaAIContent } from "./tabs/ElisaAIContent";
+import { notifyPaymentConfirmation } from "../../services/emailNotifications";
+import { ThemeToggle } from "../../components/ui/ThemeToggle";
 
 type CompanyFormProps = {
   isOpen: boolean;
@@ -303,11 +305,11 @@ const CompanyForm = ({
         onSubmit={handleSubmit}
         className="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"
       >
-        <h3 className="md:col-span-2 text-lg font-semibold text-white border-b border-neutral-700 pb-2 mb-2">
+        <h3 className="md:col-span-2 text-base font-bold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-800 pb-2 mb-2">
           Información de la Compañía
         </h3>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             Nombre de la Compañía
           </label>
           <input
@@ -316,11 +318,11 @@ const CompanyForm = ({
             value={formData.name}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-900 dark:text-white px-3.5 py-2 text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             RNC
           </label>
           <input
@@ -329,11 +331,11 @@ const CompanyForm = ({
             value={formData.rnc}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-900 dark:text-white px-3.5 py-2 text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             Email de Facturación
           </label>
           <input
@@ -342,11 +344,11 @@ const CompanyForm = ({
             value={formData.email}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-900 dark:text-white px-3.5 py-2 text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             Teléfono
           </label>
           <input
@@ -355,11 +357,11 @@ const CompanyForm = ({
             value={formData.phone}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-900 dark:text-white px-3.5 py-2 text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
-        <div className="md:col-span-2 mb-4">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="md:col-span-2 mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             Dirección
           </label>
           <input
@@ -368,18 +370,18 @@ const CompanyForm = ({
             value={formData.address}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-900 dark:text-white px-3.5 py-2 text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
-        <div className="md:col-span-2 mb-6">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="md:col-span-2 mb-4">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             Logo de la Compañía (Opcional)
           </label>
           <input
             type="file"
             accept="image/*"
             onChange={handleFileChange}
-            className="mt-1 block w-full text-sm text-neutral-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+            className="mt-1 block w-full text-sm text-neutral-600 dark:text-neutral-300 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border file:border-neutral-200 dark:file:border-neutral-700 file:text-xs file:font-bold file:bg-neutral-100 dark:file:bg-neutral-800 file:text-neutral-800 dark:file:text-neutral-200 hover:file:bg-neutral-200 dark:hover:file:bg-neutral-700"
           />
           {logoFile && (
             <p className="mt-2 text-xs text-neutral-500">
@@ -394,11 +396,11 @@ const CompanyForm = ({
           )}
         </div>
 
-        <h3 className="md:col-span-2 text-lg font-semibold text-white border-b border-neutral-700 pb-2 mb-2">
+        <h3 className="md:col-span-2 text-base font-bold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-800 pb-2 mb-2">
           Administrador Principal de la Compañía
         </h3>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             Email del Admin (Login)
           </label>
           <input
@@ -407,11 +409,11 @@ const CompanyForm = ({
             value={formData.adminUserEmail}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-900 dark:text-white px-3.5 py-2 text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             Nueva Contraseña (Opcional)
           </label>
           <input
@@ -424,15 +426,15 @@ const CompanyForm = ({
                 ? "Dejar en blanco para no cambiar"
                 : "Mínimo 6 caracteres"
             }
-            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-900 dark:text-white px-3.5 py-2 text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
 
-        <h3 className="md:col-span-2 text-lg font-semibold text-white border-b border-neutral-700 pb-2 mb-2">
+        <h3 className="md:col-span-2 text-base font-bold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-800 pb-2 mb-2">
           Facturación SaaS
         </h3>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             Inicio de Facturación
           </label>
           <input
@@ -441,11 +443,11 @@ const CompanyForm = ({
             value={formData.billingStartDate}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-900 dark:text-white px-3.5 py-2 text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             Días de Gracia
           </label>
           <input
@@ -454,23 +456,23 @@ const CompanyForm = ({
             value={formData.gracePeriodDays}
             onChange={handleChange}
             required
-            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-900 dark:text-white px-3.5 py-2 text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
 
         {/* Plan Selection */}
-        <h3 className="md:col-span-2 text-lg font-semibold text-white border-b border-neutral-700 pb-2 mb-2 mt-4">
+        <h3 className="md:col-span-2 text-base font-bold text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-800 pb-2 mb-2 mt-4">
           Plan y Pricing
         </h3>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             Plan
           </label>
           <select
             name="plan"
             value={formData.plan}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-900 dark:text-white px-3.5 py-2 text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
           >
             <option value="Trial">🆓 Prueba Gratis (14 días)</option>
             <option value="Starter">⭐ Inicial (1 condo)</option>
@@ -479,8 +481,8 @@ const CompanyForm = ({
             <option value="Enterprise">🏢 Corporativo (10+ condos)</option>
           </select>
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400">
+        <div className="mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
             Cantidad de Condos
           </label>
           <input
@@ -491,7 +493,7 @@ const CompanyForm = ({
               const min = formData.plan === "Enterprise" ? 10 : formData.plan === "Pro" ? 5 : formData.plan === "Growth" ? 2 : 1;
               setCondoCount(Math.max(min, parseInt(e.target.value) || min));
             }}
-            className="mt-1 block w-full rounded-md border-neutral-700 bg-neutral-800 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/80 text-neutral-900 dark:text-white px-3.5 py-2 text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
           <p className="mt-1 text-xs text-neutral-500">
             Precio: RD${condoCount >= 10 ? '800' : condoCount >= 5 ? '1,000' : condoCount >= 2 ? '1,200' : '1,500'}/condo
@@ -499,31 +501,31 @@ const CompanyForm = ({
         </div>
 
         {/* Addons Section */}
-        <div className="md:col-span-2 mb-4">
-          <label className="block text-sm font-medium text-neutral-400 mb-3">
+        <div className="md:col-span-2 mb-2">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-2">
             Addons Disponibles
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {AVAILABLE_ADDONS.map((addon) => (
               <label
                 key={addon.id}
-                className={`flex items-start p-3 rounded-lg border cursor-pointer transition-all ${formData.addons.includes(addon.id)
-                  ? 'border-indigo-500 bg-indigo-500/10'
-                  : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
+                className={`flex items-start p-3 rounded-xl border cursor-pointer transition-all ${formData.addons.includes(addon.id)
+                  ? 'border-indigo-500 bg-indigo-50/70 dark:bg-indigo-500/10'
+                  : 'border-neutral-200 dark:border-neutral-700/80 bg-neutral-50/50 dark:bg-neutral-800/50 hover:border-neutral-300 dark:hover:border-neutral-600'
                   }`}
               >
                 <input
                   type="checkbox"
                   checked={formData.addons.includes(addon.id)}
                   onChange={() => handleAddonToggle(addon.id)}
-                  className="mt-1 h-4 w-4 text-indigo-600 border-neutral-600 rounded focus:ring-indigo-500 bg-neutral-700"
+                  className="mt-1 h-4 w-4 text-indigo-600 border-neutral-300 dark:border-neutral-600 rounded focus:ring-indigo-500 bg-white dark:bg-neutral-700"
                 />
                 <div className="ml-3 flex-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-white">{addon.name}</span>
-                    <span className="text-xs font-bold text-green-400">+RD${addon.monthlyPrice.toLocaleString()}/mes</span>
+                    <span className="text-sm font-semibold text-neutral-900 dark:text-white">{addon.name}</span>
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">+RD${addon.monthlyPrice.toLocaleString()}/mes</span>
                   </div>
-                  <p className="text-xs text-neutral-400 mt-1">{addon.description}</p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">{addon.description}</p>
                 </div>
               </label>
             ))}
@@ -531,42 +533,42 @@ const CompanyForm = ({
         </div>
 
         {/* Pricing Summary */}
-        <div className="md:col-span-2 p-4 rounded-lg bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-indigo-500/30 mb-4">
-          <h4 className="text-sm font-medium text-neutral-300 mb-3">Resumen de Facturación</h4>
+        <div className="md:col-span-2 p-5 rounded-2xl bg-neutral-50 dark:bg-gradient-to-r dark:from-indigo-950/40 dark:to-purple-950/40 border border-neutral-200 dark:border-indigo-500/30 mb-2">
+          <h4 className="text-xs font-bold text-neutral-600 dark:text-neutral-300 uppercase tracking-wider mb-3">Resumen de Facturación</h4>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-neutral-400">
+            <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
               <span>Plan Base ({condoCount} condo{condoCount > 1 ? 's' : ''})</span>
-              <span>RD${formData.plan === 'Trial' ? '0' : ((condoCount * (condoCount >= 10 ? 800 : condoCount >= 5 ? 1000 : condoCount >= 2 ? 1200 : 1500))).toLocaleString()}</span>
+              <span className="font-semibold text-neutral-900 dark:text-neutral-200">RD${formData.plan === 'Trial' ? '0' : ((condoCount * (condoCount >= 10 ? 800 : condoCount >= 5 ? 1000 : condoCount >= 2 ? 1200 : 1500))).toLocaleString()}</span>
             </div>
             {formData.addons.length > 0 && (
-              <div className="flex justify-between text-neutral-400">
+              <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
                 <span>Addons ({formData.addons.length})</span>
-                <span>+RD${formData.addons.reduce((sum, id) => sum + (AVAILABLE_ADDONS.find(a => a.id === id)?.monthlyPrice || 0), 0).toLocaleString()}</span>
+                <span className="font-semibold text-neutral-900 dark:text-neutral-200">+RD${formData.addons.reduce((sum, id) => sum + (AVAILABLE_ADDONS.find(a => a.id === id)?.monthlyPrice || 0), 0).toLocaleString()}</span>
               </div>
             )}
-            <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-neutral-700">
+            <div className="flex justify-between text-base font-bold text-neutral-900 dark:text-white pt-2 border-t border-neutral-200 dark:border-neutral-700/80">
               <span>Total Mensual</span>
-              <span className="text-green-400">RD${monthlyFee.toLocaleString()}</span>
+              <span className="text-emerald-600 dark:text-emerald-400 text-lg">RD${monthlyFee.toLocaleString()}</span>
             </div>
             {formData.plan === 'Trial' && (
-              <p className="text-xs text-yellow-400 mt-2">⚠️ El plan Trial es gratuito por 14 días. Después se requiere seleccionar un plan pago.</p>
+              <p className="text-xs text-amber-600 dark:text-yellow-400 mt-2 font-medium">⚠️ El plan Trial es gratuito por 14 días. Después se requiere seleccionar un plan pago.</p>
             )}
           </div>
         </div>
 
-        <div className="md:col-span-2 flex justify-end pt-4">
+        <div className="md:col-span-2 flex justify-end pt-4 border-t border-neutral-200 dark:border-neutral-800">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="mr-3 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-neutral-300 bg-neutral-700 hover:bg-neutral-600 disabled:opacity-50"
+            className="mr-3 py-2 px-4 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 disabled:opacity-50 transition-colors"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 flex items-center"
+            className="py-2 px-5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 flex items-center shadow-sm transition-colors"
           >
             {loading && <Spinner className="w-4 h-4 mr-2" />}
             {loading ? "Guardando..." : "Guardar Compañía"}
@@ -604,15 +606,29 @@ const ViewClientsModal = ({
     if (!company) return;
     setLoading(true);
     try {
+      if (window.location.hostname === 'localhost' || company.id === 'dev-company-id' || company.id.startsWith('dev-')) {
+        const stored = localStorage.getItem('micondo_live_condos_v2');
+        const localCondos: Condo[] = stored ? JSON.parse(stored) : [];
+        const condosToShow = localCondos.length > 0 ? localCondos : [];
+        const filtered = condosToShow.filter((c: any) => c.companyId === company.id || company.id === 'dev-company-id');
+        setCondos(filtered.length > 0 ? filtered : condosToShow);
+        setLoading(false);
+        return;
+      }
+
       const { data: condoList, error } = await supabase
         .from('condos')
         .select('*')
         .eq('company_id', company.id);
       if (error) throw error;
 
-      setCondos(condoList);
+      setCondos(condoList || []);
     } catch (error) {
       console.error("Error fetching condos:", error);
+      const stored = localStorage.getItem('micondo_live_condos_v2');
+      if (stored) {
+        setCondos(JSON.parse(stored));
+      }
     } finally {
       setLoading(false);
     }
@@ -807,6 +823,16 @@ const BillingDetailModal = ({
       }).eq('id', company.id);
 
       addToast(`Pago de RD$${paymentForm.amount} registrado`, "success");
+
+      // Send payment confirmation email (non-blocking)
+      notifyPaymentConfirmation(
+        company.id,
+        parseFloat(paymentForm.amount),
+        paymentData.reference || `PAY-${Date.now()}`,
+        paymentData.period_start,
+        paymentData.period_end
+      ).catch(err => console.warn('Email notification failed:', err));
+
       setIsPaymentFormOpen(false);
       setPaymentForm({ amount: "", method: "Transferencia", reference: "", notes: "" });
       onPaymentRegistered();
@@ -825,13 +851,13 @@ const BillingDetailModal = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Estado Actual */}
           <div
-            className={`rounded-xl p-4 border ${billing.status === "active"
-              ? "bg-green-500/10 border-green-500/30"
+            className={`rounded-2xl p-4 border shadow-2xs ${billing.status === "active"
+              ? "bg-emerald-50/80 dark:bg-green-500/10 border-emerald-200 dark:border-green-500/30 text-emerald-700 dark:text-green-400"
               : billing.status === "grace"
-                ? "bg-yellow-500/10 border-yellow-500/30"
+                ? "bg-amber-50/80 dark:bg-yellow-500/10 border-amber-200 dark:border-yellow-500/30 text-amber-700 dark:text-yellow-400"
                 : billing.status === "trial"
-                  ? "bg-blue-500/10 border-blue-500/30"
-                  : "bg-red-500/10 border-red-500/30"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-400"
+                  : "bg-rose-50/80 dark:bg-red-500/10 border-rose-200 dark:border-red-500/30 text-rose-700 dark:text-red-400"
               }`}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -845,38 +871,22 @@ const BillingDetailModal = ({
                         ? "gift"
                         : "alert-circle"
                 }
-                className={`w-5 h-5 ${billing.status === "active"
-                  ? "text-green-400"
-                  : billing.status === "grace"
-                    ? "text-yellow-400"
-                    : billing.status === "trial"
-                      ? "text-blue-400"
-                      : "text-red-400"
-                  }`}
+                className="w-5 h-5"
               />
-              <span className="text-sm text-neutral-400">Estado</span>
+              <span className="text-xs font-semibold uppercase tracking-wider opacity-80">Estado</span>
             </div>
-            <p
-              className={`text-lg font-bold ${billing.status === "active"
-                ? "text-green-400"
-                : billing.status === "grace"
-                  ? "text-yellow-400"
-                  : billing.status === "trial"
-                    ? "text-blue-400"
-                    : "text-red-400"
-                }`}
-            >
+            <p className="text-xl font-black tracking-tight">
               {billing.statusLabel}
             </p>
           </div>
 
           {/* Próximo Vencimiento */}
-          <div className="bg-neutral-800 rounded-xl p-4 border border-neutral-700">
+          <div className="bg-neutral-50 dark:bg-neutral-800/80 rounded-2xl p-4 border border-neutral-200/80 dark:border-neutral-700 shadow-2xs">
             <div className="flex items-center gap-2 mb-2">
-              <Icon name="calendar" className="w-5 h-5 text-neutral-400" />
-              <span className="text-sm text-neutral-400">Próximo Vencimiento</span>
+              <Icon name="calendar" className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+              <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Próximo Vencimiento</span>
             </div>
-            <p className="text-lg font-bold text-white">
+            <p className="text-xl font-black text-neutral-900 dark:text-white tracking-tight">
               {billing.nextDueDate.toLocaleDateString("es-DO", {
                 day: "numeric",
                 month: "short",
@@ -884,39 +894,39 @@ const BillingDetailModal = ({
               })}
             </p>
             {billing.daysUntilDue > 0 && (
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                 en {billing.daysUntilDue} días
               </p>
             )}
           </div>
 
           {/* Total Pagado */}
-          <div className="bg-neutral-800 rounded-xl p-4 border border-neutral-700">
+          <div className="bg-neutral-50 dark:bg-neutral-800/80 rounded-2xl p-4 border border-neutral-200/80 dark:border-neutral-700 shadow-2xs">
             <div className="flex items-center gap-2 mb-2">
-              <Icon name="dollar-sign" className="w-5 h-5 text-green-400" />
-              <span className="text-sm text-neutral-400">Total Pagado</span>
+              <Icon name="dollar-sign" className="w-5 h-5 text-emerald-600 dark:text-green-400" />
+              <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Total Pagado</span>
             </div>
-            <p className="text-lg font-bold text-white">
+            <p className="text-xl font-black text-neutral-900 dark:text-white tracking-tight">
               RD$ {totalPaid.toLocaleString()}
             </p>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
               {companyPayments.length} pagos registrados
             </p>
           </div>
         </div>
 
         {/* Información del Plan */}
-        <div className="bg-neutral-800/50 rounded-xl p-4 border border-neutral-700 flex justify-between items-center">
+        <div className="bg-neutral-50/80 dark:bg-neutral-800/50 rounded-2xl p-5 border border-neutral-200/80 dark:border-neutral-700/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-2xs">
           <div>
-            <p className="text-sm text-neutral-400">Plan Actual</p>
-            <p className="text-lg font-bold text-white">{company.plan || "Pro"}</p>
-            <p className="text-xs text-neutral-500">
-              Período de gracia: {company.gracePeriodDays} días
+            <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Plan Actual</p>
+            <p className="text-lg font-black text-neutral-900 dark:text-white">{company.plan || "Pro"}</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Período de gracia: {company.gracePeriodDays} días • Condos: {company.condoCount || 1}
             </p>
           </div>
           <button
             onClick={() => setIsPaymentFormOpen(!isPaymentFormOpen)}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium flex items-center gap-2 transition-colors"
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
           >
             <Icon name="plus" className="w-4 h-4" />
             Registrar Pago
@@ -925,72 +935,72 @@ const BillingDetailModal = ({
 
         {/* Formulario de Pago */}
         {isPaymentFormOpen && (
-          <div className="bg-neutral-900 rounded-xl p-4 border border-green-500/30 space-y-4">
-            <h4 className="font-semibold text-white flex items-center gap-2">
-              <Icon name="credit-card" className="w-4 h-4 text-green-400" />
-              Nuevo Pago
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl p-5 border border-emerald-300 dark:border-green-500/40 shadow-md space-y-4">
+            <h4 className="font-bold text-neutral-900 dark:text-white flex items-center gap-2 text-sm">
+              <Icon name="credit-card" className="w-4 h-4 text-emerald-600 dark:text-green-400" />
+              Nuevo Pago de Suscripción
             </h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-neutral-400 mb-1">Monto (RD$) *</label>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">Monto (RD$) *</label>
                 <input
                   type="number"
                   value={paymentForm.amount}
                   onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
-                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                   placeholder="1500"
                 />
               </div>
               <div>
-                <label className="block text-sm text-neutral-400 mb-1">Método</label>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">Método</label>
                 <select
                   value={paymentForm.method}
                   onChange={(e) => setPaymentForm({ ...paymentForm, method: e.target.value })}
-                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 >
                   <option>Transferencia</option>
+                  <option>Depósito</option>
                   <option>Efectivo</option>
                   <option>Cheque</option>
-                  <option>Tarjeta</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-neutral-400 mb-1">Referencia</label>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">Referencia</label>
                 <input
                   type="text"
                   value={paymentForm.reference}
                   onChange={(e) => setPaymentForm({ ...paymentForm, reference: e.target.value })}
-                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                   placeholder="REF-001"
                 />
               </div>
               <div>
-                <label className="block text-sm text-neutral-400 mb-1">Notas</label>
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">Notas</label>
                 <input
                   type="text"
                   value={paymentForm.notes}
                   onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
-                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white"
-                  placeholder="Pago mensual diciembre"
+                  className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  placeholder="Pago mensual periodo actual"
                 />
               </div>
             </div>
-            <div className="flex gap-2 justify-end">
+            <div className="flex gap-2 justify-end pt-2">
               <button
                 onClick={() => setIsPaymentFormOpen(false)}
-                className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white"
+                className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-xl text-neutral-700 dark:text-neutral-300 text-xs font-semibold border border-neutral-200 dark:border-neutral-700 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSubmitPayment}
                 disabled={isSaving}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-medium flex items-center gap-2"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-colors"
               >
                 {isSaving ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <Icon name="check" className="w-4 h-4" />
+                  <Icon name="check" className="w-3.5 h-3.5" />
                 )}
                 Guardar Pago
               </button>
@@ -1000,45 +1010,45 @@ const BillingDetailModal = ({
 
         {/* Historial de Pagos */}
         <div>
-          <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
-            <Icon name="history" className="w-4 h-4 text-neutral-400" />
+          <h4 className="font-bold text-neutral-900 dark:text-white mb-3 flex items-center gap-2 text-sm">
+            <Icon name="history" className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
             Historial de Pagos
           </h4>
           {companyPayments.length === 0 ? (
-            <div className="text-center py-8 text-neutral-500">
-              <Icon name="inbox" className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p>No hay pagos registrados</p>
+            <div className="text-center py-8 text-neutral-400 bg-neutral-50/50 dark:bg-neutral-900/40 rounded-2xl border border-neutral-200/80 dark:border-neutral-800">
+              <Icon name="inbox" className="w-10 h-10 mx-auto mb-2 opacity-40 text-neutral-400" />
+              <p className="text-xs font-medium">No hay pagos registrados</p>
             </div>
           ) : (
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {companyPayments.map((payment, index) => (
+            <div className="space-y-2.5 max-h-64 overflow-y-auto">
+              {companyPayments.map((payment) => (
                 <div
                   key={payment.id}
-                  className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg border border-neutral-700/50 hover:border-neutral-600 transition-colors"
+                  className="flex items-center justify-between p-3.5 bg-neutral-50/70 dark:bg-neutral-800/50 rounded-xl border border-neutral-200/80 dark:border-neutral-700/50 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                      <Icon name="check" className="w-5 h-5 text-green-400" />
+                    <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                      <Icon name="check" className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-white font-medium">
+                      <p className="text-neutral-900 dark:text-white font-bold text-sm">
                         RD$ {payment.amount.toLocaleString()}
                       </p>
-                      <p className="text-xs text-neutral-500">
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">
                         {payment.method} • {payment.reference || "Sin ref."}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <p className="text-sm text-neutral-300">
+                      <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                         {new Date(payment.paymentDate).toLocaleDateString("es-DO", {
                           day: "numeric",
                           month: "short",
                           year: "numeric",
                         })}
                       </p>
-                      <p className="text-xs text-neutral-500">
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
                         Período: {payment.periodStart} - {payment.periodEnd}
                       </p>
                     </div>
@@ -1057,10 +1067,10 @@ const BillingDetailModal = ({
                         });
                         addToast("Recibo generado", "success");
                       }}
-                      className="p-2 hover:bg-neutral-700 rounded-lg transition-colors"
+                      className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
                       title="Descargar Recibo"
                     >
-                      <Icon name="download" className="w-4 h-4 text-neutral-400 hover:text-white" />
+                      <Icon name="download" className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -1070,10 +1080,10 @@ const BillingDetailModal = ({
         </div>
 
         {/* Botones */}
-        <div className="flex justify-end gap-2 pt-4 border-t border-neutral-800">
+        <div className="flex justify-end gap-2 pt-4 border-t border-neutral-200 dark:border-neutral-800">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white"
+            className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-700 dark:text-neutral-200 font-semibold text-xs transition-colors"
           >
             Cerrar
           </button>
@@ -1110,6 +1120,33 @@ const BillingTab = ({ companies }: BillingTabProps) => {
   const fetchPayments = async () => {
     setLoading(true);
     try {
+      // DEV MODE: use mock data when Supabase is unreachable
+      if (window.location.hostname === 'localhost') {
+        const { data: paymentList, error } = await supabase
+          .from('saas_payments')
+          .select('*');
+        if (error) {
+          console.warn('Supabase offline, using mock payments');
+          setPayments([{
+            id: 'mock-pay-1', companyId: 'dev-company-1', companyName: 'Empresa Demo 1',
+            amount: 1500, paymentDate: '2026-03-01', periodStart: '2026-03-01',
+            periodEnd: '2026-03-31', method: 'Transferencia', reference: 'REF-DEMO-001',
+            createdAt: new Date().toISOString()
+          }]);
+          setLoading(false);
+          return;
+        }
+        const mappedPayments = (paymentList || []).map((p: any) => ({
+          ...p, companyId: p.company_id, companyName: p.company_name,
+          paymentDate: p.payment_date, periodStart: p.period_start,
+          periodEnd: p.period_end, createdAt: p.created_at
+        }));
+        mappedPayments.sort((a: any, b: any) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime());
+        setPayments(mappedPayments);
+        setLoading(false);
+        return;
+      }
+
       const { data: paymentList, error } = await supabase
         .from('saas_payments')
         .select('*');
@@ -1168,6 +1205,15 @@ const BillingTab = ({ companies }: BillingTabProps) => {
         "success"
       );
 
+      // Send payment confirmation email (non-blocking)
+      notifyPaymentConfirmation(
+        selectedCompany.id,
+        parseFloat(paymentForm.amount),
+        paymentData.reference || `PAY-${Date.now()}`,
+        paymentData.periodStart,
+        paymentData.periodEnd
+      ).catch(err => console.warn('Email notification failed:', err));
+
       setIsPaymentModalOpen(false);
       setSelectedCompany(null);
       setPaymentForm({
@@ -1204,124 +1250,121 @@ const BillingTab = ({ companies }: BillingTabProps) => {
   return (
     <div className="space-y-6">
       {/* Métricas de Facturación - Estilo moderno */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Recaudado Este Mes - Card destacada */}
-        <div className="bg-gradient-to-br from-emerald-600/20 to-green-600/10 border border-emerald-500/30 rounded-2xl p-6">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-              <Icon name="trending-up" className="w-6 h-6 text-emerald-400" />
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <Icon name="trending-up" className="w-6 h-6" />
             </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/50 font-semibold">
               Este Mes
             </span>
           </div>
-          <p className="text-neutral-400 text-sm mb-1">Recaudado</p>
-          <p className="text-3xl font-bold text-white">
-            ${totalThisMonth.toLocaleString()}
+          <p className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-1">Recaudado</p>
+          <p className="text-3xl font-black text-neutral-900 dark:text-white tracking-tight">
+            RD$ {totalThisMonth.toLocaleString()}
           </p>
-          <p className="text-xs text-neutral-500 mt-2">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
             {thisMonthPayments.length} pagos recibidos
           </p>
         </div>
 
         {/* Promedio por Cliente */}
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 hover:border-neutral-700 transition-colors">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-              <Icon name="calculator" className="w-6 h-6 text-blue-400" />
+            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <Icon name="calculator" className="w-6 h-6" />
             </div>
           </div>
-          <p className="text-neutral-400 text-sm mb-1">Promedio por Pago</p>
-          <p className="text-3xl font-bold text-white">
-            $
-            {thisMonthPayments.length > 0
-              ? Math.round(
-                totalThisMonth / thisMonthPayments.length
-              ).toLocaleString()
+          <p className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-1">Promedio por Pago</p>
+          <p className="text-3xl font-black text-neutral-900 dark:text-white tracking-tight">
+            RD$ {thisMonthPayments.length > 0
+              ? Math.round(totalThisMonth / thisMonthPayments.length).toLocaleString()
               : "0"}
           </p>
-          <p className="text-xs text-neutral-500 mt-2">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
             Ticket promedio mensual
           </p>
         </div>
 
         {/* Total Histórico */}
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 hover:border-neutral-700 transition-colors">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-              <Icon name="wallet" className="w-6 h-6 text-purple-400" />
+            <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-400">
+              <Icon name="wallet" className="w-6 h-6" />
             </div>
           </div>
-          <p className="text-neutral-400 text-sm mb-1">Total Histórico</p>
-          <p className="text-3xl font-bold text-white">
-            ${totalAllTime.toLocaleString()}
+          <p className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Histórico</p>
+          <p className="text-3xl font-black text-neutral-900 dark:text-white tracking-tight">
+            RD$ {totalAllTime.toLocaleString()}
           </p>
-          <p className="text-xs text-neutral-500 mt-2">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
             {payments.length} pagos totales
           </p>
         </div>
       </div>
 
-      {/* Botón Registrar Pago - Mejorado */}
+      {/* Botón Registrar Pago */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-white">Historial de Pagos</h3>
+        <div>
+          <h3 className="text-lg font-bold text-neutral-900 dark:text-white tracking-tight">Historial de Pagos</h3>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">Transacciones y facturación SaaS de administradoras</p>
+        </div>
         <button
           onClick={() => setIsPaymentModalOpen(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/20"
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm"
         >
-          <Icon name="plus" size={18} />
+          <Icon name="plus" size={16} />
           Registrar Pago
         </button>
       </div>
 
       {/* Historial de Pagos - Tabla mejorada */}
-      <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl overflow-hidden">
+      <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-2xs">
         <table className="min-w-full">
-          <thead className="bg-neutral-800/50">
+          <thead className="bg-neutral-50 dark:bg-neutral-800/40 border-b border-neutral-200 dark:border-neutral-800">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                 Fecha
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                 Compañía
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                 Monto
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                 Método
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                 Referencia
               </th>
-              <th className="px-6 py-4 text-center text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-center text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-800/50">
+          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
             {loading && (
               <tr>
                 <td colSpan={6} className="text-center py-12">
                   <Spinner className="w-8 h-8 mx-auto" />
-                  <p className="text-neutral-500 mt-2">Cargando pagos...</p>
+                  <p className="text-neutral-500 dark:text-neutral-400 text-xs mt-2">Cargando pagos...</p>
                 </td>
               </tr>
             )}
             {!loading && payments.length === 0 && (
               <tr>
                 <td colSpan={6} className="text-center py-12">
-                  <div className="w-16 h-16 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
-                    <Icon
-                      name="credit-card"
-                      className="w-8 h-8 text-neutral-600"
-                    />
+                  <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3 text-neutral-400">
+                    <Icon name="credit-card" className="w-7 h-7" />
                   </div>
-                  <p className="text-neutral-400 font-medium">
+                  <p className="text-neutral-900 dark:text-white font-bold text-sm">
                     No hay pagos registrados
                   </p>
-                  <p className="text-neutral-500 text-sm mt-1">
-                    Los pagos aparecerán aquí
+                  <p className="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
+                    Los pagos registrados aparecerán aquí
                   </p>
                 </td>
               </tr>
@@ -1331,33 +1374,30 @@ const BillingTab = ({ companies }: BillingTabProps) => {
               payments.map((payment: any) => (
                 <tr
                   key={payment.id}
-                  className="hover:bg-neutral-800/30 transition-colors"
+                  className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/30 transition-colors"
                 >
-                  <td className="px-6 py-4 text-sm text-neutral-300">
+                  <td className="px-6 py-4 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                     {payment.paymentDate}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center">
-                        <Icon
-                          name="building-2"
-                          className="w-4 h-4 text-blue-400"
-                        />
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                        <Icon name="building-2" className="w-4 h-4" />
                       </div>
-                      <span className="text-sm text-white font-medium">
+                      <span className="text-xs font-bold text-neutral-900 dark:text-white">
                         {payment.companyName}
                       </span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1 rounded-lg">
-                      ${payment.amount?.toLocaleString()}
+                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-900/50 px-2.5 py-1 rounded-lg">
+                      RD$ {payment.amount?.toLocaleString()}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-neutral-300">
+                  <td className="px-6 py-4 text-xs font-medium text-neutral-600 dark:text-neutral-300">
                     {payment.method}
                   </td>
-                  <td className="px-6 py-4 text-sm text-neutral-500">
+                  <td className="px-6 py-4 text-xs font-medium text-neutral-500 dark:text-neutral-400">
                     {payment.reference || "—"}
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -1376,11 +1416,11 @@ const BillingTab = ({ companies }: BillingTabProps) => {
                         });
                         addToast("Recibo generado correctamente", "success");
                       }}
-                      className="p-2 hover:bg-neutral-700 rounded-lg transition-colors inline-flex items-center gap-1 text-neutral-400 hover:text-white"
+                      className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors inline-flex items-center gap-1 text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
                       title="Descargar Recibo PDF"
                     >
                       <Icon name="download" className="w-4 h-4" />
-                      <span className="text-xs">PDF</span>
+                      <span className="text-xs font-semibold">PDF</span>
                     </button>
                   </td>
                 </tr>
@@ -1397,7 +1437,7 @@ const BillingTab = ({ companies }: BillingTabProps) => {
       >
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
               Compañía
             </label>
             <select
@@ -1407,7 +1447,7 @@ const BillingTab = ({ companies }: BillingTabProps) => {
                   companies.find((c) => c.id === e.target.value) || null
                 )
               }
-              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
+              className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             >
               <option value="">Seleccionar compañía...</option>
               {companies.map((c) => (
@@ -1418,8 +1458,8 @@ const BillingTab = ({ companies }: BillingTabProps) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
-              Monto ($)
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
+              Monto (RD$)
             </label>
             <input
               type="number"
@@ -1427,12 +1467,12 @@ const BillingTab = ({ companies }: BillingTabProps) => {
               onChange={(e) =>
                 setPaymentForm((prev) => ({ ...prev, amount: e.target.value }))
               }
-              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
-              placeholder="99.00"
+              className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              placeholder="1500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
               Método de Pago
             </label>
             <select
@@ -1440,16 +1480,16 @@ const BillingTab = ({ companies }: BillingTabProps) => {
               onChange={(e) =>
                 setPaymentForm((prev) => ({ ...prev, method: e.target.value }))
               }
-              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
+              className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             >
               <option value="Transferencia">Transferencia</option>
-              <option value="Tarjeta">Tarjeta</option>
+              <option value="Depósito">Depósito</option>
               <option value="Efectivo">Efectivo</option>
-              <option value="Otro">Otro</option>
+              <option value="Cheque">Cheque</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
               Referencia (opcional)
             </label>
             <input
@@ -1461,12 +1501,12 @@ const BillingTab = ({ companies }: BillingTabProps) => {
                   reference: e.target.value,
                 }))
               }
-              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
+              className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               placeholder="No. de confirmación"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
               Notas (opcional)
             </label>
             <textarea
@@ -1474,20 +1514,20 @@ const BillingTab = ({ companies }: BillingTabProps) => {
               onChange={(e) =>
                 setPaymentForm((prev) => ({ ...prev, notes: e.target.value }))
               }
-              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
+              className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               rows={2}
             />
           </div>
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end gap-2 pt-4 border-t border-neutral-200 dark:border-neutral-800">
             <button
               onClick={() => setIsPaymentModalOpen(false)}
-              className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white"
+              className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-700 dark:text-neutral-200 text-xs font-semibold transition-colors"
             >
               Cancelar
             </button>
             <button
               onClick={handleRegisterPayment}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-bold"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white font-bold text-xs shadow-sm transition-colors"
             >
               Registrar Pago
             </button>
@@ -1527,7 +1567,18 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
       const { data: announcementsList, error } = await supabase
         .from('saas_announcements')
         .select('*');
-      if (error) throw error;
+      if (error) {
+        console.warn('Supabase offline, using mock announcements');
+        setAnnouncements([{
+          id: 'mock-ann-1', title: 'Bienvenido al modo desarrollo',
+          content: 'Supabase est\u00e1 desconectado. Los datos mostrados son de prueba.',
+          type: 'info', isActive: true, targetAudience: 'all',
+          publishDate: new Date().toISOString().split('T')[0],
+          expirationDate: null
+        }]);
+        setLoading(false);
+        return;
+      }
 
       const mappedAnnouncements = (announcementsList || []).map((a: any) => ({
         ...a,
@@ -1631,167 +1682,170 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Métricas de Comunicaciones - Estilo moderno */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Anuncios Activos - Card destacada */}
-        <div className="bg-gradient-to-br from-indigo-600/20 to-purple-600/10 border border-indigo-500/30 rounded-2xl p-6">
+      {/* Métricas de Comunicaciones */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {/* Anuncios Activos */}
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-              <Icon name="megaphone" className="w-6 h-6 text-indigo-400" />
+            <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              <Icon name="megaphone" className="w-6 h-6" />
             </div>
-            <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/50 font-semibold">
               Activos
             </span>
           </div>
-          <p className="text-neutral-400 text-sm mb-1">Anuncios Activos</p>
-          <p className="text-3xl font-bold text-white">
+          <p className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-1">Anuncios Activos</p>
+          <p className="text-3xl font-black text-neutral-900 dark:text-white tracking-tight">
             {announcements.filter((a: any) => a.isActive).length}
           </p>
-          <p className="text-xs text-neutral-500 mt-2">
-            Visibles para clientes
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+            Visibles para administradoras y clientes
           </p>
         </div>
 
         {/* Total Anuncios */}
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 hover:border-neutral-700 transition-colors">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-              <Icon name="file-text" className="w-6 h-6 text-blue-400" />
+            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <Icon name="file-text" className="w-6 h-6" />
             </div>
           </div>
-          <p className="text-neutral-400 text-sm mb-1">Total Anuncios</p>
-          <p className="text-3xl font-bold text-white">
+          <p className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Anuncios</p>
+          <p className="text-3xl font-black text-neutral-900 dark:text-white tracking-tight">
             {announcements.length}
           </p>
-          <p className="text-xs text-neutral-500 mt-2">Histórico completo</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">Histórico completo</p>
         </div>
 
         {/* Alcance */}
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 hover:border-neutral-700 transition-colors">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-              <Icon name="users" className="w-6 h-6 text-purple-400" />
+            <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-400">
+              <Icon name="users" className="w-6 h-6" />
             </div>
           </div>
-          <p className="text-neutral-400 text-sm mb-1">Clientes Alcanzados</p>
-          <p className="text-3xl font-bold text-white">{companies.length}</p>
-          <p className="text-xs text-neutral-500 mt-2">Compañías activas</p>
+          <p className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-1">Compañías Alcanzadas</p>
+          <p className="text-3xl font-black text-neutral-900 dark:text-white tracking-tight">{companies.length}</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">Empresas administradoras activas</p>
         </div>
       </div>
 
       {/* Templates Rápidos */}
-      <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6">
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <Icon name="zap" className="w-5 h-5 text-yellow-400" />
-          Templates Rápidos
+      <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
+        <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
+          <Icon name="zap" className="w-5 h-5 text-amber-500" />
+          Plantillas Rápidas
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <button
             onClick={() => {
               setAnnouncementForm({
                 title: "Mantenimiento Programado",
-                content: "Realizaremos un mantenimiento programado el [FECHA] de [HORA] a [HORA]. El sistema podría presentar interrupciones. Agradecemos su comprensión.",
+                content: "Realizaremos un mantenimiento preventivo de infraestructura el [FECHA] de [HORA] a [HORA]. El servicio permanecerá activo con posibles intermitencias breves.",
                 type: "maintenance",
                 targetAudience: "all",
               });
               setIsAnnouncementModalOpen(true);
             }}
-            className="flex flex-col items-center gap-2 p-4 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-xl transition-colors group"
+            className="flex flex-col items-center gap-2 p-4 bg-orange-50/70 hover:bg-orange-100/70 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 border border-orange-200/80 dark:border-orange-500/30 rounded-xl transition-all group"
           >
-            <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Icon name="wrench" className="w-5 h-5 text-orange-400" />
+            <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Icon name="wrench" className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             </div>
-            <span className="text-sm text-neutral-300 group-hover:text-white text-center">Mantenimiento</span>
+            <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 text-center">Mantenimiento</span>
           </button>
 
           <button
             onClick={() => {
               setAnnouncementForm({
-                title: "¡Nueva Actualización!",
-                content: "Hemos incorporado nuevas funcionalidades para mejorar tu experiencia:\n\n• [Funcionalidad 1]\n• [Funcionalidad 2]\n• [Funcionalidad 3]\n\n¡Explórelas ahora!",
+                title: "¡Nueva Actualización de Plataforma!",
+                content: "Hemos incorporado nuevas funcionalidades en MI CONDO SaaS:\n\n• Conciliación bancaria mejorada\n• Portal de residentes con dark mode y soporte móvil\n• Gestión de asambleas y actas digitales",
                 type: "update",
                 targetAudience: "all",
               });
               setIsAnnouncementModalOpen(true);
             }}
-            className="flex flex-col items-center gap-2 p-4 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 rounded-xl transition-colors group"
+            className="flex flex-col items-center gap-2 p-4 bg-emerald-50/70 hover:bg-emerald-100/70 dark:bg-green-500/10 dark:hover:bg-green-500/20 border border-emerald-200/80 dark:border-green-500/30 rounded-xl transition-all group"
           >
-            <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Icon name="sparkles" className="w-5 h-5 text-green-400" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-green-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Icon name="sparkles" className="w-5 h-5 text-emerald-600 dark:text-green-400" />
             </div>
-            <span className="text-sm text-neutral-300 group-hover:text-white text-center">Actualización</span>
+            <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 text-center">Actualización</span>
           </button>
 
           <button
             onClick={() => {
               setAnnouncementForm({
-                title: "Recordatorio de Pago",
-                content: "Le recordamos que su cuota de mantenimiento vence el [FECHA]. Para evitar recargos, realice su pago a tiempo.\n\nMétodos de pago disponibles:\n• Transferencia bancaria\n• Pago en oficina\n\n¡Gracias por su puntualidad!",
+                title: "Recordatorio de Pago de Licencia",
+                content: "Le recordamos que el ciclo de facturación de su suscripción SaaS vence próximamente. Para mantener el acceso continuo a todos sus condominios, realice su pago vía transferencia bancaria.",
                 type: "warning",
                 targetAudience: "all",
               });
               setIsAnnouncementModalOpen(true);
             }}
-            className="flex flex-col items-center gap-2 p-4 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 rounded-xl transition-colors group"
+            className="flex flex-col items-center gap-2 p-4 bg-amber-50/70 hover:bg-amber-100/70 dark:bg-yellow-500/10 dark:hover:bg-yellow-500/20 border border-amber-200/80 dark:border-yellow-500/30 rounded-xl transition-all group"
           >
-            <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Icon name="bell" className="w-5 h-5 text-yellow-400" />
+            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-yellow-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Icon name="bell" className="w-5 h-5 text-amber-600 dark:text-yellow-400" />
             </div>
-            <span className="text-sm text-neutral-300 group-hover:text-white text-center">Recordatorio</span>
+            <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 text-center">Recordatorio</span>
           </button>
 
           <button
             onClick={() => {
               setAnnouncementForm({
-                title: "Información Importante",
-                content: "[Escriba aquí el mensaje para todos los residentes y administradores de condominios...]",
+                title: "Comunicado Oficial",
+                content: "A todas las empresas administradoras: les compartimos información importante acerca de las actualizaciones fiscales DGII aplicables a la gestión de condominios.",
                 type: "info",
                 targetAudience: "all",
               });
               setIsAnnouncementModalOpen(true);
             }}
-            className="flex flex-col items-center gap-2 p-4 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-xl transition-colors group"
+            className="flex flex-col items-center gap-2 p-4 bg-blue-50/70 hover:bg-blue-100/70 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 border border-blue-200/80 dark:border-blue-500/30 rounded-xl transition-all group"
           >
-            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Icon name="info" className="w-5 h-5 text-blue-400" />
+            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Icon name="info" className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
-            <span className="text-sm text-neutral-300 group-hover:text-white text-center">Información</span>
+            <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 text-center">Información</span>
           </button>
         </div>
       </div>
 
       {/* Header + Botón Nuevo Anuncio */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-white">
-          Anuncios Publicados
-        </h3>
+        <div>
+          <h3 className="text-lg font-bold text-neutral-900 dark:text-white tracking-tight">
+            Anuncios Publicados
+          </h3>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">Circulares y notificaciones globales del sistema</p>
+        </div>
         <button
           onClick={() => setIsAnnouncementModalOpen(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/20"
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm"
         >
-          <Icon name="megaphone" size={18} />
+          <Icon name="megaphone" size={16} />
           Nuevo Anuncio
         </button>
       </div>
 
-      {/* Lista de Anuncios - Mejorada */}
-      <div className="space-y-4">
+      {/* Lista de Anuncios */}
+      <div className="space-y-3.5">
         {loading && (
-          <div className="text-center py-12 bg-neutral-900/50 border border-neutral-800 rounded-2xl">
+          <div className="text-center py-12 bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl shadow-2xs">
             <Spinner className="w-8 h-8 mx-auto" />
-            <p className="text-neutral-500 mt-2">Cargando anuncios...</p>
+            <p className="text-neutral-500 dark:text-neutral-400 text-xs mt-2">Cargando anuncios...</p>
           </div>
         )}
 
         {!loading && announcements.length === 0 && (
-          <div className="text-center py-12 bg-neutral-900/50 border border-neutral-800 rounded-2xl">
-            <div className="w-16 h-16 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-3">
-              <Icon name="megaphone" className="w-8 h-8 text-neutral-600" />
+          <div className="text-center py-12 bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl shadow-2xs">
+            <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-3 text-neutral-400">
+              <Icon name="megaphone" className="w-7 h-7" />
             </div>
-            <p className="text-neutral-400 font-medium">
+            <p className="text-neutral-900 dark:text-white font-bold text-sm">
               No hay anuncios publicados
             </p>
-            <p className="text-neutral-500 text-sm mt-1">
+            <p className="text-neutral-500 dark:text-neutral-400 text-xs mt-1">
               Crea tu primer anuncio para comunicarte con tus clientes
             </p>
           </div>
@@ -1804,63 +1858,55 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
             return (
               <div
                 key={announcement.id}
-                className={`bg-neutral-900/50 border rounded-2xl p-5 transition-all duration-200 hover:bg-neutral-900/80 ${announcement.isActive
-                  ? "border-l-4 border-l-green-500 border-t-neutral-800 border-r-neutral-800 border-b-neutral-800"
-                  : "border-neutral-800 opacity-60"
+                className={`bg-white dark:bg-[#161b26] border rounded-2xl p-5 transition-all shadow-2xs ${announcement.isActive
+                  ? "border-l-4 border-l-emerald-500 border-neutral-200/80 dark:border-neutral-800"
+                  : "border-neutral-200/80 dark:border-neutral-800 opacity-60"
                   }`}
               >
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${typeConfig.color
-                          .replace("text-", "bg-")
-                          .replace("-400", "-500/20")}`}
-                      >
-                        <Icon
-                          name={typeConfig.icon as any}
-                          className={`w-4 h-4 ${typeConfig.color}`}
-                        />
-                      </div>
+                    <div className="flex items-center gap-2 mb-2">
                       <span
-                        className={`text-xs px-2.5 py-1 rounded-full bg-neutral-800 ${typeConfig.color} font-medium`}
+                        className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${typeConfig.color}`}
                       >
                         {typeConfig.label}
                       </span>
                       {announcement.isActive ? (
-                        <span className="text-xs px-2.5 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/50">
                           ● Activo
                         </span>
                       ) : (
-                        <span className="text-xs px-2.5 py-1 rounded-full bg-neutral-700 text-neutral-400">
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
                           Inactivo
                         </span>
                       )}
                     </div>
-                    <h3 className="text-lg font-bold text-white">
+                    <h4 className="text-base font-bold text-neutral-900 dark:text-white">
                       {announcement.title}
-                    </h3>
-                    <p className="text-neutral-400 mt-2 line-clamp-2">
+                    </h4>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-1.5 leading-relaxed line-clamp-3">
                       {announcement.content}
                     </p>
-                    <div className="text-xs text-neutral-500 mt-3 flex items-center gap-4">
+                    <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-3 flex items-center gap-4 font-medium">
                       <span className="flex items-center gap-1">
-                        <Icon name="calendar" className="w-3 h-3" />
+                        <Icon name="calendar" className="w-3.5 h-3.5" />
                         {announcement.publishDate}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Icon name="users" className="w-3 h-3" />
-                        {announcement.targetAudience === "all"
+                        <Icon name="users" className="w-3.5 h-3.5" />
+                        Destino: {announcement.targetAudience === "all"
                           ? "Todos"
-                          : announcement.targetAudience}
+                          : announcement.targetAudience === "admin"
+                            ? "Administradores"
+                            : "Residentes"}
                       </span>
                     </div>
                   </div>
                   <button
                     onClick={() => toggleAnnouncementStatus(announcement)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${announcement.isActive
-                      ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
-                      : "bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs ${announcement.isActive
+                      ? "bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50"
+                      : "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50"
                       }`}
                   >
                     {announcement.isActive ? "Desactivar" : "Activar"}
@@ -1879,7 +1925,7 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
       >
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
               Título *
             </label>
             <input
@@ -1891,12 +1937,12 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
                   title: e.target.value,
                 }))
               }
-              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
+              className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               placeholder="Ej: Nueva funcionalidad disponible"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
               Contenido *
             </label>
             <textarea
@@ -1907,14 +1953,14 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
                   content: e.target.value,
                 }))
               }
-              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
+              className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               rows={4}
               placeholder="Escriba el contenido del anuncio..."
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
                 Tipo
               </label>
               <select
@@ -1925,7 +1971,7 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
                     type: e.target.value,
                   }))
                 }
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
+                className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               >
                 <option value="info">ℹ️ Información</option>
                 <option value="update">✨ Actualización</option>
@@ -1934,7 +1980,7 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
                 Audiencia
               </label>
               <select
@@ -1945,26 +1991,24 @@ const CommunicationsTab = ({ companies }: CommunicationsTabProps) => {
                     targetAudience: e.target.value,
                   }))
                 }
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
+                className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               >
-                <option value="all">Todos los clientes</option>
-                <option value="active">Solo activos</option>
-                <option value="inactive">Solo inactivos</option>
+                <option value="all">Todos los usuarios</option>
                 <option value="admin">Solo Administradores</option>
                 <option value="resident">Solo Residentes</option>
               </select>
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end gap-2 pt-4 border-t border-neutral-200 dark:border-neutral-800">
             <button
               onClick={() => setIsAnnouncementModalOpen(false)}
-              className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white"
+              className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-700 dark:text-neutral-200 text-xs font-semibold transition-colors"
             >
               Cancelar
             </button>
             <button
               onClick={handlePublishAnnouncement}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-bold"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-white font-bold text-xs shadow-sm transition-colors"
             >
               Publicar Anuncio
             </button>
@@ -2107,51 +2151,51 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Icon name="message-circle" className="w-6 h-6 text-purple-400" />
+          <h2 className="text-xl font-black text-neutral-900 dark:text-white flex items-center gap-2 tracking-tight">
+            <Icon name="message-circle" className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             Mensajes Directos
           </h2>
-          <p className="text-neutral-400">
-            Comunicación directa con sus clientes SaaS
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+            Canal de comunicación y soporte técnico con administradoras de condominios
           </p>
         </div>
         <button
           onClick={() => setIsComposeModalOpen(true)}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"
+          className="bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center gap-2 shadow-sm transition-all"
         >
-          <Icon name="send" size={18} />
+          <Icon name="send" size={16} />
           Nuevo Mensaje
         </button>
       </div>
 
       {/* Stats Bar */}
-      <div className="grid grid-cols-4 gap-4">
-        <div className="bg-neutral-900 rounded-lg p-4 border border-neutral-800">
-          <div className="text-2xl font-bold text-white">{messages.length}</div>
-          <div className="text-sm text-neutral-400">Total Mensajes</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-[#161b26] rounded-2xl p-5 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+          <div className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight">{messages.length}</div>
+          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mt-1">Total Mensajes</div>
         </div>
-        <div className="bg-neutral-900 rounded-lg p-4 border border-neutral-800">
-          <div className="text-2xl font-bold text-red-400">{unreadCount}</div>
-          <div className="text-sm text-neutral-400">Sin Leer</div>
+        <div className="bg-white dark:bg-[#161b26] rounded-2xl p-5 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+          <div className="text-2xl font-black text-rose-600 dark:text-red-400 tracking-tight">{unreadCount}</div>
+          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mt-1">Sin Leer</div>
         </div>
-        <div className="bg-neutral-900 rounded-lg p-4 border border-neutral-800">
-          <div className="text-2xl font-bold text-blue-400">{sentCount}</div>
-          <div className="text-sm text-neutral-400">Enviados</div>
+        <div className="bg-white dark:bg-[#161b26] rounded-2xl p-5 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+          <div className="text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight">{sentCount}</div>
+          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mt-1">Enviados</div>
         </div>
-        <div className="bg-neutral-900 rounded-lg p-4 border border-neutral-800">
-          <div className="text-2xl font-bold text-green-400">
+        <div className="bg-white dark:bg-[#161b26] rounded-2xl p-5 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+          <div className="text-2xl font-black text-emerald-600 dark:text-green-400 tracking-tight">
             {receivedCount}
           </div>
-          <div className="text-sm text-neutral-400">Recibidos</div>
+          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mt-1">Recibidos</div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 items-center">
+      <div className="flex flex-wrap gap-4 items-center">
         <select
           value={selectedCompany || ""}
           onChange={(e) => setSelectedCompany(e.target.value || null)}
-          className="bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 text-white"
+          className="bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl px-4 py-2 text-xs font-medium text-neutral-800 dark:text-white shadow-2xs focus:border-purple-500"
         >
           <option value="">Todas las compañías</option>
           {companies.map((c) => (
@@ -2160,14 +2204,14 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
             </option>
           ))}
         </select>
-        <div className="flex gap-1 bg-neutral-800 p-1 rounded-lg">
+        <div className="flex gap-1 bg-neutral-100 dark:bg-neutral-800/80 p-1 rounded-xl border border-neutral-200/80 dark:border-neutral-700/80">
           {(["all", "unread", "sent", "received"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-3 py-1 rounded text-sm ${filter === f
-                ? "bg-purple-600 text-white"
-                : "text-neutral-400 hover:text-white"
+              className={`px-3 py-1.5 rounded-lg text-xs transition-all ${filter === f
+                ? "bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white font-bold shadow-2xs"
+                : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white font-medium"
                 }`}
             >
               {f === "all"
@@ -2185,19 +2229,19 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
       {/* Messages List */}
       <div className="space-y-3">
         {loading && (
-          <div className="text-center py-8">
+          <div className="text-center py-12 bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl shadow-2xs">
             <Spinner />
-            <p className="text-neutral-400 mt-2">Cargando mensajes...</p>
+            <p className="text-neutral-500 dark:text-neutral-400 text-xs mt-2">Cargando mensajes...</p>
           </div>
         )}
 
         {!loading && filteredMessages.length === 0 && (
-          <div className="text-center py-8 text-neutral-400 bg-neutral-900 rounded-lg">
+          <div className="text-center py-12 text-neutral-500 dark:text-neutral-400 bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl shadow-2xs">
             <Icon
               name="message-circle"
-              className="w-12 h-12 mx-auto mb-2 opacity-50"
+              className="w-12 h-12 mx-auto mb-2 opacity-40 text-neutral-400"
             />
-            <p>No hay mensajes.</p>
+            <p className="text-sm font-semibold">No hay mensajes en este buzón</p>
           </div>
         )}
 
@@ -2206,11 +2250,11 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
           filteredMessages.map((msg: any) => (
             <div
               key={msg.id}
-              className={`bg-neutral-900 p-4 rounded-lg border-l-4 cursor-pointer hover:bg-neutral-800 transition-colors ${msg.direction === "from_client"
+              className={`bg-white dark:bg-[#161b26] p-5 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 border-l-4 cursor-pointer hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-2xs ${msg.direction === "from_client"
                 ? msg.isRead
-                  ? "border-neutral-600"
-                  : "border-green-500"
-                : "border-blue-500"
+                  ? "border-l-neutral-400 dark:border-l-neutral-600"
+                  : "border-l-emerald-500"
+                : "border-l-blue-500"
                 }`}
               onClick={() =>
                 !msg.isRead &&
@@ -2218,38 +2262,38 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
                 markAsRead(msg.id)
               }
             >
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-start gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1.5">
                     <Icon
                       name={
                         msg.direction === "to_client"
                           ? "arrow-right"
                           : "arrow-left"
                       }
-                      className={`w-4 h-4 ${msg.direction === "to_client" ? "text-blue-400" : "text-green-400"}`}
+                      className={`w-4 h-4 ${msg.direction === "to_client" ? "text-blue-600 dark:text-blue-400" : "text-emerald-600 dark:text-emerald-400"}`}
                     />
-                    <span className="text-sm font-medium text-neutral-300">
+                    <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       {msg.direction === "to_client"
                         ? "Enviado a:"
                         : "Recibido de:"}
                     </span>
-                    <span className="text-white font-bold">
+                    <span className="text-xs font-bold text-neutral-900 dark:text-white">
                       {msg.companyName}
                     </span>
                     {!msg.isRead && msg.direction === "from_client" && (
-                      <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                      <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
                         Nuevo
                       </span>
                     )}
                   </div>
-                  <h3 className="text-lg font-semibold text-white">
+                  <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
                     {msg.subject}
-                  </h3>
-                  <p className="text-neutral-400 mt-1 line-clamp-2">
+                  </h4>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-1 line-clamp-2 leading-relaxed">
                     {msg.content}
                   </p>
-                  <div className="text-xs text-neutral-500 mt-2">
+                  <div className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-2.5 font-medium">
                     {new Date(msg.createdAt).toLocaleString("es-DO", {
                       year: "numeric",
                       month: "short",
@@ -2272,7 +2316,7 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
       >
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
               Destinatario *
             </label>
             <select
@@ -2283,7 +2327,7 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
                   companyId: e.target.value,
                 }))
               }
-              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
+              className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
             >
               <option value="">Seleccione una compañía...</option>
               {companies.map((c) => (
@@ -2294,7 +2338,7 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
               Asunto *
             </label>
             <input
@@ -2303,12 +2347,12 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
               onChange={(e) =>
                 setMessageForm((prev) => ({ ...prev, subject: e.target.value }))
               }
-              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
-              placeholder="Ej: Recordatorio de pago"
+              className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+              placeholder="Ej: Actualización de cuota de servicio"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
               Mensaje *
             </label>
             <textarea
@@ -2316,21 +2360,21 @@ const MessagesTab = ({ companies }: { companies: Company[] }) => {
               onChange={(e) =>
                 setMessageForm((prev) => ({ ...prev, content: e.target.value }))
               }
-              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-white"
+              className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
               rows={5}
               placeholder="Escriba su mensaje aquí..."
             />
           </div>
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end gap-2 pt-4 border-t border-neutral-200 dark:border-neutral-800">
             <button
               onClick={() => setIsComposeModalOpen(false)}
-              className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded-lg text-white"
+              className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-700 dark:text-neutral-200 text-xs font-semibold transition-colors"
             >
               Cancelar
             </button>
             <button
               onClick={handleSendMessage}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-bold flex items-center gap-2"
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-xl text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-colors"
             >
               <Icon name="send" size={16} />
               Enviar Mensaje
@@ -2437,18 +2481,21 @@ const SettingsTab = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Información General */}
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <Icon name="building-2" className="w-5 h-5 text-blue-400" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <Icon name="building-2" className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-semibold text-white">
-              Información General
-            </h3>
+            <div>
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                Información de Plataforma
+              </h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Identidad del sistema y canales de soporte</p>
+            </div>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
                 Nombre de la Plataforma
               </label>
               <input
@@ -2457,12 +2504,12 @@ const SettingsTab = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, companyName: e.target.value })
                 }
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+                className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-1">
-                Email de Soporte
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
+                Email de Soporte Técnico
               </label>
               <input
                 type="email"
@@ -2470,11 +2517,11 @@ const SettingsTab = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, supportEmail: e.target.value })
                 }
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+                className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
                 Teléfono de Soporte
               </label>
               <input
@@ -2483,23 +2530,26 @@ const SettingsTab = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, supportPhone: e.target.value })
                 }
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+                className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
               />
             </div>
           </div>
         </div>
 
         {/* Configuración de Facturación */}
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-              <Icon name="credit-card" className="w-5 h-5 text-emerald-400" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <Icon name="credit-card" className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-semibold text-white">Facturación</h3>
+            <div>
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white">Facturación SaaS</h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Parámetros por defecto para suscripciones</p>
+            </div>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
                 Período de Gracia por Defecto (días)
               </label>
               <input
@@ -2511,44 +2561,47 @@ const SettingsTab = () => {
                     defaultGracePeriod: parseInt(e.target.value) || 7,
                   })
                 }
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+                className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-1">
-                Moneda por Defecto
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-1">
+                Moneda Base del Sistema
               </label>
               <select
                 value={settings.defaultCurrency}
                 onChange={(e) =>
                   setSettings({ ...settings, defaultCurrency: e.target.value })
                 }
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all"
+                className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-2.5 text-neutral-900 dark:text-white text-sm shadow-2xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
               >
-                <option value="DOP">DOP - Peso Dominicano</option>
-                <option value="USD">USD - Dólar Americano</option>
-                <option value="EUR">EUR - Euro</option>
+                <option value="DOP">DOP - Peso Dominicano (RD$)</option>
+                <option value="USD">USD - Dólar Americano ($)</option>
+                <option value="EUR">EUR - Euro (€)</option>
               </select>
             </div>
           </div>
         </div>
 
         {/* Notificaciones */}
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-              <Icon name="bell" className="w-5 h-5 text-purple-400" />
+            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-400">
+              <Icon name="bell" className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-semibold text-white">Notificaciones</h3>
+            <div>
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white">Notificaciones</h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Canales de entrega de avisos y alertas</p>
+            </div>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3.5 bg-neutral-50/70 dark:bg-neutral-800/50 rounded-xl border border-neutral-200/80 dark:border-neutral-700/60">
               <div>
-                <p className="text-sm font-medium text-white">
+                <p className="text-xs font-bold text-neutral-900 dark:text-white">
                   Notificaciones por Email
                 </p>
-                <p className="text-xs text-neutral-500">
-                  Enviar alertas y notificaciones por correo
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                  Enviar confirmaciones de pago y alertas por correo
                 </p>
               </div>
               <button
@@ -2560,24 +2613,24 @@ const SettingsTab = () => {
                 }
                 className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${settings.enableEmailNotifications
                   ? "bg-purple-600"
-                  : "bg-neutral-700"
+                  : "bg-neutral-300 dark:bg-neutral-700"
                   }`}
               >
                 <span
-                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${settings.enableEmailNotifications
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 shadow-sm ${settings.enableEmailNotifications
                     ? "translate-x-5"
                     : "translate-x-0"
                     }`}
                 />
               </button>
             </div>
-            <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg">
+            <div className="flex items-center justify-between p-3.5 bg-neutral-50/70 dark:bg-neutral-800/50 rounded-xl border border-neutral-200/80 dark:border-neutral-700/60">
               <div>
-                <p className="text-sm font-medium text-white">
-                  Notificaciones por SMS
+                <p className="text-xs font-bold text-neutral-900 dark:text-white">
+                  Notificaciones por SMS / WhatsApp
                 </p>
-                <p className="text-xs text-neutral-500">
-                  Enviar alertas críticas por mensaje de texto
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                  Enviar avisos de pago inmediato al móvil del administrador
                 </p>
               </div>
               <button
@@ -2589,11 +2642,11 @@ const SettingsTab = () => {
                 }
                 className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${settings.enableSmsNotifications
                   ? "bg-purple-600"
-                  : "bg-neutral-700"
+                  : "bg-neutral-300 dark:bg-neutral-700"
                   }`}
               >
                 <span
-                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${settings.enableSmsNotifications
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 shadow-sm ${settings.enableSmsNotifications
                     ? "translate-x-5"
                     : "translate-x-0"
                     }`}
@@ -2604,21 +2657,24 @@ const SettingsTab = () => {
         </div>
 
         {/* Modo Mantenimiento */}
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-              <Icon name="settings" className="w-5 h-5 text-orange-400" />
+            <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 dark:border-orange-900/50 flex items-center justify-center text-orange-600 dark:text-orange-400">
+              <Icon name="settings" className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-semibold text-white">Sistema</h3>
+            <div>
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white">Sistema & Entorno</h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">Estado operativo y control de plataforma</p>
+            </div>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-neutral-800/50 rounded-lg border border-orange-500/20">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3.5 bg-neutral-50/70 dark:bg-neutral-800/50 rounded-xl border border-neutral-200/80 dark:border-neutral-700/60">
               <div>
-                <p className="text-sm font-medium text-white">
+                <p className="text-xs font-bold text-neutral-900 dark:text-white">
                   Modo Mantenimiento
                 </p>
-                <p className="text-xs text-neutral-500">
-                  Activar para deshabilitar acceso de clientes
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                  Deshabilita temporalmente el acceso general para clientes
                 </p>
               </div>
               <button
@@ -2628,29 +2684,26 @@ const SettingsTab = () => {
                     maintenanceMode: !settings.maintenanceMode,
                   })
                 }
-                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${settings.maintenanceMode ? "bg-orange-600" : "bg-neutral-700"
+                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${settings.maintenanceMode ? "bg-orange-600" : "bg-neutral-300 dark:bg-neutral-700"
                   }`}
               >
                 <span
-                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 ${settings.maintenanceMode
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all duration-200 shadow-sm ${settings.maintenanceMode
                     ? "translate-x-5"
                     : "translate-x-0"
                     }`}
                 />
               </button>
             </div>
-            <div className="p-4 bg-neutral-800/30 rounded-lg border border-neutral-700/50">
+            <div className="p-4 bg-neutral-50/70 dark:bg-neutral-800/40 rounded-xl border border-neutral-200/80 dark:border-neutral-700/50">
               <div className="flex items-start gap-3">
-                <Icon name="info" className="w-5 h-5 text-blue-400 mt-0.5" />
+                <Icon name="info" className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm text-neutral-300">
-                    Versión del Sistema
+                  <p className="text-xs font-bold text-neutral-900 dark:text-white">
+                    MI CONDO SaaS v1.0.0-pro
                   </p>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    MI CONDO SaaS v1.0.0-dev
-                  </p>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Ambiente: {window.location.hostname === "localhost" ? "Desarrollo" : "Producción"}
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                    Ambiente: {window.location.hostname === "localhost" ? "Desarrollo Local" : "Producción"} • RNC: 1-33-04982-1
                   </p>
                 </div>
               </div>
@@ -2721,65 +2774,65 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Planes y Precios</h2>
-          <p className="text-neutral-400 text-sm mt-1">
-            Gestión de planes de suscripción y pricing
+          <h2 className="text-xl font-black text-neutral-900 dark:text-white tracking-tight">Planes y Precios SaaS</h2>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+            Estructura de cobro mensual a empresas administradoras (Wise Services Dominicana SRL)
           </p>
         </div>
         <button
           onClick={() => setShowCalculator(!showCalculator)}
-          className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl flex items-center gap-2 transition-colors"
+          className="px-4 py-2 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-800 dark:text-white border border-neutral-200/80 dark:border-neutral-700 rounded-xl flex items-center gap-2 transition-all text-xs font-bold shadow-2xs"
         >
-          <Icon name="calculator" className="w-4 h-4" />
-          Calculadora
+          <Icon name="calculator" className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+          {showCalculator ? "Ocultar Calculadora" : "Abrir Calculadora"}
         </button>
       </div>
 
       {/* Métricas de Revenue */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 border border-green-500/30 rounded-xl p-5">
+        <div className="bg-white dark:bg-[#161b26] border border-emerald-200/80 dark:border-green-500/30 rounded-2xl p-5 shadow-2xs">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-              <Icon name="dollar-sign" className="w-6 h-6 text-green-400" />
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-green-500/20 border border-emerald-200/60 dark:border-green-500/30 flex items-center justify-center text-emerald-600 dark:text-green-400">
+              <Icon name="dollar-sign" className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight">
                 RD$ {planStats.monthlyRevenue.toLocaleString()}
               </p>
-              <p className="text-xs text-green-400">Ingreso Mensual</p>
+              <p className="text-xs font-semibold text-emerald-600 dark:text-green-400 uppercase tracking-wider">Ingreso Mensual</p>
             </div>
           </div>
         </div>
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 shadow-2xs">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-              <Icon name="building-2" className="w-6 h-6 text-blue-400" />
+            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-500/20 border border-blue-200/60 dark:border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <Icon name="building-2" className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{planStats.totalCondos}</p>
-              <p className="text-xs text-neutral-400">Condos Activos</p>
+              <p className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight">{planStats.totalCondos}</p>
+              <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Condos Gestionados</p>
             </div>
           </div>
         </div>
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 shadow-2xs">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-              <Icon name="users" className="w-6 h-6 text-purple-400" />
+            <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-500/20 border border-purple-200/60 dark:border-purple-500/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
+              <Icon name="users" className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{planStats.active}</p>
-              <p className="text-xs text-neutral-400">Clientes Pagando</p>
+              <p className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight">{planStats.active}</p>
+              <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Empresas Activas</p>
             </div>
           </div>
         </div>
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-5 shadow-2xs">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center">
-              <Icon name="clock" className="w-6 h-6 text-yellow-400" />
+            <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-yellow-500/20 border border-amber-200/60 dark:border-yellow-500/30 flex items-center justify-center text-amber-600 dark:text-yellow-400">
+              <Icon name="clock" className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{planStats.trial}</p>
-              <p className="text-xs text-neutral-400">En Trial</p>
+              <p className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight">{planStats.trial}</p>
+              <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">En Periodo Prueba</p>
             </div>
           </div>
         </div>
@@ -2787,15 +2840,15 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
 
       {/* Calculadora de Precios */}
       {showCalculator && (
-        <div className="bg-gradient-to-br from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Icon name="calculator" className="w-5 h-5 text-purple-400" />
-            Calculadora de Precios
+        <div className="bg-white dark:bg-[#161b26] border border-purple-200 dark:border-purple-500/30 rounded-2xl p-6 shadow-2xs">
+          <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
+            <Icon name="calculator" className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            Calculadora de Precios de Licencia
           </h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-3">
-                ¿Cuántos condominios administras?
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-3">
+                ¿Cuántos condominios administra la empresa cliente?
               </label>
               <input
                 type="range"
@@ -2803,9 +2856,9 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
                 max="20"
                 value={condoSlider}
                 onChange={(e) => setCondoSlider(parseInt(e.target.value))}
-                className="w-full h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                className="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
               />
-              <div className="flex justify-between text-xs text-neutral-500 mt-1">
+              <div className="flex justify-between text-xs text-neutral-400 dark:text-neutral-500 mt-1">
                 <span>1</span>
                 <span>5</span>
                 <span>10</span>
@@ -2813,45 +2866,45 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
                 <span>20+</span>
               </div>
               <div className="text-center mt-4">
-                <span className="text-4xl font-bold text-white">{condoSlider}</span>
-                <span className="text-neutral-400 ml-2">condominios</span>
+                <span className="text-4xl font-black text-neutral-900 dark:text-white">{condoSlider}</span>
+                <span className="text-neutral-500 dark:text-neutral-400 ml-2 font-medium">condominios</span>
               </div>
             </div>
-            <div className="bg-neutral-900/50 rounded-xl p-5 space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-neutral-400">Precio por condo:</span>
-                <span className="text-white font-bold">
+            <div className="bg-neutral-50 dark:bg-neutral-900/60 rounded-xl p-5 space-y-3 border border-neutral-200/80 dark:border-neutral-800">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-neutral-600 dark:text-neutral-400">Tarifa por condominio:</span>
+                <span className="text-neutral-900 dark:text-white font-bold">
                   RD$ {pricing.perCondo.toLocaleString()}/mes
                 </span>
               </div>
-              <div className="flex justify-between items-center text-lg">
-                <span className="text-neutral-300">Total Mensual:</span>
-                <span className="text-green-400 font-bold">
+              <div className="flex justify-between items-center text-base">
+                <span className="text-neutral-700 dark:text-neutral-300 font-bold">Total Mensual:</span>
+                <span className="text-emerald-600 dark:text-green-400 font-black text-xl">
                   RD$ {pricing.total.toLocaleString()}
                 </span>
               </div>
-              <div className="border-t border-neutral-700 pt-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-neutral-400">Total Anual:</span>
-                  <span className="text-white">RD$ {annualTotal.toLocaleString()}</span>
+              <div className="border-t border-neutral-200 dark:border-neutral-700/80 pt-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-neutral-600 dark:text-neutral-400">Total Anual estimado:</span>
+                  <span className="text-neutral-900 dark:text-white font-bold">RD$ {annualTotal.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-green-400">Con 10% descuento:</span>
-                  <span className="text-green-400 font-bold">
+                <div className="flex justify-between items-center text-xs mt-1">
+                  <span className="text-emerald-600 dark:text-green-400 font-semibold">Con 10% descuento anual:</span>
+                  <span className="text-emerald-600 dark:text-green-400 font-bold">
                     RD$ {(annualTotal - annualDiscount).toLocaleString()}
                   </span>
                 </div>
               </div>
               <div className="pt-2">
-                <span className={`text-xs px-2 py-1 rounded-full ${pricing.tier.minCondos >= 10
-                  ? "bg-green-500/20 text-green-400"
+                <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${pricing.tier.minCondos >= 10
+                  ? "bg-emerald-50 dark:bg-green-500/20 text-emerald-700 dark:text-green-400"
                   : pricing.tier.minCondos >= 5
-                    ? "bg-blue-500/20 text-blue-400"
+                    ? "bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400"
                     : pricing.tier.minCondos >= 2
-                      ? "bg-purple-500/20 text-purple-400"
-                      : "bg-neutral-700 text-neutral-300"
+                      ? "bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400"
+                      : "bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
                   }`}>
-                  Tier: {pricing.tier.label}
+                  Nivel Asignado: {pricing.tier.label}
                 </span>
               </div>
             </div>
@@ -2860,84 +2913,84 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
       )}
 
       {/* Tabla de Precios */}
-      <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl overflow-hidden">
-        <div className="p-6 border-b border-neutral-800">
-          <h3 className="text-lg font-bold text-white">Estructura de Precios</h3>
-          <p className="text-sm text-neutral-400 mt-1">
-            Precio por condo con descuentos por volumen
+      <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-2xs">
+        <div className="p-5 border-b border-neutral-200 dark:border-neutral-800">
+          <h3 className="text-base font-bold text-neutral-900 dark:text-white">Estructura de Precios por Volumen</h3>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+            Tarifas escalonadas de cobro en República Dominicana
           </p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-neutral-800/50">
+            <thead className="bg-neutral-50 dark:bg-neutral-800/40 border-b border-neutral-200 dark:border-neutral-800">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                  Tier
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                  Nivel (Tier)
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                  Cantidad
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                  Condos
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                   Precio/Condo (RD$)
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                  Precio/Condo (USD)
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                  Equiv. USD
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                  Descuento
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                  Ahorro
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-800">
-              <tr className="bg-yellow-500/5 border-l-4 border-l-yellow-500">
+            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+              <tr className="bg-amber-50/40 dark:bg-yellow-500/5 border-l-4 border-l-amber-500">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <Icon name="gift" className="w-5 h-5 text-yellow-400" />
-                    <span className="font-medium text-yellow-400">Trial</span>
+                    <Icon name="gift" className="w-4 h-4 text-amber-600 dark:text-yellow-400" />
+                    <span className="font-bold text-amber-700 dark:text-yellow-400 text-xs">Trial</span>
                   </div>
                 </td>
-                <td className="px-6 py-4">Ilimitado</td>
+                <td className="px-6 py-4 text-xs font-medium text-neutral-600 dark:text-neutral-300">Ilimitado</td>
                 <td className="px-6 py-4">
-                  <span className="text-green-400 font-bold">GRATIS</span>
+                  <span className="text-emerald-700 dark:text-green-400 font-black text-xs">GRATIS</span>
                 </td>
-                <td className="px-6 py-4 text-neutral-400">$0</td>
+                <td className="px-6 py-4 text-xs text-neutral-500 dark:text-neutral-400">$0</td>
                 <td className="px-6 py-4">
-                  <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400">
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-yellow-500/20 text-amber-800 dark:text-yellow-400 font-semibold">
                     {TRIAL_DAYS} días
                   </span>
                 </td>
               </tr>
               {PRICING_TIERS.map((tier, index) => (
-                <tr key={index} className="hover:bg-neutral-800/30 transition-colors">
+                <tr key={index} className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/30 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <Icon
                         name={index === 0 ? "building" : index === 3 ? "crown" : "building-2"}
-                        className={`w-5 h-5 ${index === 3 ? "text-green-400" :
-                          index === 2 ? "text-blue-400" :
-                            index === 1 ? "text-purple-400" : "text-neutral-400"
+                        className={`w-4 h-4 ${index === 3 ? "text-emerald-600 dark:text-green-400" :
+                          index === 2 ? "text-blue-600 dark:text-blue-400" :
+                            index === 1 ? "text-purple-600 dark:text-purple-400" : "text-neutral-400"
                           }`}
                       />
-                      <span className="font-medium text-white capitalize">
+                      <span className="font-bold text-neutral-900 dark:text-white text-xs capitalize">
                         {index === 0 ? "Starter" : index === 1 ? "Growth" : index === 2 ? "Pro" : "Enterprise"}
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-white">{tier.label}</td>
+                  <td className="px-6 py-4 text-xs text-neutral-700 dark:text-neutral-300 font-medium">{tier.label}</td>
                   <td className="px-6 py-4">
-                    <span className="text-white font-bold">
+                    <span className="text-neutral-900 dark:text-white font-black text-xs">
                       RD$ {tier.pricePerCondo.toLocaleString()}
                     </span>
-                    <span className="text-neutral-500 text-sm">/mes</span>
+                    <span className="text-neutral-400 text-[11px] ml-1">/mes</span>
                   </td>
-                  <td className="px-6 py-4 text-neutral-400">${tier.priceUSD}/mes</td>
+                  <td className="px-6 py-4 text-xs text-neutral-500 dark:text-neutral-400">${tier.priceUSD}/mes</td>
                   <td className="px-6 py-4">
                     {index === 0 ? (
-                      <span className="text-neutral-500">—</span>
+                      <span className="text-neutral-400 text-xs">—</span>
                     ) : (
-                      <span className={`text-xs px-2 py-1 rounded-full ${index === 3 ? "bg-green-500/20 text-green-400" :
-                        index === 2 ? "bg-blue-500/20 text-blue-400" :
-                          "bg-purple-500/20 text-purple-400"
+                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${index === 3 ? "bg-emerald-50 dark:bg-green-500/20 text-emerald-700 dark:text-green-400" :
+                        index === 2 ? "bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400" :
+                          "bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400"
                         }`}>
                         {index === 1 ? "-20%" : index === 2 ? "-33%" : "-47%"}
                       </span>
@@ -2952,79 +3005,54 @@ const PlansTab = ({ companies }: { companies: Company[] }) => {
 
       {/* Features Incluidas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Icon name="check-circle" className="w-5 h-5 text-green-400" />
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
+          <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
+            <Icon name="check-circle" className="w-5 h-5 text-emerald-600 dark:text-green-400" />
             Incluido en Todos los Planes
           </h3>
-          <ul className="space-y-3">
+          <ul className="space-y-2.5">
             {[
               "Unidades ilimitadas por condominio",
-              "Portal de residentes",
-              "Gestión de pagos y cuotas",
-              "Reportes financieros",
-              "Control de acceso",
-              "Comunicaciones y anuncios",
-              "Gestión de incidentes",
-              "Reserva de amenidades",
-              "Soporte por email",
+              "Portal de residentes con autogestión de pagos y notificaciones",
+              "Gestión de cuentas por pagar y proveedores dominicanos (EDESUR, CAASD)",
+              "Reportes financieros y conciliación de cuentas bancarias",
+              "Control de acceso y directorio de residentes",
+              "Comunicaciones oficiales y circulares",
+              "Gestión de incidentes con seguimiento de resolución",
+              "Reserva de áreas sociales y amenidades",
+              "Soporte local en República Dominicana",
             ].map((feature, i) => (
-              <li key={i} className="flex items-center gap-3 text-neutral-300">
-                <Icon name="check" className="w-4 h-4 text-green-400 flex-shrink-0" />
+              <li key={i} className="flex items-center gap-2.5 text-xs text-neutral-700 dark:text-neutral-300 font-medium">
+                <Icon name="check" className="w-4 h-4 text-emerald-600 dark:text-green-400 flex-shrink-0" />
                 {feature}
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Icon name="sparkles" className="w-5 h-5 text-purple-400" />
-            Próximamente (Add-ons)
+        <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
+          <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
+            <Icon name="sparkles" className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            Módulos Adicionales (Add-ons)
           </h3>
-          <ul className="space-y-3">
+          <ul className="space-y-2.5">
             {[
-              { name: "Notificaciones WhatsApp", price: "RD$ 500/mes" },
-              { name: "Reportes Premium", price: "RD$ 300/mes" },
-              { name: "Usuarios adicionales", price: "RD$ 200/usuario" },
-              { name: "Almacenamiento extra", price: "RD$ 100/10GB" },
-              { name: "API Access", price: "RD$ 1,000/mes" },
-              { name: "White Label", price: "Cotizar" },
+              { name: "Notificaciones Automáticas por WhatsApp", price: "RD$ 500/mes" },
+              { name: "Reportes Fiscales Avanzados para DGII (606/607)", price: "RD$ 300/mes" },
+              { name: "Usuarios Administradores Adicionales", price: "RD$ 200/usuario" },
+              { name: "Almacenamiento Extra para Comprobantes", price: "RD$ 100/10GB" },
+              { name: "Acceso API para ERP Contable Externo", price: "RD$ 1,000/mes" },
+              { name: "Personalización de Marca Blanca (White Label)", price: "Cotizar" },
             ].map((addon, i) => (
-              <li key={i} className="flex items-center justify-between p-2 rounded-lg bg-neutral-800/50">
-                <span className="text-neutral-300 flex items-center gap-2">
-                  <Icon name="plus-circle" className="w-4 h-4 text-purple-400" />
+              <li key={i} className="flex items-center justify-between p-3 rounded-xl bg-neutral-50/70 dark:bg-neutral-800/50 border border-neutral-200/80 dark:border-neutral-700/60">
+                <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
+                  <Icon name="plus-circle" className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                   {addon.name}
                 </span>
-                <span className="text-xs text-purple-400">{addon.price}</span>
+                <span className="text-xs font-bold text-purple-700 dark:text-purple-400">{addon.price}</span>
               </li>
             ))}
           </ul>
-        </div>
-      </div>
-
-      {/* Comparativa con Competencia */}
-      <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/20 rounded-xl p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <Icon name="trending-up" className="w-5 h-5 text-blue-400" />
-          ¿Por qué MI CONDO?
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-neutral-900/50 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-green-400 mb-1">-60%</div>
-            <p className="text-sm text-neutral-400">vs Buildium</p>
-            <p className="text-xs text-neutral-500">($62+ USD/mes)</p>
-          </div>
-          <div className="bg-neutral-900/50 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-blue-400 mb-1">∞</div>
-            <p className="text-sm text-neutral-400">Unidades</p>
-            <p className="text-xs text-neutral-500">Sin límite por condo</p>
-          </div>
-          <div className="bg-neutral-900/50 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-purple-400 mb-1">RD$</div>
-            <p className="text-sm text-neutral-400">Pago Local</p>
-            <p className="text-xs text-neutral-500">Sin tarjeta internacional</p>
-          </div>
         </div>
       </div>
     </div>
@@ -3385,37 +3413,51 @@ export const SuperAdminDashboard = () => {
   const isDevMode = window.location.hostname === "localhost";
 
   const fetchCompanies = async () => {
-    // En modo desarrollo, usar datos mock
+    // En modo desarrollo, usar datos mock con Wise Services Dominicana SRL conectado a los condominios locales
     if (isDevMode && isDevAuthenticated) {
-      // console.log("🔧 DEV MODE: Usando compañías mock");
+      let liveCondosCount = 2;
+      try {
+        const stored = localStorage.getItem('micondo_live_condos_v2');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) liveCondosCount = parsed.length;
+        }
+      } catch (e) {
+        // fallback
+      }
+
       setCompanies([
         {
-          id: "dev-company-1",
-          name: "Empresa Demo 1",
-          rnc: "123456789",
-          address: "Calle Principal #1",
-          phone: "809-555-0001",
-          email: "demo1@example.com",
+          id: "dev-company-id",
+          name: "Wise Services Dominicana SRL",
+          rnc: "430314706",
+          address: "Av. Abraham Lincoln #1003, Piantini, Santo Domingo",
+          phone: "829-455-4783",
+          email: "info@wiseservicesrd.com",
           logoUrl: undefined,
           status: "Activo",
-          adminUserEmail: "admin@demo1.com",
+          adminUserEmail: "admin@micondo.com",
           billingStartDate: "2025-01-01",
           gracePeriodDays: 7,
           plan: "Pro",
+          condoCount: liveCondosCount,
+          monthlyFee: liveCondosCount * 1000,
         },
         {
           id: "dev-company-2",
-          name: "Empresa Demo 2",
-          rnc: "987654321",
-          address: "Avenida Central #2",
+          name: "CondoAdmin Premier SRL",
+          rnc: "131849204",
+          address: "Av. Winston Churchill #45, Bella Vista",
           phone: "809-555-0002",
-          email: "demo2@example.com",
+          email: "contacto@condoadminrd.com",
           logoUrl: undefined,
           status: "Activo",
           adminUserEmail: "admin@demo2.com",
           billingStartDate: "2025-01-15",
           gracePeriodDays: 14,
           plan: "Enterprise",
+          condoCount: 5,
+          monthlyFee: 4000,
         },
       ]);
       setLoading(false);
@@ -3737,7 +3779,7 @@ export const SuperAdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-300">
+    <div className="min-h-screen bg-[#f8f9fb] dark:bg-[#0b0f17] text-neutral-800 dark:text-neutral-100 transition-colors">
       {/* Sidebar */}
       <SuperAdminSidebar
         activeTab={activeTab}
@@ -3745,6 +3787,8 @@ export const SuperAdminDashboard = () => {
         onShowRoadmap={() => setActiveTab("roadmap")}
         onLogout={logout}
         metrics={sidebarMetrics}
+        isOpenOnMobile={false}
+        onCloseMobile={() => {}}
       />
 
       {/* Main Content Area */}
@@ -3753,15 +3797,15 @@ export const SuperAdminDashboard = () => {
         <header className="mb-8">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-1">
-                {activeTab === "dashboard" && "📊 Dashboard"}
-                {activeTab === "companies" && "🏢 Compañías"}
-                {activeTab === "billing" && "💳 Facturación"}
-                {activeTab === "communications" && "📢 Comunicaciones"}
-                {activeTab === "messages" && "💬 Mensajes"}
-                {activeTab === "roadmap" && "🗺️ Development Roadmap"}
+              <h1 className="text-2xl font-black text-neutral-900 dark:text-white mb-1">
+                {activeTab === "dashboard" && "Dashboard"}
+                {activeTab === "companies" && "Compañías"}
+                {activeTab === "billing" && "Facturación"}
+                {activeTab === "communications" && "Comunicaciones"}
+                {activeTab === "messages" && "Mensajes"}
+                {activeTab === "roadmap" && "Development Roadmap"}
               </h1>
-              <p className="text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 {activeTab === "dashboard" &&
                   "Vista general de tu plataforma SaaS"}
                 {activeTab === "companies" &&
@@ -3775,15 +3819,18 @@ export const SuperAdminDashboard = () => {
                   "Progreso y planificación del desarrollo"}
               </p>
             </div>
-            {activeTab === "companies" && (
-              <button
-                onClick={handleOpenCreate}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-lg shadow-indigo-500/20"
-              >
-                <Icon name="plus" size={18} />
-                Nueva Compañía
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              {activeTab === "companies" && (
+                <button
+                  onClick={handleOpenCreate}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-sm text-xs"
+                >
+                  <Icon name="plus" size={16} />
+                  Nueva Compañía
+                </button>
+              )}
+            </div>
           </div>
         </header>
 
@@ -3797,69 +3844,69 @@ export const SuperAdminDashboard = () => {
             {/* Métricas destacadas */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* MRR Card - Grande */}
-              <div className="bg-gradient-to-br from-emerald-600/20 to-teal-600/10 border border-emerald-500/30 rounded-2xl p-6">
+              <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/5 dark:from-emerald-600/20 dark:to-teal-600/10 border border-emerald-500/30 rounded-2xl p-6 shadow-2xs">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
                     <Icon
                       name="dollar-sign"
-                      className="w-6 h-6 text-emerald-400"
+                      className="w-6 h-6 text-emerald-600 dark:text-emerald-400"
                     />
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 font-bold border border-emerald-300 dark:border-emerald-500/30">
                     +12% vs mes anterior
                   </span>
                 </div>
-                <p className="text-neutral-400 text-sm mb-1">
+                <p className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-1">
                   Ingresos Recurrentes (MRR)
                 </p>
-                <p className="text-4xl font-bold text-white">
-                  ${metrics.mrr.toLocaleString()}
+                <p className="text-4xl font-black text-neutral-900 dark:text-white">
+                  RD$ {metrics.mrr.toLocaleString()}
                 </p>
-                <div className="mt-4 h-2 bg-neutral-800 rounded-full overflow-hidden">
+                <div className="mt-4 h-2 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
                     style={{ width: "75%" }}
                   />
                 </div>
                 <p className="text-xs text-neutral-500 mt-2">
-                  75% del objetivo mensual ($5,000)
+                  75% del objetivo mensual (RD$ 250,000)
                 </p>
               </div>
 
               {/* Clientes Activos Card - Grande */}
-              <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/10 border border-blue-500/30 rounded-2xl p-6">
+              <div className="bg-gradient-to-br from-blue-500/10 to-indigo-500/5 dark:from-blue-600/20 dark:to-indigo-600/10 border border-blue-500/30 rounded-2xl p-6 shadow-2xs">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                    <Icon name="building-2" className="w-6 h-6 text-blue-400" />
+                    <Icon name="building-2" className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                    {metrics.total} totales
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-400 font-bold border border-blue-300 dark:border-blue-500/30">
+                    {metrics.total} registradas
                   </span>
                 </div>
-                <p className="text-neutral-400 text-sm mb-1">
-                  Clientes Activos
+                <p className="text-neutral-500 dark:text-neutral-400 text-xs font-semibold uppercase tracking-wider mb-1">
+                  Compañías Administradoras Activas
                 </p>
-                <p className="text-4xl font-bold text-white">
+                <p className="text-4xl font-black text-neutral-900 dark:text-white">
                   {metrics.active}
                 </p>
                 <div className="mt-4 grid grid-cols-3 gap-2">
-                  <div className="text-center p-2 bg-neutral-800/50 rounded-lg">
-                    <p className="text-lg font-bold text-green-400">
+                  <div className="text-center p-2.5 bg-white/80 dark:bg-neutral-800/50 rounded-xl border border-neutral-200/60 dark:border-neutral-700/50 shadow-2xs">
+                    <p className="text-lg font-black text-emerald-600 dark:text-green-400">
                       {metrics.active}
                     </p>
-                    <p className="text-xs text-neutral-500">Activos</p>
+                    <p className="text-[11px] font-medium text-neutral-500">Activas</p>
                   </div>
-                  <div className="text-center p-2 bg-neutral-800/50 rounded-lg">
-                    <p className="text-lg font-bold text-yellow-400">
+                  <div className="text-center p-2.5 bg-white/80 dark:bg-neutral-800/50 rounded-xl border border-neutral-200/60 dark:border-neutral-700/50 shadow-2xs">
+                    <p className="text-lg font-black text-amber-600 dark:text-yellow-400">
                       {metrics.inGrace}
                     </p>
-                    <p className="text-xs text-neutral-500">En Gracia</p>
+                    <p className="text-[11px] font-medium text-neutral-500">En Gracia</p>
                   </div>
-                  <div className="text-center p-2 bg-neutral-800/50 rounded-lg">
-                    <p className="text-lg font-bold text-red-400">
+                  <div className="text-center p-2.5 bg-white/80 dark:bg-neutral-800/50 rounded-xl border border-neutral-200/60 dark:border-neutral-700/50 shadow-2xs">
+                    <p className="text-lg font-black text-rose-600 dark:text-red-400">
                       {metrics.inactive}
                     </p>
-                    <p className="text-xs text-neutral-500">Inactivos</p>
+                    <p className="text-[11px] font-medium text-neutral-500">Inactivas</p>
                   </div>
                 </div>
               </div>
@@ -3867,69 +3914,69 @@ export const SuperAdminDashboard = () => {
 
             {/* Métricas secundarias */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 hover:border-neutral-700 transition-colors">
+              <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-4 shadow-2xs hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                    <Icon name="calendar" className="w-5 h-5 text-orange-400" />
+                  <div className="w-10 h-10 rounded-xl bg-orange-500/15 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                    <Icon name="calendar" className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-white">
+                    <p className="text-2xl font-black text-neutral-900 dark:text-white">
                       {metrics.upcomingRenewals}
                     </p>
                     <p className="text-xs text-neutral-500">Vencen Pronto</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 hover:border-neutral-700 transition-colors">
+              <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-4 shadow-2xs hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center">
                     <Icon
                       name="message-circle"
-                      className="w-5 h-5 text-purple-400"
+                      className="w-5 h-5"
                     />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-white">0</p>
+                    <p className="text-2xl font-black text-neutral-900 dark:text-white">0</p>
                     <p className="text-xs text-neutral-500">Mensajes Nuevos</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 hover:border-neutral-700 transition-colors">
+              <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-4 shadow-2xs hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
-                    <Icon name="megaphone" className="w-5 h-5 text-pink-400" />
+                  <div className="w-10 h-10 rounded-xl bg-pink-500/15 text-pink-600 dark:text-pink-400 flex items-center justify-center">
+                    <Icon name="megaphone" className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-white">0</p>
+                    <p className="text-2xl font-black text-neutral-900 dark:text-white">1</p>
                     <p className="text-xs text-neutral-500">Anuncios Activos</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 hover:border-neutral-700 transition-colors">
+              <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-4 shadow-2xs hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
                     <Icon
                       name="credit-card"
-                      className="w-5 h-5 text-cyan-400"
+                      className="w-5 h-5"
                     />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-white">0</p>
-                    <p className="text-xs text-neutral-500">Pagos Este Mes</p>
+                    <p className="text-2xl font-black text-neutral-900 dark:text-white">{allPayments.length}</p>
+                    <p className="text-xs text-neutral-500">Pagos Registrados</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* MRR Trend Chart - Últimos 6 meses */}
-            <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+            <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <Icon name="trending-up" className="w-5 h-5 text-emerald-400" />
-                  Tendencia MRR (Últimos 6 Meses)
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                  <Icon name="trending-up" className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  Tendencia de Ingresos SaaS (MRR)
                 </h3>
-                <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  ${metrics.mrr.toLocaleString()}/mes actual
+                <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 font-bold border border-emerald-300 dark:border-emerald-500/30">
+                  RD$ {metrics.mrr.toLocaleString()}/mes actual
                 </span>
               </div>
               <div className="h-64">
@@ -3940,13 +3987,13 @@ export const SuperAdminDashboard = () => {
             {/* Charts Row: Plan Distribution + Top Clients */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Plan Distribution Pie Chart */}
-              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+              <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <Icon name="pie-chart" className="w-5 h-5 text-purple-400" />
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                    <Icon name="pie-chart" className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                     Distribución por Plan
                   </h3>
-                  <span className="text-xs px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-400 font-bold border border-purple-300 dark:border-purple-500/30">
                     {companies.length} clientes
                   </span>
                 </div>
@@ -3956,14 +4003,14 @@ export const SuperAdminDashboard = () => {
               </div>
 
               {/* Top Clients by Revenue */}
-              <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+              <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <Icon name="trophy" className="w-5 h-5 text-yellow-400" />
-                    Top 5 Clientes
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                    <Icon name="trophy" className="w-5 h-5 text-amber-500" />
+                    Top Clientes SaaS
                   </h3>
-                  <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-                    Por revenue mensual
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400 font-bold border border-amber-300 dark:border-amber-500/30">
+                    Por facturación mensual
                   </span>
                 </div>
                 <TopClients companies={companies} />
@@ -3972,15 +4019,15 @@ export const SuperAdminDashboard = () => {
 
             {/* Panel de Alertas - Grace Period */}
             {companiesNeedingAttention.length > 0 && (
-              <div className="bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-500/30 rounded-xl p-6">
+              <div className="bg-rose-50/70 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-2xl p-6 shadow-2xs">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <Icon name="alert-triangle" className="w-5 h-5 text-red-400" />
+                  <h3 className="text-base font-bold text-rose-900 dark:text-rose-200 flex items-center gap-2">
+                    <Icon name="alert-triangle" className="w-5 h-5 text-rose-600 dark:text-rose-400" />
                     Requieren Atención ({companiesNeedingAttention.length})
                   </h3>
                   <button
                     onClick={() => setActiveTab("billing")}
-                    className="text-sm text-red-400 hover:text-red-300 flex items-center gap-1"
+                    className="text-xs font-bold text-rose-700 dark:text-rose-400 hover:text-rose-800 flex items-center gap-1"
                   >
                     Ver Facturación
                     <Icon name="arrow-right" className="w-4 h-4" />
@@ -3993,12 +4040,7 @@ export const SuperAdminDashboard = () => {
                     return (
                       <div
                         key={item.companyId}
-                        className={`flex items-center justify-between p-3 rounded-lg border ${item.billing.urgency === "critical"
-                          ? "bg-red-500/10 border-red-500/30"
-                          : item.billing.urgency === "high"
-                            ? "bg-orange-500/10 border-orange-500/30"
-                            : "bg-yellow-500/10 border-yellow-500/30"
-                          }`}
+                        className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-neutral-800/80 border border-rose-200/80 dark:border-rose-900/50 shadow-2xs"
                       >
                         <div className="flex items-center gap-3">
                           <div
@@ -4010,10 +4052,10 @@ export const SuperAdminDashboard = () => {
                               }`}
                           />
                           <div>
-                            <p className="text-sm font-medium text-white">
+                            <p className="text-xs font-bold text-neutral-900 dark:text-white">
                               {company.name}
                             </p>
-                            <p className="text-xs text-neutral-400">
+                            <p className="text-[11px] text-neutral-500">
                               {item.billing.statusLabel}
                             </p>
                           </div>
@@ -4023,7 +4065,7 @@ export const SuperAdminDashboard = () => {
                             setSelectedCompanyBilling(company);
                             setIsBillingDetailOpen(true);
                           }}
-                          className="px-3 py-1 text-xs bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
+                          className="px-3 py-1.5 text-xs font-bold bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-800 dark:text-white rounded-xl transition-colors"
                         >
                           Ver Detalle
                         </button>
@@ -4035,47 +4077,47 @@ export const SuperAdminDashboard = () => {
             )}
 
             {/* Quick Actions */}
-            <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-4">
                 Acciones Rápidas
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <button
                   onClick={() => setActiveTab("companies")}
-                  className="flex items-center gap-3 p-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg transition-colors group"
+                  className="flex items-center gap-3 p-3 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800/40 dark:hover:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/50 rounded-xl transition-all group text-left"
                 >
-                  <Icon name="building-2" className="w-5 h-5 text-blue-400" />
-                  <span className="text-sm text-neutral-300 group-hover:text-white">
+                  <Icon name="building-2" className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white">
                     Ver Compañías
                   </span>
                 </button>
                 <button
                   onClick={handleOpenCreate}
-                  className="flex items-center gap-3 p-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg transition-colors group"
+                  className="flex items-center gap-3 p-3 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800/40 dark:hover:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/50 rounded-xl transition-all group text-left"
                 >
-                  <Icon name="plus" className="w-5 h-5 text-green-400" />
-                  <span className="text-sm text-neutral-300 group-hover:text-white">
+                  <Icon name="plus" className="w-5 h-5 text-emerald-600 dark:text-green-400" />
+                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white">
                     Nueva Compañía
                   </span>
                 </button>
                 <button
                   onClick={() => setActiveTab("billing")}
-                  className="flex items-center gap-3 p-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg transition-colors group"
+                  className="flex items-center gap-3 p-3 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800/40 dark:hover:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/50 rounded-xl transition-all group text-left"
                 >
                   <Icon
                     name="credit-card"
-                    className="w-5 h-5 text-emerald-400"
+                    className="w-5 h-5 text-emerald-600 dark:text-emerald-400"
                   />
-                  <span className="text-sm text-neutral-300 group-hover:text-white">
+                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white">
                     Registrar Pago
                   </span>
                 </button>
                 <button
                   onClick={() => setActiveTab("communications")}
-                  className="flex items-center gap-3 p-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg transition-colors group"
+                  className="flex items-center gap-3 p-3 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800/40 dark:hover:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/50 rounded-xl transition-all group text-left"
                 >
-                  <Icon name="megaphone" className="w-5 h-5 text-purple-400" />
-                  <span className="text-sm text-neutral-300 group-hover:text-white">
+                  <Icon name="megaphone" className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white">
                     Nuevo Anuncio
                   </span>
                 </button>
@@ -4083,29 +4125,28 @@ export const SuperAdminDashboard = () => {
             </div>
 
             {/* Panel de Actividad Reciente */}
-            <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-6">
+            <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-2xs">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <Icon name="activity" className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                  <Icon name="activity" className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   Actividad Reciente
                 </h3>
                 <button
                   onClick={fetchActivityEvents}
-                  className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                  className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 flex items-center gap-1"
                 >
-                  <Icon name="refresh-cw" className="w-4 h-4" />
+                  <Icon name="refresh-cw" className="w-3.5 h-3.5" />
                   Actualizar
                 </button>
               </div>
 
               {activityEvents.length === 0 ? (
-                <p className="text-neutral-500 text-sm text-center py-4">
-                  No hay actividad reciente
+                <p className="text-neutral-400 text-xs text-center py-6">
+                  No hay actividad reciente registrada.
                 </p>
               ) : (
-                <div className="space-y-3 max-h-80 overflow-y-auto">
+                <div className="space-y-2.5 max-h-80 overflow-y-auto">
                   {activityEvents.map((event) => {
-                    // Calcular tiempo relativo
                     const eventDate = new Date(event.createdAt);
                     const now = new Date();
                     const diffMs = now.getTime() - eventDate.getTime();
@@ -4118,35 +4159,34 @@ export const SuperAdminDashboard = () => {
                     else if (diffHours < 24) timeAgo = `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
                     else timeAgo = `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
 
-                    // Icono y color según tipo
                     const eventConfig: Record<string, { icon: string; color: string; bg: string }> = {
-                      company_created: { icon: "building-2", color: "text-green-400", bg: "bg-green-500/20" },
-                      company_updated: { icon: "edit", color: "text-blue-400", bg: "bg-blue-500/20" },
-                      plan_changed: { icon: "arrow-up-circle", color: "text-purple-400", bg: "bg-purple-500/20" },
-                      addon_added: { icon: "plus-circle", color: "text-emerald-400", bg: "bg-emerald-500/20" },
-                      addon_removed: { icon: "minus-circle", color: "text-orange-400", bg: "bg-orange-500/20" },
-                      payment_received: { icon: "dollar-sign", color: "text-green-400", bg: "bg-green-500/20" },
-                      status_changed: { icon: "toggle-right", color: "text-yellow-400", bg: "bg-yellow-500/20" },
+                      company_created: { icon: "building-2", color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-500/20" },
+                      company_updated: { icon: "edit", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/20" },
+                      plan_changed: { icon: "arrow-up-circle", color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-500/20" },
+                      addon_added: { icon: "plus-circle", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/20" },
+                      addon_removed: { icon: "minus-circle", color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-500/20" },
+                      payment_received: { icon: "dollar-sign", color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-500/20" },
+                      status_changed: { icon: "toggle-right", color: "text-yellow-600 dark:text-yellow-400", bg: "bg-yellow-50 dark:bg-yellow-500/20" },
                     };
-                    const config = eventConfig[event.type] || { icon: "activity", color: "text-neutral-400", bg: "bg-neutral-500/20" };
+                    const config = eventConfig[event.type] || { icon: "activity", color: "text-neutral-500", bg: "bg-neutral-100 dark:bg-neutral-800" };
 
                     return (
                       <div
                         key={event.id}
-                        className="flex items-start gap-3 p-3 bg-neutral-800/30 rounded-lg hover:bg-neutral-800/50 transition-colors"
+                        className="flex items-start gap-3 p-3 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-700/40 rounded-xl"
                       >
                         <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center flex-shrink-0`}>
                           <Icon name={config.icon} className={`w-4 h-4 ${config.color}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-white font-medium truncate">
+                          <p className="text-xs font-bold text-neutral-900 dark:text-white truncate">
                             {event.companyName}
                           </p>
-                          <p className="text-xs text-neutral-400">
+                          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
                             {event.description}
                           </p>
                         </div>
-                        <span className="text-xs text-neutral-500 whitespace-nowrap">
+                        <span className="text-[10px] text-neutral-400 font-mono whitespace-nowrap">
                           {timeAgo}
                         </span>
                       </div>
@@ -4169,24 +4209,24 @@ export const SuperAdminDashboard = () => {
         {activeTab === "companies" && (
           <div className="space-y-6">
             {/* Barra de herramientas - Búsqueda, Filtros, Exportar */}
-            <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-4">
+            <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-4 shadow-2xs">
               <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
                 {/* Barra de búsqueda */}
                 <div className="relative flex-1 max-w-md">
-                  <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                  <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                   <input
                     type="text"
                     placeholder="Buscar por nombre, RNC o email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-neutral-800 border border-neutral-700 rounded-xl text-white placeholder-neutral-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                    className="w-full pl-9 pr-8 py-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-400 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-white"
                     >
-                      <Icon name="x" className="w-4 h-4" />
+                      <Icon name="x" className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
@@ -4195,36 +4235,36 @@ export const SuperAdminDashboard = () => {
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setCompanyFilter("all")}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "all"
-                      ? "bg-white text-neutral-900"
-                      : "bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700"
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${companyFilter === "all"
+                      ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs"
+                      : "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300"
                       }`}
                   >
                     Todos ({companies.length})
                   </button>
                   <button
                     onClick={() => setCompanyFilter("active")}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "active"
-                      ? "bg-green-500 text-white"
-                      : "bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30"
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${companyFilter === "active"
+                      ? "bg-green-600 text-white"
+                      : "bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-400 border border-green-200/60 dark:border-green-500/30 hover:bg-green-100"
                       }`}
                   >
                     Activos ({companies.filter((c) => c.status === "Activo").length})
                   </button>
                   <button
                     onClick={() => setCompanyFilter("grace")}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "grace"
-                      ? "bg-yellow-500 text-white"
-                      : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${companyFilter === "grace"
+                      ? "bg-amber-600 text-white"
+                      : "bg-amber-50 dark:bg-yellow-500/15 text-amber-700 dark:text-yellow-400 border border-amber-200/60 dark:border-yellow-500/30 hover:bg-amber-100"
                       }`}
                   >
                     En Gracia ({companies.filter((c) => c.status === "Gracia").length})
                   </button>
                   <button
                     onClick={() => setCompanyFilter("inactive")}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${companyFilter === "inactive"
-                      ? "bg-red-500 text-white"
-                      : "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${companyFilter === "inactive"
+                      ? "bg-rose-600 text-white"
+                      : "bg-rose-50 dark:bg-red-500/15 text-rose-700 dark:text-red-400 border border-rose-200/60 dark:border-red-500/30 hover:bg-rose-100"
                       }`}
                   >
                     Inactivos ({companies.filter((c) => c.status === "Inactivo").length})
@@ -4234,16 +4274,16 @@ export const SuperAdminDashboard = () => {
                 {/* Botón Exportar */}
                 <button
                   onClick={exportToCSV}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-emerald-500/20"
+                  className="flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
                 >
-                  <Icon name="download" className="w-4 h-4" />
+                  <Icon name="download" className="w-3.5 h-3.5" />
                   Exportar CSV
                 </button>
               </div>
 
               {/* Resultados de búsqueda */}
               {searchQuery && (
-                <div className="mt-3 text-sm text-neutral-400">
+                <div className="mt-3 text-xs text-neutral-500">
                   Mostrando {filteredCompanies.length} resultado{filteredCompanies.length !== 1 ? 's' : ''} para "{searchQuery}"
                 </div>
               )}
@@ -4251,29 +4291,29 @@ export const SuperAdminDashboard = () => {
 
             {/* Empty State */}
             {filteredCompanies.length === 0 ? (
-              <div className="text-center py-16 bg-neutral-900/50 border border-neutral-800 rounded-2xl">
-                <div className="w-20 h-20 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-4">
+              <div className="text-center py-16 bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl shadow-2xs">
+                <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4 text-neutral-400">
                   <Icon
                     name="building-2"
-                    className="w-10 h-10 text-neutral-600"
+                    className="w-8 h-8"
                   />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-1">
                   {companies.length === 0
                     ? "No hay compañías registradas"
                     : "No hay compañías con este filtro"}
                 </h3>
-                <p className="text-neutral-500 mb-6">
+                <p className="text-neutral-500 text-xs mb-6">
                   {companies.length === 0
-                    ? "Comienza agregando tu primera compañía administradora"
-                    : "Prueba cambiando el filtro o añade más compañías"}
+                    ? "Comience agregando su primera compañía administradora"
+                    : "Pruebe cambiando el filtro o agregando más compañías"}
                 </p>
                 {companies.length === 0 && (
                   <button
                     onClick={handleOpenCreate}
-                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/20"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-xs text-xs"
                   >
-                    <Icon name="plus" className="w-5 h-5 inline mr-2" />
+                    <Icon name="plus" className="w-4 h-4 inline mr-1.5" />
                     Añadir Primera Compañía
                   </button>
                 )}
@@ -4284,48 +4324,48 @@ export const SuperAdminDashboard = () => {
                 {filteredCompanies.map((company) => (
                   <div
                     key={company.id}
-                    className={`bg-neutral-900/50 border rounded-2xl p-5 transition-all duration-200 hover:bg-neutral-900/80 hover:shadow-lg group ${company.status === "Activo"
-                      ? "border-neutral-800 hover:border-green-500/30"
+                    className={`bg-white dark:bg-[#161b26] border rounded-2xl p-5 transition-all duration-200 hover:shadow-md group shadow-2xs ${company.status === "Activo"
+                      ? "border-neutral-200/80 dark:border-neutral-800 hover:border-blue-400 dark:hover:border-blue-500/40"
                       : company.status === "Gracia"
-                        ? "border-yellow-500/30"
-                        : "border-red-500/30 opacity-75"
+                        ? "border-amber-300 dark:border-yellow-500/30"
+                        : "border-rose-300 dark:border-red-500/30 opacity-75"
                       }`}
                   >
                     {/* Header de la Card */}
                     <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3.5">
                         {/* Logo */}
                         {company.logoUrl ? (
                           <img
                             src={company.logoUrl}
                             alt={`${company.name} Logo`}
-                            className="w-14 h-14 object-contain rounded-xl bg-white p-2"
+                            className="w-12 h-12 object-contain rounded-xl bg-white border border-neutral-200 p-1.5"
                           />
                         ) : (
-                          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center border border-indigo-500/30">
+                          <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center border border-blue-200/60 dark:border-blue-800/60">
                             <Icon
                               name="building-2"
-                              className="w-7 h-7 text-indigo-400"
+                              className="w-6 h-6 text-blue-600 dark:text-blue-400"
                             />
                           </div>
                         )}
                         {/* Nombre y RNC */}
                         <div>
-                          <h3 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">
+                          <h3 className="text-base font-bold text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                             {company.name}
                           </h3>
-                          <p className="text-sm text-neutral-500">
+                          <p className="text-xs text-neutral-500 font-mono">
                             RNC: {company.rnc}
                           </p>
                         </div>
                       </div>
                       {/* Badge de Estado */}
                       <span
-                        className={`px-3 py-1.5 text-xs font-bold rounded-full ${company.status === "Activo"
-                          ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                        className={`px-2.5 py-1 text-xs font-bold rounded-full ${company.status === "Activo"
+                          ? "bg-emerald-50 dark:bg-green-500/20 text-emerald-700 dark:text-green-400 border border-emerald-200 dark:border-green-500/30"
                           : company.status === "Gracia"
-                            ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                            : "bg-red-500/20 text-red-400 border border-red-500/30"
+                            ? "bg-amber-50 dark:bg-yellow-500/20 text-amber-700 dark:text-yellow-400 border border-amber-200 dark:border-yellow-500/30"
+                            : "bg-rose-50 dark:bg-red-500/20 text-rose-700 dark:text-red-400 border border-rose-200 dark:border-red-500/30"
                           }`}
                       >
                         {company.status === "Activo" && "● "}
@@ -4334,99 +4374,102 @@ export const SuperAdminDashboard = () => {
                     </div>
 
                     {/* Info Grid */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div className="bg-neutral-800/50 rounded-xl p-3">
-                        <div className="flex items-center gap-2 mb-1">
+                    <div className="grid grid-cols-2 gap-2.5 mb-4">
+                      <div className="bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-700/40 rounded-xl p-2.5">
+                        <div className="flex items-center gap-1.5 mb-1">
                           <Icon
                             name="mail"
-                            className="w-4 h-4 text-neutral-500"
+                            className="w-3.5 h-3.5 text-neutral-400"
                           />
-                          <span className="text-xs text-neutral-500">
-                            Admin
+                          <span className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
+                            Admin Login
                           </span>
                         </div>
-                        <p className="text-sm text-white truncate">
+                        <p className="text-xs text-neutral-800 dark:text-neutral-200 font-medium truncate">
                           {company.adminUserEmail}
                         </p>
                       </div>
-                      <div className="bg-neutral-800/50 rounded-xl p-3">
-                        <div className="flex items-center gap-2 mb-1">
+                      <div className="bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-700/40 rounded-xl p-2.5">
+                        <div className="flex items-center gap-1.5 mb-1">
                           <Icon
                             name="phone"
-                            className="w-4 h-4 text-neutral-500"
+                            className="w-3.5 h-3.5 text-neutral-400"
                           />
-                          <span className="text-xs text-neutral-500">
+                          <span className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
                             Teléfono
                           </span>
                         </div>
-                        <p className="text-sm text-white">{company.phone}</p>
+                        <p className="text-xs text-neutral-800 dark:text-neutral-200 font-medium">{company.phone}</p>
                       </div>
-                      <div className="bg-neutral-800/50 rounded-xl p-3">
-                        <div className="flex items-center gap-2 mb-1">
+                      <div className="bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-700/40 rounded-xl p-2.5">
+                        <div className="flex items-center gap-1.5 mb-1">
                           <Icon
                             name="calendar"
-                            className="w-4 h-4 text-neutral-500"
+                            className="w-3.5 h-3.5 text-neutral-400"
                           />
-                          <span className="text-xs text-neutral-500">
+                          <span className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
                             Facturación
                           </span>
                         </div>
-                        <p className="text-sm text-white">
+                        <p className="text-xs text-neutral-800 dark:text-neutral-200 font-medium font-mono">
                           {company.billingStartDate}
                         </p>
                       </div>
-                      <div className="bg-neutral-800/50 rounded-xl p-3">
-                        <div className="flex items-center gap-2 mb-1">
+                      <div className="bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-700/40 rounded-xl p-2.5">
+                        <div className="flex items-center gap-1.5 mb-1">
                           <Icon
                             name="clock"
-                            className="w-4 h-4 text-neutral-500"
+                            className="w-3.5 h-3.5 text-neutral-400"
                           />
-                          <span className="text-xs text-neutral-500">
+                          <span className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
                             Gracia
                           </span>
                         </div>
-                        <p className="text-sm text-white">
+                        <p className="text-xs text-neutral-800 dark:text-neutral-200 font-medium">
                           {company.gracePeriodDays} días
                         </p>
                       </div>
                     </div>
 
                     {/* Plan Badge */}
-                    <div className="flex items-center gap-2 mb-4">
+                    <div className="flex items-center justify-between mb-4">
                       <span
-                        className={`px-3 py-1 text-xs font-bold rounded-lg ${company.plan === "Enterprise"
-                          ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                        className={`px-2.5 py-1 text-xs font-bold rounded-lg ${company.plan === "Enterprise"
+                          ? "bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-500/30"
                           : company.plan === "Pro"
-                            ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                            : "bg-neutral-700 text-neutral-300"
+                            ? "bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30"
+                            : "bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
                           }`}
                       >
-                        Plan {company.plan || "Pro"}
+                        Plan {company.plan || "Pro"} · {company.condoCount || 1} Condominios
+                      </span>
+                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        RD$ {(company.monthlyFee || ((company.condoCount || 1) * 1000)).toLocaleString()}/mes
                       </span>
                     </div>
 
                     {/* Acciones */}
-                    <div className="flex gap-2 pt-3 border-t border-neutral-800">
+                    <div className="flex gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                       <button
                         onClick={() => handleOpenEdit(company)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-sm font-medium transition-colors"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-white text-xs font-bold transition-colors"
                       >
-                        <Icon name="edit" className="w-4 h-4" />
+                        <Icon name="edit" className="w-3.5 h-3.5" />
                         Editar
                       </button>
                       <button
                         onClick={() => setViewingCompany(company)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-sm font-medium transition-colors border border-blue-500/30"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 text-xs font-bold transition-colors border border-blue-200/60 dark:border-blue-800/60"
                       >
-                        <Icon name="building-2" className="w-4 h-4" />
-                        Condos
+                        <Icon name="building-2" className="w-3.5 h-3.5" />
+                        Ver Condos ({company.condoCount || 1})
                       </button>
                       <button
                         onClick={() => toggleCompanyStatus(company)}
                         disabled={isUpdating}
-                        className={`py-2.5 px-4 rounded-xl text-sm font-medium transition-colors ${company.status === "Activo"
-                          ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
-                          : "bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
+                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-colors ${company.status === "Activo"
+                          ? "bg-rose-50 hover:bg-rose-100 dark:bg-red-500/20 dark:hover:bg-red-500/30 text-rose-700 dark:text-red-400 border border-rose-200/60 dark:border-red-500/30"
+                          : "bg-emerald-50 hover:bg-emerald-100 dark:bg-green-500/20 dark:hover:bg-green-500/30 text-emerald-700 dark:text-green-400 border border-emerald-200/60 dark:border-green-500/30"
                           }`}
                       >
                         {isUpdating

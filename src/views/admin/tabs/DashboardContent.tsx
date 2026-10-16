@@ -11,23 +11,24 @@ type DashboardContentProps = {
 const QuickAccessButton = ({ icon, label, onClick }: { icon: string; label: string; onClick: () => void }) => (
     <button
         onClick={onClick}
-        className="group relative bg-neutral-800/30 hover:bg-neutral-800/80 p-6 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all duration-300 border border-neutral-800/50 hover:border-orange-500/30 hover:shadow-[0_0_30px_rgba(249,115,22,0.05)] overflow-hidden"
+        className="group relative bg-neutral-50/80 dark:bg-neutral-900/40 hover:bg-blue-50/70 dark:hover:bg-blue-950/30 p-4 rounded-xl flex flex-col items-center justify-center gap-2.5 transition-all duration-150 border border-neutral-200/80 dark:border-neutral-800 hover:border-blue-200 dark:hover:border-blue-800 shadow-2xs"
     >
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        <Icon name={icon} className="w-8 h-8 text-neutral-500 group-hover:text-orange-400 transition-all duration-300 group-hover:scale-110 relative z-10" />
-        <span className="text-xs font-black text-neutral-400 group-hover:text-white uppercase tracking-widest text-center relative z-10">
+        <div className="w-10 h-10 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 flex items-center justify-center text-neutral-600 dark:text-neutral-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:border-blue-300 dark:group-hover:border-blue-600 transition-colors shadow-2xs">
+            <Icon name={icon} className="w-5 h-5" />
+        </div>
+        <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 group-hover:text-blue-700 dark:group-hover:text-blue-400 text-center leading-tight">
             {label}
         </span>
     </button>
 );
 
 const SectionContainer = ({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) => (
-    <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/50 p-6 rounded-[2rem] h-full overflow-hidden relative">
-        <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-neutral-800 flex items-center justify-center">
-                <Icon name={icon} className="w-4 h-4 text-orange-500" />
+    <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 p-6 rounded-2xl h-full shadow-2xs">
+        <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <Icon name={icon} className="w-4 h-4" />
             </div>
-            <h3 className="text-xs font-black text-white uppercase tracking-[2px]">{title}</h3>
+            <h3 className="text-xs font-bold text-neutral-800 dark:text-neutral-200 uppercase tracking-wider">{title}</h3>
         </div>
         {children}
     </div>
@@ -45,23 +46,26 @@ const LatestIncidentsCard = () => {
     }, [selectedCondo]);
 
     return (
-        <SectionContainer title="Incidentes Críticos" icon="alert-triangle">
+        <SectionContainer title="Incidencias Críticas" icon="alert-triangle">
             {latestOpenIncident ? (
-                <div className="group relative bg-neutral-900/60 p-5 rounded-2xl border border-red-500/10 hover:border-red-500/30 transition-all">
+                <div className="bg-rose-50/50 dark:bg-rose-950/20 p-4 rounded-xl border border-rose-200/80 dark:border-rose-900/40">
                     <div className="flex justify-between items-start mb-2">
-                        <span className="px-2 py-0.5 bg-red-500/10 text-[9px] font-black text-red-500 uppercase tracking-widest rounded">Alta Prioridad</span>
-                        <span className="text-[10px] text-neutral-500 font-bold">{formatDate(latestOpenIncident.date)}</span>
+                        <span className="px-2 py-0.5 bg-rose-100 dark:bg-rose-900/60 text-[10px] font-bold text-rose-700 dark:text-rose-300 uppercase tracking-wider rounded">
+                            Atención Requerida
+                        </span>
+                        <span className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium">{formatDate(latestOpenIncident.date)}</span>
                     </div>
-                    <p className="text-sm font-bold text-white mb-2 leading-relaxed">{latestOpenIncident.description}</p>
-                    <div className="flex items-center gap-2 text-xs text-neutral-500">
-                        <Icon name="user" className="w-3 h-3" />
-                        <span>{latestOpenIncident.reportedBy}</span>
+                    <p className="text-xs font-bold text-neutral-900 dark:text-neutral-100 mb-2 leading-relaxed">{latestOpenIncident.description}</p>
+                    <div className="flex items-center gap-2 text-[11px] text-neutral-500 dark:text-neutral-400">
+                        <Icon name="user" className="w-3.5 h-3.5 text-neutral-400" />
+                        <span>Reportado por: {latestOpenIncident.reportedBy}</span>
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center py-10 opacity-30">
-                    <Icon name="check-circle" className="w-10 h-10 mb-2" />
-                    <p className="text-xs font-black uppercase tracking-widest">Sin Incidentes</p>
+                <div className="flex flex-col items-center justify-center py-8 text-neutral-400">
+                    <Icon name="check-circle" className="w-8 h-8 mb-2 text-emerald-500" />
+                    <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Sin incidentes abiertos</p>
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">Todas las áreas funcionando con normalidad</p>
                 </div>
             )}
         </SectionContainer>
@@ -75,23 +79,43 @@ export const DashboardContent = ({ onNavigate }: DashboardContentProps) => {
     const [timeRange, setTimeRange] = useState('6M');
 
     const summary = useMemo(() => {
-        if (!selectedCondo) return { openIncidents: 0, totalPendingPayableAmount: 0, currentBalance: 0 };
+        if (!selectedCondo) {
+            return {
+                openIncidents: 0,
+                totalPendingPayableAmount: 0,
+                currentBalance: 0,
+                totalUnits: 0,
+                unitsUpToDate: 0,
+                collectionRate: 100
+            };
+        }
 
         const incidents = (selectedCondo.incidents as unknown as any[]) || [];
         const payables = (selectedCondo.accountsPayable as unknown as any[]) || [];
         const finances = (selectedCondo.finances as unknown as any[]) || [];
+        const units = (selectedCondo.units as unknown as any[]) || [];
 
         const openIncidents = incidents.filter((i: any) => i.status === 'Abierto').length;
-
         const pendingPayables = payables.filter((p: any) => p.status === 'Pendiente');
         const totalPendingPayableAmount = pendingPayables.reduce((acc: number, p: any) => acc + (p.amount || 0), 0);
-
         const currentBalance = finances.length > 0 ? finances[finances.length - 1].balance : (selectedCondo.manualBalance || 0);
+
+        let unitsUpToDate = 0;
+        units.forEach(u => {
+            const history = (u.accountHistory as any[]) || [];
+            const bal = history.reduce((acc: number, item: any) => acc + (item.type === 'Cargo' ? item.amount : -item.amount), 0);
+            if (bal <= 0) unitsUpToDate++;
+        });
+
+        const collectionRate = units.length > 0 ? Math.round((unitsUpToDate / units.length) * 100) : 100;
 
         return {
             openIncidents: openIncidents || 0,
             totalPendingPayableAmount: totalPendingPayableAmount || 0,
             currentBalance: currentBalance || 0,
+            totalUnits: units.length,
+            unitsUpToDate,
+            collectionRate
         };
     }, [selectedCondo]);
 
@@ -138,7 +162,6 @@ export const DashboardContent = ({ onNavigate }: DashboardContentProps) => {
         return { labels, incomeValues, expenseValues };
     }, [selectedCondo, timeRange]);
 
-
     useEffect(() => {
         if (chartRef.current && (window as any).Chart) {
             const ctx = chartRef.current.getContext('2d');
@@ -153,20 +176,20 @@ export const DashboardContent = ({ onNavigate }: DashboardContentProps) => {
                         labels: chartData.labels,
                         datasets: [
                             {
-                                label: 'Ingresos',
+                                label: 'Ingresos (Cuotas)',
                                 data: chartData.incomeValues,
-                                backgroundColor: 'rgba(34, 197, 94, 0.4)',
-                                borderColor: 'rgba(34, 197, 94, 1)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.75)',
+                                borderColor: 'rgba(59, 130, 246, 1)',
                                 borderWidth: 0,
-                                borderRadius: 10
+                                borderRadius: 6
                             },
                             {
-                                label: 'Egresos',
+                                label: 'Egresos (Gastos Operativos)',
                                 data: chartData.expenseValues,
-                                backgroundColor: 'rgba(239, 68, 68, 0.4)',
+                                backgroundColor: 'rgba(239, 68, 68, 0.65)',
                                 borderColor: 'rgba(239, 68, 68, 1)',
                                 borderWidth: 0,
-                                borderRadius: 10
+                                borderRadius: 6
                             }
                         ]
                     },
@@ -176,11 +199,15 @@ export const DashboardContent = ({ onNavigate }: DashboardContentProps) => {
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: { color: '#525252', font: { family: 'Inter', weight: 'bold', size: 10 } },
-                                grid: { color: 'rgba(255,255,255,0.03)' }
+                                ticks: { 
+                                    color: '#737373', 
+                                    font: { family: 'Inter', weight: 'bold', size: 10 },
+                                    callback: (val: any) => `RD$ ${(val / 1000).toFixed(0)}k`
+                                },
+                                grid: { color: 'rgba(255,255,255,0.05)' }
                             },
                             x: {
-                                ticks: { color: '#525252', font: { family: 'Inter', weight: 'bold', size: 10 } },
+                                ticks: { color: '#737373', font: { family: 'Inter', weight: 'bold', size: 10 } },
                                 grid: { color: 'transparent' }
                             }
                         },
@@ -189,8 +216,10 @@ export const DashboardContent = ({ onNavigate }: DashboardContentProps) => {
                                 position: 'top',
                                 align: 'end',
                                 labels: {
-                                    color: '#737373',
-                                    font: { family: 'Inter', weight: 'black', size: 10 }
+                                    color: '#a3a3a3',
+                                    font: { family: 'Inter', weight: 'bold', size: 11 },
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
                                 }
                             }
                         }
@@ -208,64 +237,74 @@ export const DashboardContent = ({ onNavigate }: DashboardContentProps) => {
     if (!selectedCondo) return null;
 
     return (
-        <div className="space-y-8 pb-20">
-            {/* KPI Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="space-y-6 pb-12">
+            {/* 4 Executive KPI Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <PremiumKpiCard
-                    title="Balance en Bóveda"
+                    title="Balance en Banco"
                     value={`RD$ ${(summary.currentBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
-                    icon="scale"
-                    gradient="from-blue-600 to-indigo-600"
-                    delay="delay-100"
+                    subtitle="Cuenta Operativa • Banco Popular"
+                    icon="landmark"
+                    badgeText="Conciliado"
+                    badgeType="success"
                 />
                 <PremiumKpiCard
-                    title="Incidentes Activos"
-                    value={summary.openIncidents || 0}
-                    icon="alert-triangle"
-                    gradient="from-orange-600 to-red-600"
-                    delay="delay-200"
+                    title="Cobranza del Mes"
+                    value={`${summary.collectionRate}%`}
+                    subtitle={`${summary.unitsUpToDate} de ${summary.totalUnits} unidades al día`}
+                    icon="pie-chart"
+                    badgeText={summary.collectionRate >= 80 ? 'Saludable' : 'Seguimiento'}
+                    badgeType={summary.collectionRate >= 80 ? 'success' : 'warning'}
                 />
                 <PremiumKpiCard
-                    title="Pasivos Pendientes"
+                    title="Cuentas por Pagar"
                     value={`RD$ ${(summary.totalPendingPayableAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
+                    subtitle="Proveedores y servicios pendientes"
                     icon="receipt"
-                    gradient="from-red-600 to-pink-600"
-                    delay="delay-300"
+                    badgeText="CxP Pendiente"
+                    badgeType={summary.totalPendingPayableAmount > 0 ? 'warning' : 'neutral'}
+                />
+                <PremiumKpiCard
+                    title="Incidencias Activas"
+                    value={summary.openIncidents}
+                    subtitle={summary.openIncidents === 0 ? "Todo en orden en la torre" : "Reportes de residentes"}
+                    icon="alert-triangle"
+                    badgeText={summary.openIncidents === 0 ? "Normal" : "Pendiente"}
+                    badgeType={summary.openIncidents === 0 ? "success" : "warning"}
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Quick Access */}
+            {/* Quick Actions & Incident Highlights */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
-                    <SectionContainer title="Acciones de Alta Velocidad" icon="zap">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <QuickAccessButton icon="landmark" label="Registrar Movimiento" onClick={() => onNavigate('finances', 'add')} />
-                            <QuickAccessButton icon="receipt" label="Gasto Pendiente" onClick={() => onNavigate('payable', 'add')} />
-                            <QuickAccessButton icon="megaphone" label="Emitir Comunicado" onClick={() => onNavigate('communications', 'add')} />
-                            <QuickAccessButton icon="siren" label="Reportar Alerta" onClick={() => onNavigate('incidents', 'add')} />
+                    <SectionContainer title="Acciones Rápidas de Gestión" icon="zap">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <QuickAccessButton icon="plus-circle" label="Registrar Cuota" onClick={() => onNavigate('finances', 'add')} />
+                            <QuickAccessButton icon="receipt" label="Registrar Factura" onClick={() => onNavigate('payable', 'add')} />
+                            <QuickAccessButton icon="megaphone" label="Nuevo Comunicado" onClick={() => onNavigate('communications', 'add')} />
+                            <QuickAccessButton icon="gavel" label="Convocar Asamblea" onClick={() => onNavigate('assemblies')} />
                         </div>
                     </SectionContainer>
                 </div>
 
-                {/* Latest Incidents */}
                 <LatestIncidentsCard />
             </div>
 
-            {/* Visual Analytics Section */}
-            <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800/50 p-8 rounded-[2rem] overflow-hidden relative">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            {/* Cash Flow Chart */}
+            <div className="bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 p-6 rounded-2xl relative shadow-2xs">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
                     <div>
-                        <h3 className="text-xl font-black text-white tracking-tighter">Análisis de Flujo de Caja</h3>
-                        <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mt-1">Comparativa Ingresos vs Egresos</p>
+                        <h3 className="text-base font-bold text-neutral-900 dark:text-white tracking-tight">Flujo Financiero Mensual</h3>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">Ingresos por Cuotas vs. Gastos Operativos y Nómina</p>
                     </div>
-                    <div className="flex space-x-1 bg-neutral-800/50 p-1.5 rounded-xl border border-neutral-700/30">
-                        {['1M', '3M', '6M', '12M'].map(range => (
+                    <div className="flex space-x-1 bg-neutral-100 dark:bg-neutral-800/80 p-1 rounded-lg border border-neutral-200/80 dark:border-neutral-700/60">
+                        {['3M', '6M', '12M'].map(range => (
                             <button
                                 key={range}
                                 onClick={() => setTimeRange(range)}
-                                className={`px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${timeRange === range
-                                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                                        : 'text-neutral-500 hover:text-white hover:bg-neutral-700'
+                                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${timeRange === range
+                                    ? 'bg-blue-600 text-white shadow-xs'
+                                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-700/50'
                                     }`}
                             >
                                 {range}
@@ -273,7 +312,7 @@ export const DashboardContent = ({ onNavigate }: DashboardContentProps) => {
                         ))}
                     </div>
                 </div>
-                <div className="h-[400px]">
+                <div className="h-[320px]">
                     <canvas ref={chartRef}></canvas>
                 </div>
             </div>

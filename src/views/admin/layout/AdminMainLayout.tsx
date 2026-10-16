@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
+import { AdminProfileModal } from '../../../components/modals/AdminProfileModal';
 import { useAuth } from '../../../context/AuthContext';
 
 type AdminMainLayoutProps = {
@@ -16,44 +17,55 @@ export const AdminMainLayout: React.FC<AdminMainLayoutProps> = ({
 }) => {
     const { logout } = useAuth();
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+    const handleTabChange = (tab: string) => {
+        if (tab === 'profile') {
+            setIsProfileModalOpen(true);
+        } else {
+            onTabChange(tab);
+        }
+    };
 
     const getPageTitle = () => {
         const titles: Record<string, string> = {
             dashboard: 'Consola Central',
-            condos: 'Gestionar Condominios',
-            news: 'Novedades Mi Condo',
-            profile: 'Mi Perfil'
+            condos: 'Gestionar Clientes',
         };
         return titles[activeTab] || 'Administración';
     };
 
     return (
-        <div className="flex h-screen bg-neutral-950 overflow-hidden">
+        <div className="flex h-screen bg-[#f8f9fb] dark:bg-[#0b0f17] text-neutral-800 dark:text-neutral-100 overflow-hidden transition-colors duration-200">
             {/* Sidebar persistent for Admin experience */}
             <AdminSidebar
                 activeTab={activeTab}
-                onTabChange={onTabChange}
+                onTabChange={handleTabChange}
                 onLogout={logout}
                 isOpenOnMobile={isMobileSidebarOpen}
                 onCloseMobile={() => setIsMobileSidebarOpen(false)}
             />
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col lg:ml-64 relative overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-[#f8f9fb] dark:bg-[#0b0f17] transition-colors duration-200">
                 <AdminHeader
                     pageTitle={getPageTitle()}
                     onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                    onOpenProfile={() => setIsProfileModalOpen(true)}
                 />
-                {/* Background decorative elements matching Shadow-Fusion */}
-                <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-orange-600/10 blur-[120px] rounded-full pointer-events-none" />
-                <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
 
-                <main className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8 relative z-10">
-                    <div className="max-w-7xl mx-auto anime-fade-in pb-20 md:pb-8">
+                <main className="flex-1 overflow-y-auto custom-scrollbar p-6 lg:p-10 relative z-10">
+                    <div className="max-w-[1400px] mx-auto anime-fade-in pb-16">
                         {children}
                     </div>
                 </main>
             </div>
+
+            {/* Admin Profile Modal */}
+            <AdminProfileModal
+                isOpen={isProfileModalOpen}
+                onClose={() => setIsProfileModalOpen(false)}
+            />
         </div>
     );
 };

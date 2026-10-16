@@ -73,25 +73,25 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
         aria-hidden="true"
       />
 
-      <aside className={`fixed lg:relative left-0 top-0 h-screen w-64 bg-neutral-900/80 backdrop-blur-xl border-r border-neutral-800 flex flex-col z-[70] transition-transform duration-300 ease-in-out
+      <aside className={`fixed left-0 top-0 h-screen w-64 bg-white dark:bg-[#111827] border-r border-neutral-200/80 dark:border-neutral-800 shadow-[1px_0_10px_rgba(0,0,0,0.02)] flex flex-col z-[70] transition-colors duration-200 ease-in-out
         ${isOpenOnMobile ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}>
         {/* Logo */}
-        <div className="p-6 border-b border-neutral-800">
+        <div className="p-5 border-b border-neutral-200/80 dark:border-neutral-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm">
               <Icon name="building-2" className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">MI CONDO</h1>
-              <p className="text-xs text-neutral-500">SuperAdmin Panel</p>
+              <h1 className="text-sm font-black text-neutral-900 dark:text-white tracking-tight">MICONDO OS</h1>
+              <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">SuperAdmin SaaS</p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-3 mb-3">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider px-3 mb-2">
             Menú Principal
           </p>
 
@@ -102,24 +102,24 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
                 key={item.id}
                 onClick={() => { onTabChange(item.id); onCloseMobile(); }}
                 className={`
-                w-full flex items-center justify-between px-3 py-2.5 rounded-lg
-                transition-all duration-200 group
+                w-full flex items-center justify-between px-3 py-2 rounded-xl
+                transition-all duration-200 group text-left
                 ${isActive
-                    ? "bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-white border border-indigo-500/30"
-                    : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                    ? "bg-blue-50 dark:bg-blue-600/15 text-blue-600 dark:text-blue-400 font-semibold"
+                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100/70 dark:hover:bg-neutral-800/60"
                   }
               `}
               >
                 <div className="flex items-center gap-3">
                   <Icon
                     name={item.icon as any}
-                    className={`w-5 h-5 transition-colors ${isActive ? "text-indigo-400" : "text-neutral-500 group-hover:text-neutral-300"}`}
+                    className={`w-4 h-4 transition-colors ${isActive ? "text-blue-600 dark:text-blue-400" : "text-neutral-400 dark:text-neutral-500 group-hover:text-neutral-600 dark:group-hover:text-neutral-300"}`}
                   />
-                  <span className="font-medium text-sm">{item.label}</span>
+                  <span className="text-xs font-medium">{item.label}</span>
                 </div>
                 {item.badge && item.badge > 0 && (
                   <span
-                    className={`${item.badgeColor} text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center`}
+                    className={`${item.badgeColor} text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[18px] text-center`}
                   >
                     {item.badge}
                   </span>
@@ -129,9 +129,9 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
           })}
 
           {/* Divider */}
-          <div className="my-4 border-t border-neutral-800" />
+          <div className="my-3 border-t border-neutral-200/80 dark:border-neutral-800" />
 
-          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-3 mb-3">
+          <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider px-3 mb-2">
             Herramientas
           </p>
 
@@ -139,20 +139,20 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
           <button
             onClick={() => { onShowRoadmap(); onCloseMobile(); }}
             className={`
-            w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+            w-full flex items-center gap-3 px-3 py-2 rounded-xl
             transition-all duration-200 group
             ${activeTab === "roadmap"
-                ? "bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/30"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                ? "bg-blue-50 dark:bg-blue-600/15 text-blue-600 dark:text-blue-400 font-semibold"
+                : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100/70 dark:hover:bg-neutral-800/60"
               }
           `}
           >
             <Icon
               name="map"
-              className={`w-5 h-5 ${activeTab === "roadmap" ? "text-purple-400" : "text-purple-500 group-hover:text-purple-400"}`}
+              className={`w-4 h-4 ${activeTab === "roadmap" ? "text-blue-600 dark:text-blue-400" : "text-neutral-400 dark:text-neutral-500"}`}
             />
-            <span className="font-medium text-sm">Dev Roadmap</span>
-            <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-purple-600/20 text-purple-400 border border-purple-500/30">
+            <span className="text-xs font-medium">Dev Roadmap</span>
+            <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900/50">
               DEV
             </span>
           </button>
@@ -161,42 +161,42 @@ export const SuperAdminSidebar: React.FC<SuperAdminSidebarProps> = ({
           <button
             onClick={() => { onTabChange("settings"); onCloseMobile(); }}
             className={`
-            w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+            w-full flex items-center gap-3 px-3 py-2 rounded-xl
             transition-all duration-200 group
             ${activeTab === "settings"
-                ? "bg-gradient-to-r from-neutral-600/20 to-neutral-600/20 text-white border border-neutral-500/30"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                ? "bg-blue-50 dark:bg-blue-600/15 text-blue-600 dark:text-blue-400 font-semibold"
+                : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100/70 dark:hover:bg-neutral-800/60"
               }
           `}
           >
             <Icon
               name="settings"
-              className={`w-5 h-5 ${activeTab === "settings" ? "text-neutral-300" : "text-neutral-500 group-hover:text-neutral-300"}`}
+              className={`w-4 h-4 ${activeTab === "settings" ? "text-blue-600 dark:text-blue-400" : "text-neutral-400 dark:text-neutral-500"}`}
             />
-            <span className="font-medium text-sm">Configuración</span>
+            <span className="text-xs font-medium">Configuración</span>
           </button>
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-neutral-800">
-          <div className="flex items-center gap-3 mb-3 px-2">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-              <Icon name="user" className="w-4 h-4 text-white" />
+        <div className="p-3 border-t border-neutral-200/80 dark:border-neutral-800">
+          <div className="flex items-center gap-2.5 mb-2.5 px-2">
+            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold text-xs flex items-center justify-center">
+              <Icon name="user" className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
+              <p className="text-xs font-bold text-neutral-900 dark:text-white truncate">
                 Super Admin
               </p>
-              <p className="text-xs text-neutral-500 truncate">Acceso total</p>
+              <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate">Acceso total</p>
             </div>
           </div>
 
           <button
             onClick={onLogout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-red-600/10 text-red-400 hover:bg-red-600/20 hover:text-red-300 transition-all duration-200 border border-red-500/20"
+            className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-xl text-neutral-500 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all duration-200 text-xs font-medium"
           >
             <Icon name="log-out" className="w-4 h-4" />
-            <span className="font-medium text-sm">Cerrar Sesión</span>
+            <span>Cerrar Sesión</span>
           </button>
         </div>
       </aside>

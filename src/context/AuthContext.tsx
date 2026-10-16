@@ -1,4 +1,4 @@
-﻿import React, {
+import React, {
   createContext,
   useState,
   useEffect,
@@ -16,8 +16,8 @@ import type { UserProfile } from "../services/authService";
 import { supabase } from "../supabaseClient";
 
 // DEV MODE: Permite acceso rápido sin autenticación real
-// HABILITADO GLOBALMENTE PARA TESTING
-const DEV_MODE = true;
+// Controlado por VITE_DEV_MODE en .env.local (no se activa en producción)
+const DEV_MODE = import.meta.env.VITE_DEV_MODE === 'true';
 
 export type UserRole = "superadmin" | "admin" | "resident" | null;
 
@@ -40,7 +40,7 @@ interface AuthContextType {
   googleLogin: () => Promise<any>;
 
   // DEV MODE: Acceso rápido sin autenticación
-  devLogin: (role: UserRole) => void;
+  devLogin: (role: UserRole, customResidentData?: { condoId: string; unitId: string }) => void;
   isDevMode: boolean;
   isDevAuthenticated: boolean;
 }
@@ -62,8 +62,13 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  // DEV MODE: Usuario simulado
-  const [isDevAuthenticated, setIsDevAuthenticated] = useState(false);
+  // DEV MODE: Usuario simulado (persist across refreshes via sessionStorage)
+  const [isDevAuthenticated, setIsDevAuthenticated] = useState(() => {
+    if (DEV_MODE) {
+      return sessionStorage.getItem('dev_authenticated') === 'true';
+    }
+    return false;
+  });
 
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [userRole, setUserRole] = useState<UserRole>(null);
@@ -76,7 +81,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [adminCompanyId, setAdminCompanyId] = useState<string | null>(null);
 
   const login = async (email: string, pass: string) => {
-    return loginWithEmail(email, pass);
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPass = pass.trim();
+
+    // Dev Mode / Local Offline bypass: allow direct access with credentials
+    if (DEV_MODE) {
+      if (cleanEmail === 'admin@micondo.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
+        devLogin('superadmin');
+        return { user: { email: cleanEmail } };
+      }
+      if (cleanEmail === 'admin@torre.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
+        devLogin('admin');
+        return { user: { email: cleanEmail } };
+      }
+      if (cleanEmail === 'residente@torre.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
+        devLogin('resident');
+        return { user: { email: cleanEmail } };
+      }
+    }
+
+    try {
+      return await loginWithEmail(cleanEmail, cleanPass);
+    } catch (err: any) {
+      // If Supabase is unreachable/paused while in DEV_MODE, gracefully fallback instead of crashing
+      if (DEV_MODE && (err?.message?.includes('fetch') || err?.message?.includes('network') || !err?.status)) {
+        if (cleanEmail.includes('super') || cleanEmail === 'admin@micondo.com') {
+          devLogin('superadmin');
+          return { user: { email: cleanEmail } };
+        }
+        if (cleanEmail.includes('admin')) {
+          devLogin('admin');
+          return { user: { email: cleanEmail } };
+        }
+        if (cleanEmail.includes('resident') || cleanEmail.includes('residente')) {
+          devLogin('resident');
+          return { user: { email: cleanEmail } };
+        }
+      }
+      throw err;
+    }
   };
 
   const signUp = async (email: string, pass: string, name: string) => {
@@ -104,18 +147,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setResidentData(null);
     setAdminCompanyId(null);
     setIsDevAuthenticated(false);
+    sessionStorage.removeItem('dev_authenticated');
+    sessionStorage.removeItem('dev_role');
     await supabaseLogout();
   };
 
-  // DEV MODE: Función para login rápido SIN autenticación real
-  // Simula el login para desarrollo rápido
-  const devLogin = (role: UserRole) => {
+  // DEV MODE: Restore role from sessionStorage on mount
+  useEffect(() => {
     if (!DEV_MODE) return;
+    const savedRole = sessionStorage.getItem('dev_role') as UserRole;
+    if (savedRole && sessionStorage.getItem('dev_authenticated') === 'true') {
+      applyDevRole(savedRole);
+      setIsDevAuthenticated(true);
+      setLoading(false);
+    }
+  }, []);
 
-    // console.log(`🔧 DEV MODE: Accediendo como ${role} (sin Supabase Auth)`);
-    setLoading(true);
-
-    // Simular login según el rol seleccionado
+  // Apply a dev role to all state
+  const applyDevRole = (role: UserRole, customResidentData?: { condoId: string; unitId: string }) => {
     if (role === "superadmin") {
       setIsSuperAdmin(true);
       setUserRole("superadmin");
@@ -126,16 +175,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsSuperAdmin(false);
       setUserRole("admin");
       setCompanyIsActive(true);
-      setAdminCompanyId("dev-company-id"); // ID simulado para desarrollo
+      setAdminCompanyId("dev-company-id");
       setResidentData(null);
     } else if (role === "resident") {
       setIsSuperAdmin(false);
       setUserRole("resident");
       setCompanyIsActive(true);
       setAdminCompanyId(null);
-      setResidentData({ condoId: "1", unitId: "1" }); // Datos simulados con string ID que coinciden con mockData.ts
+      let targetResident = customResidentData;
+      if (!targetResident) {
+        try {
+          const saved = sessionStorage.getItem('dev_resident_data');
+          if (saved) targetResident = JSON.parse(saved);
+        } catch (e) {}
+      }
+      setResidentData(targetResident || { condoId: "1", unitId: "1" });
     }
+  };
 
+  // DEV MODE: Función para login rápido SIN autenticación real
+  const devLogin = (role: UserRole, customResidentData?: { condoId: string; unitId: string }) => {
+    if (!DEV_MODE) return;
+    setLoading(true);
+    if (customResidentData) {
+      sessionStorage.setItem('dev_resident_data', JSON.stringify(customResidentData));
+    }
+    applyDevRole(role, customResidentData);
+    sessionStorage.setItem('dev_authenticated', 'true');
+    sessionStorage.setItem('dev_role', role || '');
     setIsDevAuthenticated(true);
     setLoading(false);
   };
@@ -234,14 +301,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    // Safety timeout: Ensure loading never hangs if Supabase is unreachable
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 1200);
+
     // EN DEV MODE: Si ya estamos autenticados con devLogin, no esperar Supabase
     if (DEV_MODE && isDevAuthenticated) {
+      clearTimeout(safetyTimer);
       setLoading(false);
       return;
     }
 
     // Subscribe to Supabase auth state changes
     const subscription = onAuthStateChange(async (user, _session) => {
+      clearTimeout(safetyTimer);
       // Si estamos en dev mode y ya autenticados, ignorar Supabase
       if (DEV_MODE && isDevAuthenticated) {
         setLoading(false);

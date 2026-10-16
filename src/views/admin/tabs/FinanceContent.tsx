@@ -67,53 +67,53 @@ const TransactionsTab = ({ initialAction, clearInitialAction }: Omit<FinanceCont
                 </button>
             </div>
 
-            <div className="flex flex-wrap justify-between items-center gap-y-4 gap-x-6 mb-4 p-4 bg-neutral-900 rounded-lg">
+            <div className="flex flex-wrap justify-between items-center gap-y-4 gap-x-6 mb-4 p-4 bg-white dark:bg-[#161b26] rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
                 <div className="flex items-center flex-wrap gap-4">
-                    <span className="font-semibold text-sm flex-shrink-0">Filtrar por Tipo:</span>
-                    <div className="flex space-x-1 bg-neutral-800 p-1 rounded-lg">
-                        <button onClick={() => setFilter('all')} className={`w-full px-3 py-1 text-sm font-medium rounded-md ${filter === 'all' ? 'bg-blue-600 text-white' : 'text-neutral-300 hover:bg-neutral-700'}`}>Todos</button>
-                        <button onClick={() => setFilter('Ingreso')} className={`w-full px-3 py-1 text-sm font-medium rounded-md ${filter === 'Ingreso' ? 'bg-blue-600 text-white' : 'text-neutral-300 hover:bg-neutral-700'}`}>Ingresos</button>
-                        <button onClick={() => setFilter('Egreso')} className={`w-full px-3 py-1 text-sm font-medium rounded-md ${filter === 'Egreso' ? 'bg-blue-600 text-white' : 'text-neutral-300 hover:bg-neutral-700'}`}>Egresos</button>
+                    <span className="font-bold text-xs uppercase tracking-wider text-neutral-500 dark:text-neutral-400 flex-shrink-0">Filtrar por Tipo:</span>
+                    <div className="flex space-x-1 bg-neutral-100 dark:bg-neutral-800/80 p-1 rounded-lg border border-neutral-200/60 dark:border-neutral-700/60">
+                        <button onClick={() => setFilter('all')} className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${filter === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-700/50'}`}>Todos</button>
+                        <button onClick={() => setFilter('Ingreso')} className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${filter === 'Ingreso' ? 'bg-emerald-600 text-white shadow-xs' : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-700/50'}`}>Ingresos</button>
+                        <button onClick={() => setFilter('Egreso')} className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${filter === 'Egreso' ? 'bg-rose-600 text-white shadow-xs' : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-700/50'}`}>Egresos</button>
                     </div>
                 </div>
                 <div className="flex items-center flex-wrap gap-2">
-                    <label htmlFor="startDate" className="text-sm font-semibold flex-shrink-0">Fechas:</label>
-                    <input type="date" id="startDate" value={dateRange.start} onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))} className="bg-neutral-800 border border-neutral-700 rounded-md px-3 py-1.5 text-white text-sm" />
-                    <span className="text-neutral-500">a</span>
-                    <input type="date" id="endDate" value={dateRange.end} onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))} className="bg-neutral-800 border border-neutral-700 rounded-md px-3 py-1.5 text-white text-sm" />
-                    <button onClick={() => setDateRange({ start: '', end: '' })} title="Limpiar filtro de fechas" className="flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 text-white font-semibold p-2 rounded-lg text-sm">
-                        <Icon name="x" size={16} />
+                    <label htmlFor="startDate" className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 flex-shrink-0">Fechas:</label>
+                    <input type="date" id="startDate" value={dateRange.start} onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))} className="bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 rounded-lg px-3 py-1.5 text-neutral-900 dark:text-white text-xs shadow-2xs focus:ring-2 focus:ring-blue-500" />
+                    <span className="text-neutral-400">a</span>
+                    <input type="date" id="endDate" value={dateRange.end} onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))} className="bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 rounded-lg px-3 py-1.5 text-neutral-900 dark:text-white text-xs shadow-2xs focus:ring-2 focus:ring-blue-500" />
+                    <button onClick={() => setDateRange({ start: '', end: '' })} title="Limpiar filtro de fechas" className="flex items-center justify-center bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-700 dark:text-white font-semibold p-2 rounded-lg text-xs transition-colors">
+                        <Icon name="x" size={14} />
                     </button>
                 </div>
             </div>
 
-            <div className="bg-neutral-900 rounded-lg shadow-md overflow-x-auto">
+            <div className="bg-white dark:bg-[#161b26] rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs overflow-x-auto">
                 <table className="min-w-full">
-                    <thead className="bg-neutral-800">
+                    <thead className="bg-neutral-50 dark:bg-neutral-800/60 border-b border-neutral-200/80 dark:border-neutral-800">
                         <tr>
                             {['Fecha', 'Descripción', 'Categoría', 'Monto', 'Balance', 'Acciones'].map(h => (
-                                <th key={h} className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">{h}</th>
+                                <th key={h} className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{h}</th>
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-neutral-800">
+                    <tbody className="divide-y divide-neutral-200/80 dark:divide-neutral-800">
                         {filteredTransactions.map((tx: any) => (
-                            <tr key={tx.id} className="hover:bg-neutral-800/50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{formatDate(tx.date)}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{tx.description}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-400">{tx.category || 'N/A'}</td>
-                                <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${tx.type === 'Ingreso' ? 'text-green-400' : 'text-red-400'}`}>
+                            <tr key={tx.id} className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40 transition-colors">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">{formatDate(tx.date)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-neutral-900 dark:text-white">{tx.description}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">{tx.category || 'N/A'}</td>
+                                <td className={`px-6 py-4 whitespace-nowrap text-sm font-bold ${tx.type === 'Ingreso' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                                     {tx.type === 'Ingreso' ? '+' : '-'} RD$ {Math.abs(tx.amount).toLocaleString()}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">RD$ {tx.balance.toLocaleString()}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button onClick={() => handleOpenModal(tx)} className="text-blue-500 hover:text-blue-400">Editar</button>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700 dark:text-neutral-300 font-medium">RD$ {tx.balance.toLocaleString()}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+                                    <button onClick={() => handleOpenModal(tx)} className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Editar</button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-                {filteredTransactions.length === 0 && <p className="text-center text-neutral-400 py-8">No hay transacciones para mostrar.</p>}
+                {filteredTransactions.length === 0 && <p className="text-center text-neutral-400 dark:text-neutral-500 py-8 text-sm">No hay transacciones para mostrar.</p>}
             </div>
 
             <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingTx ? 'Editar Transacción' : 'Nueva Transacción'}>
@@ -182,30 +182,30 @@ const ExtraordinaryFeesTab = () => {
                     <span>Crear Cuota Extraordinaria</span>
                 </button>
             </div>
-            <div className="bg-neutral-900 rounded-lg shadow-md overflow-x-auto">
+            <div className="bg-white dark:bg-[#161b26] rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs overflow-x-auto">
                 <table className="min-w-full">
-                    <thead className="bg-neutral-800">
+                    <thead className="bg-neutral-50 dark:bg-neutral-800/60 border-b border-neutral-200/80 dark:border-neutral-800">
                         <tr>
                             {['Título', 'Monto Total', 'Fecha Emisión', 'Fecha Vencimiento', 'Estado', 'Acciones'].map(h => (
-                                <th key={h} className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">{h}</th>
+                                <th key={h} className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{h}</th>
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-neutral-800">
+                    <tbody className="divide-y divide-neutral-200/80 dark:divide-neutral-800">
                         {feesSafe.map((fee: any) => (
-                            <tr key={fee.id} className="hover:bg-neutral-800/50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{fee.title}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">RD$ {fee.totalAmount.toLocaleString()}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{formatDate(fee.issueDate)}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{formatDate(fee.dueDate)}</td>
+                            <tr key={fee.id} className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40 transition-colors">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-neutral-900 dark:text-white">{fee.title}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-neutral-800 dark:text-neutral-200">RD$ {fee.totalAmount.toLocaleString()}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">{formatDate(fee.issueDate)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">{formatDate(fee.dueDate)}</td>
                                 <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={fee.status} /></td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-4">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold space-x-4">
                                     {fee.status === 'Pendiente' && (
                                         <>
-                                            <button onClick={() => { setEditingFee(fee); setIsModalOpen(true); }} className="text-blue-500 hover:text-blue-400">
+                                            <button onClick={() => { setEditingFee(fee); setIsModalOpen(true); }} className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
                                                 Editar
                                             </button>
-                                            <button onClick={() => handleApplyFee(fee)} className="text-green-500 hover:text-green-400">
+                                            <button onClick={() => handleApplyFee(fee)} className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300">
                                                 Aplicar
                                             </button>
                                         </>
@@ -215,7 +215,7 @@ const ExtraordinaryFeesTab = () => {
                         ))}
                     </tbody>
                 </table>
-                {feesSafe.length === 0 && <p className="text-center text-neutral-400 py-8">No hay cuotas extraordinarias creadas.</p>}
+                {feesSafe.length === 0 && <p className="text-center text-neutral-400 dark:text-neutral-500 py-8 text-sm">No hay cuotas extraordinarias creadas.</p>}
             </div>
             <Modal isOpen={isModalOpen} onClose={handleSuccess} title={editingFee ? 'Editar Cuota Extraordinaria' : 'Nueva Cuota Extraordinaria'}>
                 <ExtraordinaryFeeForm onSuccess={handleSuccess} onCancel={handleSuccess} defaultValues={editingFee || {}} />
@@ -293,39 +293,41 @@ const PaymentNotificationsTab = () => {
     return (
         <div>
             {pendingNotifications.length === 0 ? (
-                <div className="text-center py-10 px-6 bg-neutral-900 rounded-lg">
-                    <Icon name="check-circle-2" className="mx-auto h-12 w-12 text-green-500" />
-                    <h3 className="mt-2 text-lg font-medium text-white">Bandeja de entrada limpia</h3>
-                    <p className="mt-1 text-sm text-neutral-400">No hay nuevas notificaciones de pago pendientes de revisión.</p>
+                <div className="text-center py-12 px-6 bg-white dark:bg-[#161b26] rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-3">
+                        <Icon name="check-circle-2" className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-base font-bold text-neutral-900 dark:text-white">Bandeja de entrada al día</h3>
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">No hay nuevas notificaciones de pago pendientes de revisión.</p>
                 </div>
             ) : (
-                <div className="bg-neutral-900 rounded-lg shadow-md overflow-x-auto">
+                <div className="bg-white dark:bg-[#161b26] rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs overflow-x-auto">
                     <table className="min-w-full">
-                        <thead className="bg-neutral-800">
+                        <thead className="bg-neutral-50 dark:bg-neutral-800/60 border-b border-neutral-200/80 dark:border-neutral-800">
                             <tr>
                                 {['Unidad', 'Propietario', 'Fecha Pago', 'Monto', 'Estado', 'Acciones'].map(h => (
-                                    <th key={h} className="px-6 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider">{h}</th>
+                                    <th key={h} className="px-6 py-3.5 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{h}</th>
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-neutral-800">
+                        <tbody className="divide-y divide-neutral-200/80 dark:divide-neutral-800">
                             {pendingNotifications.map((notif: any) => {
                                 const unit = ((selectedCondo.units as unknown as any[]) || []).find((u: any) => u.id === notif.unitId);
                                 return (
-                                    <tr key={notif.id} className="hover:bg-neutral-800/50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{unit?.apartmentNumber}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{unit?.ownerName}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">{formatDate(notif.paymentDate)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-semibold">RD$ {notif.amount.toLocaleString()}</td>
+                                    <tr key={notif.id} className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-neutral-900 dark:text-white">{unit?.apartmentNumber}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700 dark:text-neutral-300">{unit?.ownerName}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">{formatDate(notif.paymentDate)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-white font-bold">RD$ {notif.amount.toLocaleString()}</td>
                                         <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={notif.status} /></td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-4">
-                                            <button onClick={() => setViewingNotification(notif)} className="text-blue-500 hover:text-blue-400">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold space-x-4">
+                                            <button onClick={() => setViewingNotification(notif)} className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
                                                 Ver Comprobante
                                             </button>
-                                            <button onClick={() => handleConfirmPayment(notif)} className="text-green-500 hover:text-green-400">
+                                            <button onClick={() => handleConfirmPayment(notif)} className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300">
                                                 Confirmar
                                             </button>
-                                            <button onClick={() => handleRejectPayment(notif.id)} className="text-red-500 hover:text-red-400">
+                                            <button onClick={() => handleRejectPayment(notif.id)} className="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300">
                                                 Rechazar
                                             </button>
                                         </td>
@@ -344,16 +346,16 @@ const PaymentNotificationsTab = () => {
                             <a
                                 href={viewingNotification.proofUrl}
                                 download={viewingNotification.proofFileName || 'comprobante.png'}
-                                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+                                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-xs"
                             >
                                 <Icon name="download" size={18} />
                                 <span>Descargar Comprobante</span>
                             </a>
                         </div>
                         {viewingNotification.notes && (
-                            <div className="mt-4 p-4 bg-neutral-800 rounded-lg">
-                                <h4 className="font-semibold text-white">Notas del Residente:</h4>
-                                <p className="text-neutral-300">{viewingNotification.notes}</p>
+                            <div className="mt-4 p-4 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-200/80 dark:border-neutral-700">
+                                <h4 className="font-bold text-sm text-neutral-900 dark:text-white mb-1">Notas del Residente:</h4>
+                                <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">{viewingNotification.notes}</p>
                             </div>
                         )}
                     </div>
@@ -383,22 +385,22 @@ export const FinanceContent = (props: FinanceContentProps) => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-white">Finanzas</h2>
-                    <p className="text-neutral-400">Balance Actual: <span className="font-bold text-green-400">RD$ {currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></p>
+                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Finanzas</h2>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Balance Actual: <span className="font-bold text-emerald-600 dark:text-emerald-400">RD$ {currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></p>
                 </div>
             </div>
-            <div className="border-b border-neutral-800 mb-6">
+            <div className="border-b border-neutral-200/80 dark:border-neutral-800 mb-6">
                 <nav className="-mb-px flex space-x-6" aria-label="Tabs">
                     {tabs.map(tab => (
                         <button key={tab.id} onClick={() => setActiveSubTab(tab.id)}
                             className={`${activeSubTab === tab.id
-                                ? 'border-blue-500 text-blue-500'
-                                : 'border-transparent text-neutral-400 hover:text-neutral-200 hover:border-neutral-700'}
-                             whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2`}>
+                                ? 'border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 font-bold'
+                                : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:border-neutral-300 dark:hover:border-neutral-700 font-medium'}
+                             whitespace-nowrap py-3 px-1 border-b-2 text-sm transition-colors flex items-center gap-2`}>
                             {tab.label}
                             {/* --- CORRECCIÓN: Verificar que count exista y sea mayor a 0 --- */}
                             {(tab.count !== undefined && tab.count > 0) && (
-                                <span className="bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">{tab.count}</span>
+                                <span className="bg-rose-500 text-white text-[10px] font-bold rounded-full h-4.5 min-w-[18px] px-1 flex items-center justify-center">{tab.count}</span>
                             )}
                         </button>
                     ))}

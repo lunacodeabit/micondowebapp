@@ -19,22 +19,24 @@ type ResidentPortalProps = {
 };
 
 // Fix: Reconstructed the ResidentPortal component, which was missing due to a file corruption issue.
-export const ResidentPortal = ({ resident, condo, onLogout }: ResidentPortalProps) => {
+export const ResidentPortal = ({ resident: propResident, condo, onLogout }: ResidentPortalProps) => {
     const { updateCondo } = useCondo();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
+    const resident = propResident || condo?.units?.[0];
+
     if (!resident) {
         return (
-            <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-8 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-neutral-900 flex items-center justify-center mb-6 border border-neutral-800">
-                    <Icon name="loader" className="w-8 h-8 text-blue-500 animate-spin" />
+            <div className="min-h-screen bg-[#f8f9fb] flex flex-col items-center justify-center p-8 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-6 border border-neutral-200 shadow-sm">
+                    <Icon name="loader" className="w-8 h-8 text-blue-600 animate-spin" />
                 </div>
-                <h2 className="text-xl font-black text-white mb-2 uppercase tracking-tight">Cargando Perfil...</h2>
+                <h2 className="text-xl font-bold text-neutral-900 mb-2 tracking-tight">Cargando Perfil...</h2>
                 <p className="text-xs text-neutral-500 max-w-xs">Estamos preparando tu portal residencial para brindarte la mejor experiencia.</p>
                 <button
                     onClick={onLogout}
-                    className="mt-8 text-[10px] font-black text-blue-500 uppercase tracking-widest hover:text-blue-400 transition-colors"
+                    className="mt-8 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
                 >
                     Volver al Inicio
                 </button>
@@ -77,7 +79,7 @@ export const ResidentPortal = ({ resident, condo, onLogout }: ResidentPortalProp
     };
 
     return (
-        <div className="bg-neutral-950 text-neutral-300 min-h-screen lg:flex overflow-hidden">
+        <div className="bg-[#f8f9fb] dark:bg-[#0b0f17] text-neutral-800 dark:text-neutral-100 min-h-screen lg:flex overflow-hidden transition-colors">
             <ResidentSidebar
                 residentName={resident.ownerName}
                 unitNumber={resident.apartmentNumber}
@@ -92,10 +94,7 @@ export const ResidentPortal = ({ resident, condo, onLogout }: ResidentPortalProp
                     pageTitle={getPageTitle()}
                     onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
                 />
-                <main className="flex-1 p-4 md:p-8 overflow-y-auto bg-neutral-950 relative">
-                    {/* Background Decorative Element */}
-                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
+                <main className="flex-1 p-4 md:p-8 overflow-y-auto bg-[#f8f9fb] dark:bg-[#0b0f17] relative transition-colors">
                     <div className="max-w-7xl mx-auto relative z-10">
                         {activeTab === 'dashboard' ? (
                             <ResidentDashboard

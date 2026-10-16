@@ -107,8 +107,7 @@ const defaultUnitData: Omit<Unit, 'id' | 'apartmentNumber' | 'ownerName' | 'mont
 // --- DATOS INICIALES (Simulación de Base de Datos para Múltiples Condominios) ---
 export const initialCondos: Condo[] = [
     {
-        // CORRECCIÓN: Añadimos companyId para cumplir con el tipo
-        companyId: 'MOCK_DATA_COMPANY',
+        companyId: 'dev-company-id',
         id: '1',
         code: '1',
         name: 'Torre Pinos',
@@ -156,6 +155,10 @@ export const initialCondos: Condo[] = [
                 id: '1',
                 apartmentNumber: '1A',
                 ownerName: 'Luis Martínez',
+                email: 'residente@torre.com',
+                authUid: 'dev-resident-uid-1',
+                ownerEmail1: 'residente@torre.com',
+                ownerPhones: '809-555-0101',
                 monthlyFee: 16700, status: 'Activo',
                 registeredDate: '2022-01-15',
                 ...defaultUnitData,
@@ -170,6 +173,10 @@ export const initialCondos: Condo[] = [
                 id: '2',
                 apartmentNumber: '2A',
                 ownerName: 'Ana García',
+                email: 'ana.garcia@gmail.com',
+                authUid: 'dev-resident-uid-2',
+                ownerEmail1: 'ana.garcia@gmail.com',
+                ownerPhones: '809-555-0202',
                 monthlyFee: 16700, status: 'Activo',
                 registeredDate: '2022-02-20',
                 ...defaultUnitData,
@@ -184,6 +191,10 @@ export const initialCondos: Condo[] = [
                 id: '3',
                 apartmentNumber: '3A',
                 ownerName: 'Carlos Perez',
+                email: 'carlos.perez@hotmail.com',
+                authUid: 'dev-resident-uid-3',
+                ownerEmail1: 'carlos.perez@hotmail.com',
+                ownerPhones: '809-555-0303',
                 monthlyFee: 16700, status: 'Activo',
                 registeredDate: '2022-05-10',
                 ...defaultUnitData,
@@ -197,6 +208,10 @@ export const initialCondos: Condo[] = [
                 id: '4',
                 apartmentNumber: '1B',
                 ownerName: 'Sofia Rodriguez',
+                email: 'sofia.rodriguez@gmail.com',
+                authUid: 'dev-resident-uid-4',
+                ownerEmail1: 'sofia.rodriguez@gmail.com',
+                ownerPhones: '809-555-0404',
                 monthlyFee: 16700, status: 'Activo',
                 registeredDate: '2023-01-30',
                 ...defaultUnitData,
@@ -209,6 +224,10 @@ export const initialCondos: Condo[] = [
                 id: '5',
                 apartmentNumber: '1C',
                 ownerName: 'Juan Gomez',
+                email: 'juan.gomez@gmail.com',
+                authUid: 'dev-resident-uid-5',
+                ownerEmail1: 'juan.gomez@gmail.com',
+                ownerPhones: '809-555-0505',
                 monthlyFee: 16700, status: 'Activo',
                 registeredDate: '2023-03-22',
                 ...defaultUnitData,
@@ -220,10 +239,10 @@ export const initialCondos: Condo[] = [
             }
         ],
         communications: [
-            { id: '1', date: '2023-10-20', title: 'Corte de Agua Programado', content: 'Se informa a todos los residentes que habrá un corte de agua el día 25 de Octubre de 10am a 2pm por mantenimiento.' },
+            { id: '1', date: '2025-06-20', title: 'Corte de Agua Programado', content: 'Se informa a todos los residentes que habrá un corte de agua el día 25 de Junio de 10am a 2pm por mantenimiento en la cisterna principal.' },
         ],
         incidents: [
-            { id: '1', date: '2023-10-18', reportedBy: 'Luis Martínez (1A)', description: 'Luz del pasillo del piso 1 quemada.', status: 'Abierto', resolution: '' },
+            { id: '1', date: '2025-06-18', reportedBy: 'Luis Martínez (1A)', description: 'Luz del pasillo del piso 1 quemada.', status: 'Abierto', resolution: '' },
         ],
         accountsPayable: [
             { id: '1', supplier: 'Compañía Eléctrica del Este', invoiceNumber: 'CE-2025-987', issueDate: '2025-05-10', dueDate: '2025-05-30', amount: 1500, description: 'Factura de luz áreas comunes Mayo', status: 'Pagada', paymentDate: '2025-05-15', relatedExpenseId: null },
@@ -301,8 +320,7 @@ export const initialCondos: Condo[] = [
         paymentNotifications: [],
     },
     {
-        // CORRECCIÓN: Añadimos companyId
-        companyId: 'MOCK_DATA_COMPANY',
+        companyId: 'dev-company-id',
         id: '2',
         code: '2',
         name: 'Residencial Roble',

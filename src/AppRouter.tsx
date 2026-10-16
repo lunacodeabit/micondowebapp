@@ -24,9 +24,12 @@ export const AppRouter: React.FC = () => {
 
     // Auto-select resident's condo
     React.useEffect(() => {
-        if (userRole === 'resident' && residentData && !selectedCondo && condos.length > 0) {
-            const found = condos.find(c => String(c.id) === String(residentData.condoId));
-            if (found) selectCondo(found.id);
+        if (userRole === 'resident' && condos.length > 0) {
+            const targetId = residentData?.condoId || condos[0].id;
+            const found = condos.find(c => String(c.id) === String(targetId)) || condos[0];
+            if (found && (!selectedCondo || String(selectedCondo.id) !== String(found.id))) {
+                selectCondo(found.id);
+            }
         }
     }, [userRole, residentData, selectedCondo, condos, selectCondo]);
 
@@ -40,7 +43,9 @@ export const AppRouter: React.FC = () => {
         }
     };
 
-    if (authLoading || condoLoading) {
+    const isPublicRoute = window.location.pathname === '/' || window.location.pathname === '/login';
+
+    if ((authLoading || condoLoading) && !isPublicRoute) {
         return (
             <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-8">
                 <div className="w-16 h-16 rounded-2xl bg-neutral-900 flex items-center justify-center mb-6 border border-neutral-800 animate-pulse">
@@ -82,6 +87,10 @@ export const AppRouter: React.FC = () => {
                             condos={condos}
                             onLogout={handleLogout}
                             onNavigateToCondos={() => navigate('/admin/condos')}
+                            onSelectCondo={(id) => {
+                                selectCondo(id);
+                                navigate('/admin/panel');
+                            }}
                         />
                     </ProtectedRoute>
                 }
@@ -93,7 +102,10 @@ export const AppRouter: React.FC = () => {
                     <ProtectedRoute allowedRoles={['admin']}>
                         <CondoSelector
                             condos={condos}
-                            onSelectCondo={selectCondo}
+                            onSelectCondo={(id) => {
+                                selectCondo(id);
+                                navigate('/admin/panel');
+                            }}
                             onLogout={handleLogout}
                             onBack={() => navigate('/admin')}
                             onAddCondo={addCondo}
@@ -108,7 +120,10 @@ export const AppRouter: React.FC = () => {
                     <ProtectedRoute allowedRoles={['admin']}>
                         {selectedCondo ? (
                             <CondoAdminPanel
-                                onBack={() => selectCondo(null)}
+                                onBack={() => {
+                                    selectCondo(null);
+                                    navigate('/admin/condos');
+                                }}
                                 onLogout={handleLogout}
                             />
                         ) : (
@@ -123,21 +138,28 @@ export const AppRouter: React.FC = () => {
                 path="/resident"
                 element={
                     <ProtectedRoute allowedRoles={['resident']}>
-                        {selectedCondo ? (
-                            <ResidentPortal
-                                resident={((selectedCondo.units as any[]) || []).find((u: any) => String(u.id) === String(residentData?.unitId))}
-                                condo={selectedCondo}
-                                onLogout={handleLogout}
-                            />
-                        ) : (
-                            <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-8">
-                                <div className="w-16 h-16 rounded-2xl bg-neutral-900 flex items-center justify-center mb-6 border border-neutral-800">
-                                    <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
-                                </div>
-                                <h2 className="text-xs font-black text-white uppercase tracking-[4px]">Cargando Condominio</h2>
-                            </div>
-                        )
-                        }
+                        {(() => {
+                            const activeCondo = selectedCondo || condos[0];
+                            if (!activeCondo) {
+                                return (
+                                    <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-8">
+                                        <div className="w-16 h-16 rounded-2xl bg-neutral-900 flex items-center justify-center mb-6 border border-neutral-800">
+                                            <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+                                        </div>
+                                        <h2 className="text-xs font-black text-white uppercase tracking-[4px]">Cargando Condominio</h2>
+                                    </div>
+                                );
+                            }
+                            const units = (activeCondo.units as any[]) || [];
+                            const activeResident = units.find((u: any) => String(u.id) === String(residentData?.unitId)) || units[0];
+                            return (
+                                <ResidentPortal
+                                    resident={activeResident}
+                                    condo={activeCondo}
+                                    onLogout={handleLogout}
+                                />
+                            );
+                        })()}
                     </ProtectedRoute>
                 }
             />

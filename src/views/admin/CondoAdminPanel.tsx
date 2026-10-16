@@ -17,6 +17,8 @@ import { ResidentsContent } from './tabs/ResidentsContent';
 import { ElisaAIContent } from './tabs/ElisaAIContent';
 import { AssembliesContent } from './tabs/AssembliesContent';
 
+import { AdminProfileModal } from '../../components/modals/AdminProfileModal';
+
 type CondoAdminPanelProps = {
     onBack: () => void;
     onLogout: () => void;
@@ -28,7 +30,7 @@ export const CondoAdminPanel = ({ onBack, onLogout }: CondoAdminPanelProps) => {
     const [initialAction, setInitialAction] = useState<string | null>(null);
     const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
     const handleNavigation = (tab: string, action: string | null = null) => {
         setActiveTab(tab);
@@ -72,7 +74,7 @@ export const CondoAdminPanel = ({ onBack, onLogout }: CondoAdminPanelProps) => {
     };
 
     return (
-        <div className="bg-neutral-950 text-neutral-300 min-h-screen">
+        <div className="bg-[#f8f9fb] dark:bg-[#0b0f17] text-neutral-800 dark:text-neutral-100 min-h-screen transition-colors duration-200">
             <Sidebar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
@@ -87,11 +89,17 @@ export const CondoAdminPanel = ({ onBack, onLogout }: CondoAdminPanelProps) => {
                 <AdminHeader
                     condoName={selectedCondo?.name || ''}
                     onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                    onOpenProfile={() => setIsProfileModalOpen(true)}
                 />
                 <div className="flex-1 p-6 overflow-y-auto">
                     {renderContent()}
                 </div>
             </main>
+
+            <AdminProfileModal
+                isOpen={isProfileModalOpen}
+                onClose={() => setIsProfileModalOpen(false)}
+            />
         </div>
     );
 };
