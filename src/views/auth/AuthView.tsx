@@ -50,7 +50,7 @@ export const AuthView = () => {
         try {
             await googleLogin();
         } catch (error: any) {
-            addToast("Error al conectar con Google", "error");
+            addToast("El backend de Supabase está temporalmente en pausa. Utiliza el acceso con credenciales o los botones directos abajo.", "error");
         }
     };
 
@@ -242,37 +242,56 @@ export const AuthView = () => {
                         </p>
                     </div>
 
-                    {/* DEV MODE: Botones de acceso rápido */}
-                    {isDevMode && (
-                        <div className="mt-8 pt-6 border-t border-white/5">
-                            <p className="text-center text-[10px] text-neutral-600 mb-4 tracking-widest uppercase">
-                                Entorno de Desarrollo
-                            </p>
-                            <div className="flex gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => devLogin("superadmin")}
-                                    className="flex-1 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 text-[10px] font-bold py-2 rounded-lg border border-purple-600/30 transition-all"
-                                >
-                                    S-ADMIN
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => devLogin("admin")}
-                                    className="flex-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-[10px] font-bold py-2 rounded-lg border border-blue-600/30 transition-all"
-                                >
-                                    ADMIN
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => devLogin("resident")}
-                                    className="flex-1 bg-green-600/20 hover:bg-green-600/30 text-green-400 text-[10px] font-bold py-2 rounded-lg border border-green-600/30 transition-all"
-                                >
-                                    RESIDENT
-                                </button>
-                            </div>
+                    {/* ACCESO DEMO RÁPIDO Y CREDENCIALES */}
+                    <div className="mt-8 pt-6 border-t border-white/10">
+                        <p className="text-center text-[10px] text-neutral-400 mb-3 tracking-widest uppercase font-semibold">
+                            Acceso Directo Demo • MiCondo OS
+                        </p>
+                        <div className="grid grid-cols-3 gap-2 mb-4">
+                            <button
+                                type="button"
+                                onClick={() => devLogin("superadmin")}
+                                className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-[10px] font-bold py-2.5 px-2 rounded-xl border border-purple-500/30 transition-all flex flex-col items-center gap-1 shadow-sm"
+                                title="SuperAdmin SaaS: admin@micondo.com / password"
+                            >
+                                <Icon name="shield" size={14} />
+                                <span>SuperAdmin</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => devLogin("admin")}
+                                className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 text-[10px] font-bold py-2.5 px-2 rounded-xl border border-blue-500/30 transition-all flex flex-col items-center gap-1 shadow-sm"
+                                title="Admin Condominio: admin@torre.com / password"
+                            >
+                                <Icon name="building-2" size={14} />
+                                <span>Admin</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => devLogin("resident")}
+                                className="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-[10px] font-bold py-2.5 px-2 rounded-xl border border-emerald-500/30 transition-all flex flex-col items-center gap-1 shadow-sm"
+                                title="Portal Residente: residente@torre.com / password"
+                            >
+                                <Icon name="user" size={14} />
+                                <span>Residente</span>
+                            </button>
                         </div>
-                    )}
+                        <div className="bg-white/[0.03] border border-white/5 rounded-xl p-3 text-[11px] text-neutral-400 space-y-1">
+                            <p className="font-semibold text-neutral-300 flex items-center gap-1.5">
+                                <Icon name="key" size={12} className="text-amber-400" />
+                                Credenciales manuales:
+                            </p>
+                            <p className="font-mono text-[10px] text-neutral-400">
+                                • S-Admin: <span className="text-white">admin@micondo.com</span> / <span className="text-white">password</span>
+                            </p>
+                            <p className="font-mono text-[10px] text-neutral-400">
+                                • Admin: <span className="text-white">admin@torre.com</span> / <span className="text-white">password</span>
+                            </p>
+                            <p className="font-mono text-[10px] text-neutral-400">
+                                • Residente: <span className="text-white">residente@torre.com</span> / <span className="text-white">password</span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </motion.div>
         </div>

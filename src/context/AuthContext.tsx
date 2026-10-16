@@ -84,27 +84,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPass = pass.trim();
 
-    // Dev Mode / Local Offline bypass: allow direct access with credentials
-    if (DEV_MODE) {
-      if (cleanEmail === 'admin@micondo.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
-        devLogin('superadmin');
-        return { user: { email: cleanEmail } };
-      }
-      if (cleanEmail === 'admin@torre.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
-        devLogin('admin');
-        return { user: { email: cleanEmail } };
-      }
-      if (cleanEmail === 'residente@torre.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
-        devLogin('resident');
-        return { user: { email: cleanEmail } };
-      }
+    // Standard Demo credentials - always allow instant access
+    if (cleanEmail === 'admin@micondo.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
+      devLogin('superadmin');
+      return { user: { email: cleanEmail } };
+    }
+    if (cleanEmail === 'admin@torre.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
+      devLogin('admin');
+      return { user: { email: cleanEmail } };
+    }
+    if (cleanEmail === 'residente@torre.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
+      devLogin('resident');
+      return { user: { email: cleanEmail } };
     }
 
     try {
       return await loginWithEmail(cleanEmail, cleanPass);
     } catch (err: any) {
-      // If Supabase is unreachable/paused while in DEV_MODE, gracefully fallback instead of crashing
-      if (DEV_MODE && (err?.message?.includes('fetch') || err?.message?.includes('network') || !err?.status)) {
+      // If Supabase is unreachable, paused, or returns a network error, gracefully fallback to demo roles
+      if (err?.message?.includes('fetch') || err?.message?.includes('network') || !err?.status || err?.message?.includes('Failed to fetch')) {
         if (cleanEmail.includes('super') || cleanEmail === 'admin@micondo.com') {
           devLogin('superadmin');
           return { user: { email: cleanEmail } };
