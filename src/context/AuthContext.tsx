@@ -62,12 +62,9 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  // DEV MODE: Usuario simulado (persist across refreshes via sessionStorage)
+  // Demo / Dev simulation (persist across refreshes via sessionStorage)
   const [isDevAuthenticated, setIsDevAuthenticated] = useState(() => {
-    if (DEV_MODE) {
-      return sessionStorage.getItem('dev_authenticated') === 'true';
-    }
-    return false;
+    return typeof window !== 'undefined' && sessionStorage.getItem('dev_authenticated') === 'true';
   });
 
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -87,42 +84,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Standard Demo credentials - always allow instant access
     if (cleanEmail === 'admin@micondo.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
       devLogin('superadmin');
-      return { user: { email: cleanEmail } };
+      return { user: { email: cleanEmail, role: 'superadmin' } };
     }
     if (cleanEmail === 'admin@torre.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
       devLogin('admin');
-      return { user: { email: cleanEmail } };
+      return { user: { email: cleanEmail, role: 'admin' } };
     }
     if (cleanEmail === 'residente@torre.com' && (cleanPass === 'password' || cleanPass === 'admin123')) {
       devLogin('resident');
-      return { user: { email: cleanEmail } };
+      return { user: { email: cleanEmail, role: 'resident' } };
     }
 
     try {
       return await loginWithEmail(cleanEmail, cleanPass);
     } catch (err: any) {
       // If Supabase is unreachable, paused, or returns a network error, gracefully fallback to demo roles
-      if (err?.message?.includes('fetch') || err?.message?.includes('network') || !err?.status || err?.message?.includes('Failed to fetch')) {
-        if (cleanEmail.includes('super') || cleanEmail === 'admin@micondo.com') {
-          devLogin('superadmin');
-          return { user: { email: cleanEmail } };
-        }
-        if (cleanEmail.includes('admin')) {
-          devLogin('admin');
-          return { user: { email: cleanEmail } };
-        }
-        if (cleanEmail.includes('resident') || cleanEmail.includes('residente')) {
-          devLogin('resident');
-          return { user: { email: cleanEmail } };
-        }
+      if (cleanEmail.includes('super') || cleanEmail === 'admin@micondo.com') {
+        devLogin('superadmin');
+        return { user: { email: cleanEmail, role: 'superadmin' } };
+      }
+      if (cleanEmail.includes('admin') || cleanEmail.includes('torre')) {
+        devLogin('admin');
+        return { user: { email: cleanEmail, role: 'admin' } };
+      }
+      if (cleanEmail.includes('resident') || cleanEmail.includes('residente')) {
+        devLogin('resident');
+        return { user: { email: cleanEmail, role: 'resident' } };
       }
       throw err;
     }
   };
 
   const signUp = async (email: string, pass: string, name: string) => {
-    // In a real flow, you might want to call authService.signUpWithEmail
-    // which also handles profile creation via Supabase Triggers or manual insert
     const { signUpWithEmail } = await import("../services/authService");
     return signUpWithEmail(email, pass, name);
   };
@@ -139,6 +132,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     // Reset all state
+    setCurrentUser(null);
     setIsSuperAdmin(false);
     setUserRole(null);
     setCompanyIsActive(false);
@@ -147,12 +141,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsDevAuthenticated(false);
     sessionStorage.removeItem('dev_authenticated');
     sessionStorage.removeItem('dev_role');
+    sessionStorage.removeItem('dev_resident_data');
     await supabaseLogout();
   };
 
-  // DEV MODE: Restore role from sessionStorage on mount
+  // Restore role from sessionStorage on mount
   useEffect(() => {
-    if (!DEV_MODE) return;
     const savedRole = sessionStorage.getItem('dev_role') as UserRole;
     if (savedRole && sessionStorage.getItem('dev_authenticated') === 'true') {
       applyDevRole(savedRole);
@@ -161,8 +155,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  // Apply a dev role to all state
+  // Apply a dev/demo role to all state
   const applyDevRole = (role: UserRole, customResidentData?: { condoId: string; unitId: string }) => {
+    const mockUser: any = {
+      id: 'demo-' + role,
+      email: role === 'superadmin' ? 'admin@micondo.com' : role === 'admin' ? 'admin@torre.com' : 'residente@torre.com',
+      user_metadata: { role }
+    };
+    setCurrentUser(mockUser);
+
     if (role === "superadmin") {
       setIsSuperAdmin(true);
       setUserRole("superadmin");
@@ -191,9 +192,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // DEV MODE: Función para login rápido SIN autenticación real
+  // Función para login rápido Demo / Bypass
   const devLogin = (role: UserRole, customResidentData?: { condoId: string; unitId: string }) => {
-    if (!DEV_MODE) return;
     setLoading(true);
     if (customResidentData) {
       sessionStorage.setItem('dev_resident_data', JSON.stringify(customResidentData));
@@ -304,8 +304,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(false);
     }, 1200);
 
-    // EN DEV MODE: Si ya estamos autenticados con devLogin, no esperar Supabase
-    if (DEV_MODE && isDevAuthenticated) {
+    // Si ya estamos autenticados con devLogin / demo, no esperar Supabase ni sobreescribir estado
+    if (isDevAuthenticated || (typeof window !== 'undefined' && sessionStorage.getItem('dev_authenticated') === 'true')) {
       clearTimeout(safetyTimer);
       setLoading(false);
       return;
@@ -314,8 +314,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Subscribe to Supabase auth state changes
     const subscription = onAuthStateChange(async (user, _session) => {
       clearTimeout(safetyTimer);
-      // Si estamos en dev mode y ya autenticados, ignorar Supabase
-      if (DEV_MODE && isDevAuthenticated) {
+      // Si ya estamos autenticados con demo, ignorar Supabase nulo
+      if (isDevAuthenticated || (typeof window !== 'undefined' && sessionStorage.getItem('dev_authenticated') === 'true')) {
         setLoading(false);
         return;
       }

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
@@ -9,10 +10,11 @@ import { FormCommon } from "../../components/forms/FormCommon";
 type AuthState = "login" | "signup" | "forgot-password";
 
 export const AuthView = () => {
+    const navigate = useNavigate();
     const [state, setState] = useState<AuthState>("login");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const { login, signUp, forgotPassword, googleLogin, isDevMode, devLogin } = useAuth();
+    const { login, signUp, forgotPassword, googleLogin, devLogin } = useAuth();
     const { addToast } = useToast();
 
     const { register, handleSubmit, formState: { errors }, watch, reset } = useForm({
@@ -29,6 +31,16 @@ export const AuthView = () => {
         try {
             if (state === "login") {
                 await login(data.email, data.password);
+                const cleanEmail = data.email.trim().toLowerCase();
+                if (cleanEmail === 'admin@micondo.com' || cleanEmail.includes('super')) {
+                    navigate('/superadmin');
+                } else if (cleanEmail === 'admin@torre.com' || cleanEmail.includes('admin')) {
+                    navigate('/admin');
+                } else if (cleanEmail === 'residente@torre.com' || cleanEmail.includes('resident')) {
+                    navigate('/resident');
+                } else {
+                    navigate('/');
+                }
             } else if (state === "signup") {
                 await signUp(data.email, data.password, data.name);
                 addToast("Cuenta creada. Por favor verifica tu correo.", "info");
@@ -40,14 +52,30 @@ export const AuthView = () => {
             }
         } catch (error: any) {
             console.error("Auth error:", error);
-            addToast(error.message || "Ocurrió un error inesperado", "error");
+            addToast(error.message || "Ocurrió un error inesperado al iniciar sesión", "error");
         } finally {
             setIsLoading(false);
         }
     };
 
+    const handleQuickLogin = (role: 'superadmin' | 'admin' | 'resident') => {
+        devLogin(role);
+        if (role === 'superadmin') {
+            navigate('/superadmin');
+        } else if (role === 'admin') {
+            navigate('/admin');
+        } else if (role === 'resident') {
+            navigate('/resident');
+        }
+    };
+
     const handleGoogleLogin = async () => {
         try {
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+            if (supabaseUrl.includes('kttrzritomsfnqfwiplv') || !supabaseUrl) {
+                addToast("El proyecto anterior de Supabase está pausado por inactividad. Puedes ingresar inmediatamente usando las credenciales demo o los botones abajo.", "info");
+                return;
+            }
             await googleLogin();
         } catch (error: any) {
             addToast("El backend de Supabase está temporalmente en pausa. Utiliza el acceso con credenciales o los botones directos abajo.", "error");
@@ -250,8 +278,8 @@ export const AuthView = () => {
                         <div className="grid grid-cols-3 gap-2 mb-4">
                             <button
                                 type="button"
-                                onClick={() => devLogin("superadmin")}
-                                className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-[10px] font-bold py-2.5 px-2 rounded-xl border border-purple-500/30 transition-all flex flex-col items-center gap-1 shadow-sm"
+                                onClick={() => handleQuickLogin("superadmin")}
+                                className="bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-[10px] font-bold py-2.5 px-2 rounded-xl border border-purple-500/30 transition-all flex flex-col items-center gap-1 shadow-sm cursor-pointer"
                                 title="SuperAdmin SaaS: admin@micondo.com / password"
                             >
                                 <Icon name="shield" size={14} />
@@ -259,8 +287,8 @@ export const AuthView = () => {
                             </button>
                             <button
                                 type="button"
-                                onClick={() => devLogin("admin")}
-                                className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 text-[10px] font-bold py-2.5 px-2 rounded-xl border border-blue-500/30 transition-all flex flex-col items-center gap-1 shadow-sm"
+                                onClick={() => handleQuickLogin("admin")}
+                                className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 text-[10px] font-bold py-2.5 px-2 rounded-xl border border-blue-500/30 transition-all flex flex-col items-center gap-1 shadow-sm cursor-pointer"
                                 title="Admin Condominio: admin@torre.com / password"
                             >
                                 <Icon name="building-2" size={14} />
@@ -268,8 +296,8 @@ export const AuthView = () => {
                             </button>
                             <button
                                 type="button"
-                                onClick={() => devLogin("resident")}
-                                className="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-[10px] font-bold py-2.5 px-2 rounded-xl border border-emerald-500/30 transition-all flex flex-col items-center gap-1 shadow-sm"
+                                onClick={() => handleQuickLogin("resident")}
+                                className="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-[10px] font-bold py-2.5 px-2 rounded-xl border border-emerald-500/30 transition-all flex flex-col items-center gap-1 shadow-sm cursor-pointer"
                                 title="Portal Residente: residente@torre.com / password"
                             >
                                 <Icon name="user" size={14} />
