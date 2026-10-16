@@ -151,3 +151,12 @@ an_access_condo(uuid)` SECURITY DEFINER hook to solve cross-table RLS recursion 
   - Guarded `onAuthStateChange` to never overwrite active demo sessions.
   - Intercepted Google OAuth requests targeting the paused Supabase project to display clear user-facing guidance instead of a DNS error page.
 - **Verification**: 41/41 unit tests passing, production build succeeded in 8.13s, verified on `https://micondowebapp.vercel.app/login` (commit `253b654`).
+
+## [2026-10-16] - SuperAdmin Fallback & Auto-Logout Elimination
+- **Root Cause Analysis (SuperAdmin expulsion)**:
+  - `SuperAdminDashboard.tsx` had `const isDevMode = window.location.hostname === "localhost"`. On Vercel, this evaluated to `false`, attempting an external Supabase request to table `companies`.
+  - When the request failed due to the paused Supabase project, the `catch` block displayed `"Error al cargar la lista de compañías."` and immediately called `logout()`, expelling the SuperAdmin back to `/login`.
+- **Resolution**:
+  - Expanded demo detection: `isDevMode = isDevAuthenticated || window.location.hostname === "localhost" || window.location.hostname.includes("vercel.app")`.
+  - Replaced `logout()` in the catch block with graceful fallback to `getDefaultCompanies()` (`Wise Services Dominicana SRL` & `CondoAdmin Premier SRL`).
+- **Verification**: Clean build, 41/41 Vitest tests passing, verified live on `micondowebapp.vercel.app` (commit `9fb165a`).
