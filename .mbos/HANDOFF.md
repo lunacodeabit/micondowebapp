@@ -1,24 +1,17 @@
 # Handoff - Mi Condo Web App
 
-## [2026-10-16] Status: Dual Theme Light/Dark Harmony & Visible Architectural Grid Live 🚀
-MiCondo OS landing page and authentication systems have been elevated with complete Light/Dark mode responsiveness, visible architectural blueprint grids in both modes, and unconditional demo logins that work regardless of Supabase paused states.
+## [2026-10-16] Status: Login Redirection & Session Wipeout Fixed Live on Vercel 🚀
+Resolved the root causes that prevented logins from executing on Vercel production: added immediate role-based navigation redirects and eliminated the Supabase null auth listener that was overwriting authenticated demo sessions.
 
 ### Key Highlights:
-1. **Architectural Grid Matrix**:
-   - **Light Mode**: Visible slate technical grid (`rgba(71, 85, 105, 0.12)`) on 40x40px matrix with radial ambient fade.
-   - **Dark Mode**: Crisp pure white technical grid (`rgba(255, 255, 255, 0.09)`) providing clear high-tech depth over obsidian background.
-2. **Dual Theme Harmony**:
-   - Full support for `ThemeToggle` (Sun/Moon).
-   - Light mode features crisp Apple/Linear PropTech styling (`#f8fafc` canvas, white glass cards, high-contrast slate text, soft purple/indigo telemetry waves).
-   - Dark mode preserves futuristic obsidian titanium look (`#070709`).
-3. **Resilient Authentication & Demo Bypass**:
-   - Resolved Supabase paused project issue (`DNS_PROBE_FINISHED_NXDOMAIN` on `kttrzritomsfnqfwiplv`).
-   - Unconditional offline demo bypass for SuperAdmin, Admin, and Resident.
-   - Quick-access 1-click buttons directly on `/login`.
-4. **Lead Capture & Nav Anchors**:
-   - Added "Solicitar Demo" modal for prospective B2B clients.
-   - Repaired all navigation anchor links (`#plataforma`, `#inteligencia`, `#seguridad`, `#ecosistema`).
-5. **Quality & Deployment**:
-   - Live URL: `https://micondowebapp.vercel.app` (HTTP 200 OK)
-   - Commit: `9c7a84d` pushed to `lunacodeabit/micondowebapp`.
+1. **Login Navigation Fixed**:
+   - `AuthView.tsx` now uses `useNavigate` to immediately redirect to `/superadmin`, `/admin`, or `/resident` both on form submission and on the 1-click quick access buttons.
+2. **Session Persistence Protected**:
+   - In `AuthContext.tsx`, `applyDevRole` now assigns a valid `currentUser` mock object (`id`, `email`, `role`) so `ProtectedRoute` validates access immediately.
+   - Guarded `onAuthStateChange` so an unreachable or paused Supabase backend cannot wipe out an active demo session.
+3. **Google OAuth Graceful Warning**:
+   - Replaced silent browser redirect crash (`NXDOMAIN`) with an informative in-app notification guiding the user.
+4. **Verified Live on Vercel**:
+   - Live URL: `https://micondowebapp.vercel.app/login`
+   - Commit: `253b654` pushed to `lunacodeabit/micondowebapp`.
    - 41/41 unit tests passing; 0 TypeScript errors.

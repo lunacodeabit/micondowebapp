@@ -138,3 +138,16 @@ an_access_condo(uuid)` SECURITY DEFINER hook to solve cross-table RLS recursion 
   - **Light Mode**: Technical slate blueprint grid (`rgba(71, 85, 105, 0.12)`) on 40px grid pitch with smooth radial vignette.
   - **Dark Mode**: Crisp pure white lines (`rgba(255, 255, 255, 0.09)`) providing clear Linear/Vercel-style technical depth against the obsidian background without obscuring typography.
 - **Verification**: Production build clean (0 errors), 41/41 unit tests passing, deployed live to Vercel (commit `9c7a84d`).
+
+## [2026-10-16] - Login Redirection & Production Session Persistence Resolution
+- **Root Cause Analysis (Why login failed on Vercel)**:
+  1. `AuthView.tsx` invoked `await login(...)` and `devLogin(...)` without calling `navigate()`, leaving the UI stranded on `/login`.
+  2. In `AuthContext.tsx`, `devLogin` and session restoration were guarded behind `DEV_MODE` (`import.meta.env.VITE_DEV_MODE === 'true'`), which evaluates to `false` in production.
+  3. `applyDevRole` never set `currentUser`, causing `ProtectedRoute.tsx` to deny access.
+  4. The Supabase auth change listener (`onAuthStateChange`) fired on mount, detected no active session from the paused project, and wiped out all role and user states.
+- **Resolution**:
+  - Attached explicit route transitions (`navigate('/superadmin')`, `/admin`, `/resident`) to form submission and quick access pills.
+  - Initialized `currentUser` mock object within `applyDevRole`.
+  - Guarded `onAuthStateChange` to never overwrite active demo sessions.
+  - Intercepted Google OAuth requests targeting the paused Supabase project to display clear user-facing guidance instead of a DNS error page.
+- **Verification**: 41/41 unit tests passing, production build succeeded in 8.13s, verified on `https://micondowebapp.vercel.app/login` (commit `253b654`).
