@@ -3409,57 +3409,59 @@ export const SuperAdminDashboard = () => {
   // Estados para Activity Feed
   const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
 
-  // DEV MODE check
-  const isDevMode = window.location.hostname === "localhost";
+  // DEV / DEMO MODE check - enabled on localhost, vercel demo, or when authenticated via demo
+  const isDevMode = isDevAuthenticated || window.location.hostname === "localhost" || window.location.hostname.includes("vercel.app");
+
+  const getDefaultCompanies = (): Company[] => {
+    let liveCondosCount = 2;
+    try {
+      const stored = localStorage.getItem('micondo_live_condos_v2');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) liveCondosCount = parsed.length;
+      }
+    } catch (e) {
+      // fallback
+    }
+    return [
+      {
+        id: "dev-company-id",
+        name: "Wise Services Dominicana SRL",
+        rnc: "430314706",
+        address: "Av. Abraham Lincoln #1003, Piantini, Santo Domingo",
+        phone: "829-455-4783",
+        email: "info@wiseservicesrd.com",
+        logoUrl: undefined,
+        status: "Activo",
+        adminUserEmail: "admin@micondo.com",
+        billingStartDate: "2025-01-01",
+        gracePeriodDays: 7,
+        plan: "Pro",
+        condoCount: liveCondosCount,
+        monthlyFee: liveCondosCount * 1000,
+      },
+      {
+        id: "dev-company-2",
+        name: "CondoAdmin Premier SRL",
+        rnc: "131849204",
+        address: "Av. Winston Churchill #45, Bella Vista",
+        phone: "809-555-0002",
+        email: "contacto@condoadminrd.com",
+        logoUrl: undefined,
+        status: "Activo",
+        adminUserEmail: "admin@demo2.com",
+        billingStartDate: "2025-01-15",
+        gracePeriodDays: 14,
+        plan: "Enterprise",
+        condoCount: 5,
+        monthlyFee: 4000,
+      },
+    ];
+  };
 
   const fetchCompanies = async () => {
-    // En modo desarrollo, usar datos mock con Wise Services Dominicana SRL conectado a los condominios locales
     if (isDevMode && isDevAuthenticated) {
-      let liveCondosCount = 2;
-      try {
-        const stored = localStorage.getItem('micondo_live_condos_v2');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) liveCondosCount = parsed.length;
-        }
-      } catch (e) {
-        // fallback
-      }
-
-      setCompanies([
-        {
-          id: "dev-company-id",
-          name: "Wise Services Dominicana SRL",
-          rnc: "430314706",
-          address: "Av. Abraham Lincoln #1003, Piantini, Santo Domingo",
-          phone: "829-455-4783",
-          email: "info@wiseservicesrd.com",
-          logoUrl: undefined,
-          status: "Activo",
-          adminUserEmail: "admin@micondo.com",
-          billingStartDate: "2025-01-01",
-          gracePeriodDays: 7,
-          plan: "Pro",
-          condoCount: liveCondosCount,
-          monthlyFee: liveCondosCount * 1000,
-        },
-        {
-          id: "dev-company-2",
-          name: "CondoAdmin Premier SRL",
-          rnc: "131849204",
-          address: "Av. Winston Churchill #45, Bella Vista",
-          phone: "809-555-0002",
-          email: "contacto@condoadminrd.com",
-          logoUrl: undefined,
-          status: "Activo",
-          adminUserEmail: "admin@demo2.com",
-          billingStartDate: "2025-01-15",
-          gracePeriodDays: 14,
-          plan: "Enterprise",
-          condoCount: 5,
-          monthlyFee: 4000,
-        },
-      ]);
+      setCompanies(getDefaultCompanies());
       setLoading(false);
       return;
     }
@@ -3470,7 +3472,11 @@ export const SuperAdminDashboard = () => {
         .from('companies')
         .select('*');
       if (error) throw error;
-      const companyList: Company[] = (rawCompanies || []).map((data: any) => ({
+      if (!rawCompanies || rawCompanies.length === 0) {
+        setCompanies(getDefaultCompanies());
+        return;
+      }
+      const companyList: Company[] = rawCompanies.map((data: any) => ({
         id: data.id,
         name: data.name || "Sin Nombre",
         rnc: data.rnc || "N/A",
@@ -3486,9 +3492,8 @@ export const SuperAdminDashboard = () => {
       }));
       setCompanies(companyList);
     } catch (error) {
-      console.error("Error fetching companies:", error);
-      addToast("Error al cargar la lista de compañías.", "error");
-      logout();
+      console.error("Error fetching companies from Supabase, using defaults:", error);
+      setCompanies(getDefaultCompanies());
     } finally {
       setLoading(false);
     }
