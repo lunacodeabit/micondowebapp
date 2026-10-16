@@ -131,3 +131,10 @@ an_access_condo(uuid)` SECURITY DEFINER hook to solve cross-table RLS recursion 
   - Resolved public route loading hangs in `AppRouter.tsx` and `AuthContext.tsx`.
   - Staged and pushed commit `3f17466` to `lunacodeabit/micondowebapp`.
   - Production build passed in 6.25s with 0 errors; verified live deployment on `https://micondowebapp.vercel.app`.
+
+## [2026-10-16] - Architectural Grid Matrix & Theme Polish
+- **Perceptible Architectural Grid Texture**:
+  - Replaced the washed-out 3% `currentColor` grid with dedicated high-clarity layers for day and night.
+  - **Light Mode**: Technical slate blueprint grid (`rgba(71, 85, 105, 0.12)`) on 40px grid pitch with smooth radial vignette.
+  - **Dark Mode**: Crisp pure white lines (`rgba(255, 255, 255, 0.09)`) providing clear Linear/Vercel-style technical depth against the obsidian background without obscuring typography.
+- **Verification**: Production build clean (0 errors), 41/41 unit tests passing, deployed live to Vercel (commit `9c7a84d`).
