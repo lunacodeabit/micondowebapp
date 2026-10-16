@@ -96,12 +96,31 @@ export const LandingPage = () => {
             <div className="fixed bottom-[-15%] left-[-10%] w-[60vw] h-[60vw] bg-radial from-blue-400/15 dark:from-blue-600/15 via-cyan-300/10 dark:via-cyan-600/5 to-transparent blur-[140px] pointer-events-none rounded-full" />
             <div className="fixed top-[40%] left-[25%] w-[40vw] h-[40vw] bg-radial from-purple-300/10 dark:from-purple-900/10 to-transparent blur-[160px] pointer-events-none rounded-full" />
 
-            {/* Subtle Grid Texture Overlay */}
+            {/* 1.1 Architectural Grid Texture Overlay - Light Mode (Slate Grid) */}
             <div
-                className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.035]"
+                className="fixed inset-0 pointer-events-none block dark:hidden z-0"
                 style={{
-                    backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
-                    backgroundSize: '48px 48px'
+                    backgroundImage: `
+                        linear-gradient(to right, rgba(71, 85, 105, 0.12) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(71, 85, 105, 0.12) 1px, transparent 1px)
+                    `,
+                    backgroundSize: '40px 40px',
+                    maskImage: 'radial-gradient(ellipse 95% 85% at 50% 20%, black 50%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 95% 85% at 50% 20%, black 50%, transparent 100%)'
+                }}
+            />
+
+            {/* 1.2 Architectural Grid Texture Overlay - Dark Mode (Crisp White Lines) */}
+            <div
+                className="fixed inset-0 pointer-events-none hidden dark:block z-0"
+                style={{
+                    backgroundImage: `
+                        linear-gradient(to right, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.09) 1px, transparent 1px)
+                    `,
+                    backgroundSize: '40px 40px',
+                    maskImage: 'radial-gradient(ellipse 95% 85% at 50% 20%, black 50%, transparent 100%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 95% 85% at 50% 20%, black 50%, transparent 100%)'
                 }}
             />
 
