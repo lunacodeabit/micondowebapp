@@ -1,25 +1,35 @@
 # Handoff - Mi Condo Web App
 
-## [2026-10-16] Status: Architecture Decoupled & B2B SaaS Landing Page Live 🚀
-MiCondo (SaaS B2B platform) and Wise Services RD (PMC physical property management client) have been cleanly decoupled. SuperAdmin and Admin sidebars reflect their correct brand roles, and the root landing page (`/`) is now a full-fledged B2B SaaS landing page selling to Dominican property management companies.
+## [2026-10-16] Status: Original Copy Restored + Wowfactor 3D Tilt Live on Vercel 🚀
+The exact original copy and conceptual foundation from the user's previous landing page have been restored and elevated with award-grade `/wowfactor` design. The blank screen issue on Vercel is resolved, and the updated version is live on `https://micondowebapp.vercel.app`.
 
 ### Key Highlights:
-1. **SuperAdmin Re-branded to MiCondo OS (`SuperAdminSidebar.tsx`)**:
-   - Replaced legacy "WISE SERVICES" label with **"MICONDO OS — SuperAdmin SaaS"**.
-   - Preserved all SaaS management features: company licensing, RD$ MRR metrics, support desk, and broadcast announcements.
-2. **Admin & Resident Portals Multi-Tenant Harmonization**:
-   - Admin sidebar subtitle updated to `"Administración • MiCondo"`.
-   - Resident header updated to `"Portal de Residente • Powered by MiCondo"`.
-3. **Official B2B SaaS Landing Page (`src/views/LandingPage.tsx`)**:
-   - Live at `http://localhost:5173/`.
-   - Interactive slider calculator in RD$ (calculates monthly license cost and hours saved).
-   - Value propositions tailored to the Dominican market (Banco Popular, BHD, Banreservas, DGII 606/607, Ley 5038).
-   - 3-tier pricing cards: Básico (RD$ 1,800/condo), Profesional (RD$ 1,500/condo), Enterprise (RD$ 1,200/condo).
-   - Demo lead capture form storing leads in `localStorage` (`micondo_saas_demo_leads`), ready to sync to the dedicated Supabase once active.
-   - Dual-theme support with `ThemeToggle` (Light and Dark mode).
-4. **Wise Services RD Landing (`isapromord/wiseservicesrd`)**:
-   - Kept pure as the physical property management acquisition page in Santo Domingo with its "Ingresar al Portal" link leading directly to `micondowebapp`.
-5. **Quality Assurance**:
-   - 41/41 Vitest unit tests passing.
-   - Production build succeeds in 10.82s with 0 TypeScript errors.
-   - Dev server active at `http://localhost:5173`.
+1. **Original Copy & Technical Concept Restored (Zero Invention)**:
+   - Header badge: `MiCondo OS • Core Protocol v4.2`
+   - Hero headline: `ORQUESTA TU CONDOMINIO.`
+   - Core cards:
+     - `Inteligencia de Gestión`
+     - `Integridad de Inventario (Cap: 4k Unidades)`
+     - `Flujo Financiero (99.2% Pagos)`
+     - `Lógica Elisa AI Autónoma`
+     - `Pulso del Sistema (Seguridad 100%, AI 84%, Uptime 99.9%)`
+     - `Cuidado de Elite Autónomo`
+2. **Award-Grade Visual Elevation (/wowfactor)**:
+   - Interactive 3D tilt telemetry console responding dynamically to cursor position.
+   - Ambient glowing mesh canvas with subtle grid matrix.
+   - Staggered Framer Motion entrance animations with kinetic typography.
+   - 3-tier architectural breakdown: SuperAdmin SaaS, Panel de Administración, and Portal del Residente.
+   - Integrated `ThemeToggle` for seamless Light/Dark mode transitions.
+3. **Vercel Blank Screen Resolution & Push**:
+   - Fixed crash in `supabaseClient.ts` due to missing Vercel environment variables.
+   - Bypassed blocking Auth loading screen for unauthenticated public landing route `/`.
+   - Pushed commit `3f17466` to `lunacodeabit/micondowebapp`.
+4. **Quality & Live Status**:
+   - Live URL: `https://micondowebapp.vercel.app` (HTTP 200 OK)
+   - Local Dev: `http://localhost:5173`
+   - 41/41 unit tests passing.
+   - 0 TypeScript errors.
+
+### Next Steps:
+1. Review live visual presentation with the user on desktop and mobile.
+2. When the user sets up their new dedicated Supabase project, connect the environment variables and sync schema.

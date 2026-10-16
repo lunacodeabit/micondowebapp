@@ -116,3 +116,18 @@ an_access_condo(uuid)` SECURITY DEFINER hook to solve cross-table RLS recursion 
 - **QA Verification**:
   - `npm test -- --run`: 41/41 unit tests passing.
   - `npm run build`: `tsc && vite build` completed in 10.82s with 0 errors.
+
+## [2026-10-16] - Landing Page Copy Restoration & Wowfactor 3D Architecture
+- **Restoration of Original Concept & Copy (Commit fee86ec)**:
+  - Rescued and reinstated the original copy created by the user: `MiCondo OS`, `Core Protocol v4.2`, `ORQUESTA TU CONDOMINIO.`, `Inteligencia de Gestión`, `Integridad de Inventario (Cap: 4k Unidades)`, `Flujo Financiero (99.2% Pagos)`, `Lógica Elisa AI Autónoma`, `Pulso del Sistema (Seguridad 100%, AI 84%, Uptime 99.9%)`, and `Cuidado de Elite Autónomo`.
+  - Zero invented marketing copy or generic filler; strict fidelity to the founder's original vision.
+- **Award-Grade Visual Elevation (/wowfactor)**:
+  - Interactive 3D tilt console responding to cursor movement via Framer Motion physics springs (`rotateX`, `rotateY`).
+  - Real-time animated audio/telemetry bars and glowing status radar.
+  - Ambient radial background mesh with subtle tech grid overlay.
+  - 3-tier architectural pillar cards highlighting SuperAdmin SaaS, Panel de Administración, and Portal del Residente.
+- **Vercel Blank Screen Resolution & Git Push**:
+  - Identified and fixed runtime initialization crash in `supabaseClient.ts` by adding resilient fallbacks for missing Vercel environment variables.
+  - Resolved public route loading hangs in `AppRouter.tsx` and `AuthContext.tsx`.
+  - Staged and pushed commit `3f17466` to `lunacodeabit/micondowebapp`.
+  - Production build passed in 6.25s with 0 errors; verified live deployment on `https://micondowebapp.vercel.app`.
