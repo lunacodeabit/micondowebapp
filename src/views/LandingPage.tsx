@@ -1,613 +1,462 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icon } from '../components/ui/Icon';
-import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { ThemeToggle } from '../components/ui/ThemeToggle';
 
 /**
- * Landing Page Oficial B2B: MiCondo SaaS
- * Propósito: Captación y venta de la plataforma a Administradoras de Condominios (PMCs)
- * Contexto: República Dominicana (RD$, Ley 5038, Banco Popular/BHD, DGII)
+ * MiCondo OS — Landing Page Oficial de Próxima Generación
+ * Arte: Dark Luxury PropTech / Aura-Shadow Fusion
+ * Todo el contenido, métricas y terminología provienen del concepto original de MiCondo.
  */
 export const LandingPage = () => {
     const navigate = useNavigate();
 
-    // Estado de la calculadora interactiva
-    const [condoCount, setCondoCount] = useState<number>(3);
-    const pricePerCondo = condoCount >= 8 ? 1200 : condoCount >= 3 ? 1500 : 1800;
-    const monthlyTotal = condoCount * pricePerCondo;
+    // Mouse Spotlight reactivo
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
 
-    // Estado del formulario de captación de leads SaaS
-    const [leadForm, setLeadForm] = useState({
-        companyName: '',
-        contactName: '',
-        phone: '',
-        email: '',
-        currentCondos: '3-5',
-        notes: ''
-    });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitSuccess, setSubmitSuccess] = useState(false);
-
-    const handleSubmitLead = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-
-        try {
-            // Guardar prospecto en almacenamiento local y sincronizar
-            const existing = JSON.parse(localStorage.getItem('micondo_saas_demo_leads') || '[]');
-            const newLead = {
-                id: 'lead-' + Date.now(),
-                ...leadForm,
-                createdAt: new Date().toISOString()
-            };
-            existing.unshift(newLead);
-            localStorage.setItem('micondo_saas_demo_leads', JSON.stringify(existing));
-
-            // Simulación de envío exitoso
-            setTimeout(() => {
-                setIsSubmitting(false);
-                setSubmitSuccess(true);
-            }, 600);
-        } catch {
-            setIsSubmitting(false);
-            setSubmitSuccess(true);
-        }
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const { clientX, clientY } = e;
+        mouseX.set(clientX);
+        mouseY.set(clientY);
     };
 
-    return (
-        <div className="min-h-screen bg-[#f8f9fb] dark:bg-[#0b0f17] text-neutral-900 dark:text-neutral-100 font-sans transition-colors duration-200 antialiased selection:bg-blue-600/20 selection:text-blue-700 dark:selection:text-blue-300">
-            {/* Top Announcement Bar */}
-            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white text-xs font-semibold py-2 px-4 text-center tracking-wide flex items-center justify-center gap-2">
-                <span className="bg-white/20 text-white px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider">
-                    🇩🇴 PropTech RD
-                </span>
-                <span>Software diseñado bajo la Ley 5038 y normas contables de República Dominicana</span>
-                <a href="#demo-form" className="underline font-bold hover:text-white/80 transition-colors ml-1 hidden sm:inline">
-                    Comenzar prueba gratis →
-                </a>
-            </div>
+    // Tilt 3D para la Consola Central
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
+    const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
+    const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ['7deg', '-7deg']);
+    const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ['-7deg', '7deg']);
 
-            {/* Navigation Header */}
-            <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#111827]/90 backdrop-blur-md border-b border-neutral-200/80 dark:border-neutral-800 transition-colors">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-                    {/* Brand */}
-                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-                            <Icon name="building-2" className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-lg font-black tracking-tight text-neutral-900 dark:text-white">
-                                    MICONDO
-                                </span>
-                                <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400">
-                                    SaaS
-                                </span>
+    const handleCardTilt = (e: React.MouseEvent<HTMLDivElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+        const mouseXPos = e.clientX - rect.left;
+        const mouseYPos = e.clientY - rect.top;
+        const xPct = mouseXPos / width - 0.5;
+        const yPct = mouseYPos / height - 0.5;
+        x.set(xPct);
+        y.set(yPct);
+    };
+
+    const handleCardLeave = () => {
+        x.set(0);
+        y.set(0);
+    };
+
+    // Simulación de telemetría de red activa
+    const [activePings, setActivePings] = useState(48);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setActivePings(prev => (prev === 48 ? 49 : 48));
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div
+            onMouseMove={handleMouseMove}
+            className="min-h-screen bg-[#070709] text-[#eef0f3] font-sans selection:bg-purple-600/40 selection:text-white relative overflow-x-hidden antialiased"
+        >
+            {/* 1. AMBIENT MESH GRADIENT LIGHTING */}
+            <div className="fixed top-[-15%] right-[-10%] w-[65vw] h-[65vw] bg-radial from-purple-600/15 via-indigo-600/5 to-transparent blur-[140px] pointer-events-none rounded-full animate-pulse duration-1000" />
+            <div className="fixed bottom-[-15%] left-[-10%] w-[60vw] h-[60vw] bg-radial from-blue-600/15 via-cyan-600/5 to-transparent blur-[140px] pointer-events-none rounded-full" />
+            <div className="fixed top-[40%] left-[25%] w-[40vw] h-[40vw] bg-radial from-purple-900/10 to-transparent blur-[160px] pointer-events-none rounded-full" />
+
+            {/* Subtle Grid Texture Overlay */}
+            <div
+                className="fixed inset-0 pointer-events-none opacity-[0.035]"
+                style={{
+                    backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
+                    backgroundSize: '48px 48px'
+                }}
+            />
+
+            <div className="max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-16 relative z-10 py-8">
+                {/* 2. NAVIGATION BAR */}
+                <header className="flex justify-between items-center mb-16 lg:mb-24 py-4 px-6 rounded-2xl bg-white/[0.03] backdrop-blur-2xl border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center gap-10">
+                        {/* Brand Logo */}
+                        <div
+                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            className="flex items-center gap-3.5 cursor-pointer group"
+                        >
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white via-neutral-200 to-neutral-400 flex items-center justify-center font-black text-black shadow-[0_0_25px_rgba(255,255,255,0.3)] group-hover:scale-105 group-hover:shadow-[0_0_35px_rgba(168,85,247,0.5)] transition-all duration-300">
+                                M
                             </div>
-                            <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium tracking-tight">Software de Gestión para Administradoras</p>
+                            <div>
+                                <h1 className="text-lg font-black tracking-tighter uppercase leading-none text-white flex items-center gap-1.5">
+                                    MiCondo <span className="text-purple-400 font-medium text-xs tracking-widest px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20">OS</span>
+                                </h1>
+                                <p className="text-[9px] font-black tracking-[0.35em] text-neutral-400 uppercase mt-0.5">
+                                    Core Protocol v4.2
+                                </p>
+                            </div>
                         </div>
+
+                        {/* Navigation Items */}
+                        <nav className="hidden lg:flex items-center gap-8 text-[11px] font-black uppercase tracking-[0.2em] text-neutral-400">
+                            <a href="#plataforma" className="text-white hover:text-purple-400 transition-colors cursor-pointer border-b border-purple-500/60 pb-0.5">
+                                Plataforma
+                            </a>
+                            <a href="#ecosistema" className="hover:text-white transition-colors cursor-pointer">
+                                Ecosistema
+                            </a>
+                            <a href="#inteligencia" className="hover:text-white transition-colors cursor-pointer">
+                                Inteligencia
+                            </a>
+                            <a href="#seguridad" className="hover:text-white transition-colors cursor-pointer">
+                                Seguridad
+                            </a>
+                        </nav>
                     </div>
 
-                    {/* Desktop Navigation Links */}
-                    <nav className="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
-                        <a href="#features" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Funcionalidades</a>
-                        <a href="#calculator" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Calculadora</a>
-                        <a href="#pricing" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Planes</a>
-                        <a href="#faq" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Preguntas</a>
-                    </nav>
+                    {/* Actions & Buttons */}
+                    <div className="flex items-center gap-4">
+                        <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-wider uppercase">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                            <span>Red Operativa</span>
+                        </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-3">
                         <ThemeToggle />
+
                         <button
                             onClick={() => navigate('/login')}
-                            className="text-xs font-bold px-4 py-2.5 rounded-xl text-neutral-700 dark:text-neutral-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                            className="hidden sm:block text-[11px] font-black uppercase tracking-widest text-neutral-400 hover:text-white transition-colors cursor-pointer px-3 py-2"
                         >
-                            Acceso Portal
+                            Acceso Clientes
                         </button>
-                        <a
-                            href="#demo-form"
-                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm transition-all transform hover:-translate-y-0.5 cursor-pointer hidden sm:inline-block"
+                        <button
+                            onClick={() => navigate('/login')}
+                            className="relative group overflow-hidden px-6 py-2.5 rounded-xl bg-white text-black font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
                         >
-                            Solicitar Demo
-                        </a>
-                    </div>
-                </div>
-            </header>
-
-            {/* Hero Section */}
-            <section className="relative pt-16 pb-20 overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center max-w-3xl mx-auto mb-12">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 text-blue-700 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-6">
-                            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-                            <span>Plataforma Cloud para Administradoras de Condominios</span>
-                        </div>
-
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-neutral-900 dark:text-white leading-[1.1] mb-6">
-                            Multiplica la rentabilidad de tu <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-                                Administradora de Condominios
+                            <span className="relative z-10 flex items-center gap-2">
+                                <span>Iniciar Sesión</span>
+                                <Icon name="arrow-right" className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                             </span>
-                        </h1>
-
-                        <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed font-normal mb-8">
-                            Automatiza la cobranza de cuotas en <strong className="text-neutral-900 dark:text-white font-semibold">pesos dominicanos (RD$)</strong>, estados de cuenta bancarios en tiempo real, actas de asamblea digitales con IA y un portal móvil que a tus residentes les encantará.
-                        </p>
-
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <a
-                                href="#demo-form"
-                                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                            >
-                                <span>Probar Gratis por 14 Días</span>
-                                <Icon name="arrow-right" className="w-4 h-4" />
-                            </a>
-                            <button
-                                onClick={() => navigate('/login')}
-                                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-bold text-sm hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all shadow-2xs flex items-center justify-center gap-2 cursor-pointer"
-                            >
-                                <Icon name="login" className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                <span>Ingresar al Portal Demostración</span>
-                            </button>
-                        </div>
-
-                        <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-4 font-medium">
-                            ✓ Sin tarjeta de crédito requerida • ✓ Soporte e inducción personalizada en RD • ✓ Cumplimiento DGII
-                        </p>
+                        </button>
                     </div>
+                </header>
 
-                    {/* Hero Feature Badges */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-6 border-t border-neutral-200/80 dark:border-neutral-800">
-                        {[
-                            { label: 'Conciliación Bancaria', desc: 'Popular, BHD, Reservas', icon: 'credit-card' },
-                            { label: 'Efectividad Cobro', desc: '98.4% Cobranza a tiempo', icon: 'trending-up' },
-                            { label: 'Ley 5038 y DGII', desc: 'Asambleas y 606/607', icon: 'file-text' },
-                            { label: 'Elisa AI Copilot', desc: 'Respuestas automáticas 24/7', icon: 'sparkles' },
-                        ].map((b, i) => (
-                            <div key={i} className="p-4 rounded-xl bg-white dark:bg-[#161b26] border border-neutral-200/80 dark:border-neutral-800 shadow-2xs text-left">
-                                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2 font-bold">
-                                    <Icon name={b.icon} className="w-4 h-4" />
-                                </div>
-                                <h4 className="text-xs font-bold text-neutral-900 dark:text-white leading-tight">{b.label}</h4>
-                                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{b.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Interactive Calculator Section */}
-            <section id="calculator" className="py-16 bg-white dark:bg-[#111827] border-y border-neutral-200/80 dark:border-neutral-800 transition-colors">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="max-w-3xl mx-auto text-center mb-10">
-                        <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2 block">
-                            Calculadora de Inversión
-                        </span>
-                        <h2 className="text-3xl font-black text-neutral-900 dark:text-white tracking-tight">
-                            ¿Cuánto cuesta MiCondo para tu empresa?
-                        </h2>
-                        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-                            Precios claros en pesos dominicanos. Sin costos ocultos. Paga solo por condominio que administres.
-                        </p>
-                    </div>
-
-                    <div className="max-w-2xl mx-auto bg-neutral-50 dark:bg-[#161b26] p-8 rounded-3xl border border-neutral-200/80 dark:border-neutral-800 shadow-sm">
-                        <div className="mb-8">
-                            <div className="flex justify-between items-center mb-3">
-                                <label className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                                    Número de Condominios que Administras:
-                                </label>
-                                <span className="text-2xl font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-4 py-1 rounded-xl border border-blue-200/60 dark:border-blue-900">
-                                    {condoCount} {condoCount === 1 ? 'Edificio' : 'Edificios'}
-                                </span>
-                            </div>
-                            <input
-                                type="range"
-                                min="1"
-                                max="20"
-                                value={condoCount}
-                                onChange={(e) => setCondoCount(parseInt(e.target.value))}
-                                className="w-full h-2.5 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                            />
-                            <div className="flex justify-between text-[10px] text-neutral-400 dark:text-neutral-500 font-bold mt-2">
-                                <span>1 Edificio</span>
-                                <span>5 Edificios</span>
-                                <span>10 Edificios</span>
-                                <span>20+ Edificios</span>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-white dark:bg-[#111827] border border-neutral-200/80 dark:border-neutral-800 mb-6">
-                            <div>
-                                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Costo por Condominio</span>
-                                <p className="text-xl font-black text-neutral-900 dark:text-white mt-0.5">
-                                    RD$ {pricePerCondo.toLocaleString()} <span className="text-xs font-normal text-neutral-400">/mes</span>
-                                </p>
-                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Incluye soporte local</span>
-                            </div>
-                            <div>
-                                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Total Mensual Estimado</span>
-                                <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-0.5">
-                                    RD$ {monthlyTotal.toLocaleString()} <span className="text-xs font-normal text-neutral-400">/mes</span>
-                                </p>
-                                <span className="text-[10px] text-neutral-500 font-medium">Factura con NCF disponible</span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-800">
-                            <span>Ahorro estimado en horas de gestión:</span>
-                            <span className="font-bold text-neutral-900 dark:text-white">~{condoCount * 12} horas / mes</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Features Showcase */}
-            <section id="features" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="max-w-3xl mx-auto text-center mb-16">
-                    <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2 block">
-                        Todo lo que Necesita una Administradora
-                    </span>
-                    <h2 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white tracking-tight">
-                        Construido para el día a día real de tu equipo
-                    </h2>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-3">
-                        Olvídate de las hojas de Excel dispersas y los recibos perdidos por WhatsApp. Centraliza toda tu operación en un solo lugar.
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {[
-                        {
-                            title: 'Cobranza Automatizada & Recibos',
-                            desc: 'Envía avisos de cobro por correo y WhatsApp. Los residentes adjuntan comprobantes bancarios y el sistema calcula balances y recargos por mora en RD$.',
-                            icon: 'credit-card',
-                            badge: 'Cobro Puntual'
-                        },
-                        {
-                            title: 'Portal de Residente (Sin Descarga)',
-                            desc: 'Una WebApp elegante donde cada propietario consulta su balance, reporta incidencias, reserva áreas sociales y descarga recibos oficiales.',
-                            icon: 'home',
-                            badge: 'Cero Fricción'
-                        },
-                        {
-                            title: 'Cuentas por Pagar & Proveedores',
-                            desc: 'Control de pagos a EDESUR, CAASD, empresas de seguridad, limpieza y mantenimiento con programación de vencimientos.',
-                            icon: 'calculator',
-                            badge: 'Control Total'
-                        },
-                        {
-                            title: 'Asambleas Digitales & Votación',
-                            desc: 'Calcula el quórum ponderado según las cuotas de participación de la Ley 5038, votaciones transparentes y actas formales en PDF.',
-                            icon: 'file-text',
-                            badge: 'Ley 5038'
-                        },
-                        {
-                            title: 'Elisa AI: Asistente Virtual 24/7',
-                            desc: 'Inteligencia artificial que responde preguntas frecuentes de los residentes sobre reglamentos del condominio y estados de cuenta.',
-                            icon: 'bot',
-                            badge: 'Inteligencia Artificial'
-                        },
-                        {
-                            title: 'Reportería Fiscal para DGII',
-                            desc: 'Reportes de gastos clasificados para formularios 606 y 607 listos para tu contador o auditoría de junta directiva.',
-                            icon: 'shield-check',
-                            badge: 'Cumplimiento Fiscal'
-                        },
-                    ].map((feat, idx) => (
-                        <div
-                            key={idx}
-                            className="bg-white dark:bg-[#161b26] p-8 rounded-3xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs hover:border-blue-500/50 transition-all flex flex-col justify-between"
+                {/* 3. HERO SECTION */}
+                <section className="mb-20 lg:mb-28 px-2 sm:px-4">
+                    <div className="max-w-5xl">
+                        {/* Protocol Pill */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6 }}
+                            className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-xl mb-8 shadow-inner"
                         >
-                            <div>
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
-                                        <Icon name={feat.icon} className="w-6 h-6" />
-                                    </div>
-                                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
-                                        {feat.badge}
-                                    </span>
-                                </div>
-                                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{feat.title}</h3>
-                                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">{feat.desc}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
+                            <span className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_10px_#a855f7] animate-pulse" />
+                            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.4em] text-neutral-300">
+                                Sistema Operativo de Próxima Generación
+                            </span>
+                        </motion.div>
 
-            {/* Pricing Section */}
-            <section id="pricing" className="py-20 bg-neutral-100/60 dark:bg-[#111827] border-y border-neutral-200/80 dark:border-neutral-800 transition-colors">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="max-w-3xl mx-auto text-center mb-16">
-                        <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2 block">
-                            Planes Flexibles
-                        </span>
-                        <h2 className="text-3xl sm:text-4xl font-black text-neutral-900 dark:text-white tracking-tight">
-                            Tarifas diseñadas para escalar con tu cartera
-                        </h2>
-                        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-                            Comienza con 1 condominio y expande a medida que tu empresa capta nuevos clientes.
-                        </p>
-                    </div>
+                        {/* Kinetic Headline */}
+                        <motion.h2
+                            initial={{ opacity: 0, y: 25 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: 0.1 }}
+                            className="text-6xl sm:text-8xl lg:text-[108px] font-black tracking-tighter leading-[0.88] mb-10 text-white select-none"
+                        >
+                            ORQUESTA TU <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-white to-neutral-400">
+                                CONDOMINIO.
+                            </span>
+                        </motion.h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                        {/* Plan Básico */}
-                        <div className="bg-white dark:bg-[#161b26] p-8 rounded-3xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs flex flex-col justify-between">
-                            <div>
-                                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Para Emprendedores</span>
-                                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mt-1">Plan Básico</h3>
-                                <div className="mt-4 mb-6">
-                                    <span className="text-4xl font-black text-neutral-900 dark:text-white">RD$ 1,800</span>
-                                    <span className="text-xs text-neutral-400"> /mes /condominio</span>
-                                </div>
-                                <ul className="space-y-3 text-xs text-neutral-600 dark:text-neutral-300">
-                                    <li className="flex items-center gap-2">✓ Hasta 2 condominios</li>
-                                    <li className="flex items-center gap-2">✓ Cobranza y recibos digitales</li>
-                                    <li className="flex items-center gap-2">✓ Portal de residentes</li>
-                                    <li className="flex items-center gap-2">✓ Cuentas por pagar básicas</li>
-                                </ul>
-                            </div>
-                            <a
-                                href="#demo-form"
-                                className="mt-8 w-full py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-bold text-xs text-center hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors block cursor-pointer"
-                            >
-                                Seleccionar Básico
-                            </a>
-                        </div>
-
-                        {/* Plan Pro (Destacado) */}
-                        <div className="bg-white dark:bg-[#161b26] p-8 rounded-3xl border-2 border-blue-600 dark:border-blue-500 shadow-xl relative flex flex-col justify-between">
-                            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] uppercase font-black tracking-widest px-3.5 py-1 rounded-full shadow-sm">
-                                Más Popular
-                            </div>
-                            <div>
-                                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Para Empresas PMCs</span>
-                                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mt-1">Plan Profesional</h3>
-                                <div className="mt-4 mb-6">
-                                    <span className="text-4xl font-black text-neutral-900 dark:text-white">RD$ 1,500</span>
-                                    <span className="text-xs text-neutral-400"> /mes /condominio</span>
-                                </div>
-                                <ul className="space-y-3 text-xs text-neutral-600 dark:text-neutral-300">
-                                    <li className="flex items-center gap-2 font-semibold">✓ De 3 a 10 condominios</li>
-                                    <li className="flex items-center gap-2 font-semibold">✓ Notificaciones por WhatsApp</li>
-                                    <li className="flex items-center gap-2 font-semibold">✓ Asambleas Digitales Ley 5038</li>
-                                    <li className="flex items-center gap-2 font-semibold">✓ Asistente Elisa AI para residentes</li>
-                                    <li className="flex items-center gap-2 font-semibold">✓ Soporte prioritario por WhatsApp</li>
-                                </ul>
-                            </div>
-                            <a
-                                href="#demo-form"
-                                className="mt-8 w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs text-center shadow-md shadow-blue-600/20 transition-all block cursor-pointer"
-                            >
-                                Probar Plan Profesional
-                            </a>
-                        </div>
-
-                        {/* Plan Enterprise */}
-                        <div className="bg-white dark:bg-[#161b26] p-8 rounded-3xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs flex flex-col justify-between">
-                            <div>
-                                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Gran Escala</span>
-                                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mt-1">Enterprise</h3>
-                                <div className="mt-4 mb-6">
-                                    <span className="text-4xl font-black text-neutral-900 dark:text-white">RD$ 1,200</span>
-                                    <span className="text-xs text-neutral-400"> /mes /condominio</span>
-                                </div>
-                                <ul className="space-y-3 text-xs text-neutral-600 dark:text-neutral-300">
-                                    <li className="flex items-center gap-2">✓ Más de 10 condominios o torres grandes</li>
-                                    <li className="flex items-center gap-2">✓ Marca Blanca (Tu Logo & Dominio)</li>
-                                    <li className="flex items-center gap-2">✓ Migración asistida desde Excel</li>
-                                    <li className="flex items-center gap-2">✓ Capacitación a tu equipo</li>
-                                    <li className="flex items-center gap-2">✓ Acuerdos de nivel de servicio (SLA)</li>
-                                </ul>
-                            </div>
-                            <a
-                                href="#demo-form"
-                                className="mt-8 w-full py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-bold text-xs text-center hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors block cursor-pointer"
-                            >
-                                Contactar Ventas Enterprise
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Lead Capture Form Section */}
-            <section id="demo-form" className="py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="bg-white dark:bg-[#161b26] p-8 sm:p-12 rounded-3xl border border-neutral-200/80 dark:border-neutral-800 shadow-xl">
-                    <div className="text-center max-w-2xl mx-auto mb-8">
-                        <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2 block">
-                            Empieza Hoy
-                        </span>
-                        <h2 className="text-3xl font-black text-neutral-900 dark:text-white tracking-tight">
-                            Solicita tu Demostración y 14 Días Gratis
-                        </h2>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-                            Te mostraremos cómo configurar tu primera torre en 15 minutos y digitalizar tus cobros de inmediato.
-                        </p>
-                    </div>
-
-                    {submitSuccess ? (
-                        <div className="p-8 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center space-y-3">
-                            <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-300 flex items-center justify-center mx-auto font-bold text-xl">
-                                ✓
-                            </div>
-                            <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-200">
-                                ¡Solicitud Recibida con Éxito!
-                            </h3>
-                            <p className="text-xs text-emerald-700 dark:text-emerald-300 max-w-md mx-auto leading-relaxed">
-                                Gracias por tu interés en MiCondo. Un especialista en gestión condominal te contactará por WhatsApp para habilitar tu acceso de demostración.
+                        {/* Subtitle & Hero CTA */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
+                            className="flex flex-col md:flex-row md:items-center gap-8 lg:gap-12"
+                        >
+                            <p className="text-base sm:text-xl text-neutral-400 font-normal tracking-tight max-w-xl leading-relaxed">
+                                Gestión autónoma para activos inmobiliarios de alta gama. Control unificado, precisión financiera y satisfacción del residente a escala.
                             </p>
-                            <div className="pt-2">
+                            <div className="hidden md:block h-14 w-px bg-white/15" />
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                                 <button
                                     onClick={() => navigate('/login')}
-                                    className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
+                                    className="px-8 py-4.5 rounded-2xl bg-gradient-to-r from-white via-neutral-100 to-neutral-200 text-black font-black text-xs uppercase tracking-widest shadow-[0_20px_50px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 hover:shadow-[0_25px_60px_rgba(255,255,255,0.25)] transition-all duration-300 text-center cursor-pointer flex items-center justify-center gap-2 group"
                                 >
-                                    Ingresar al Portal Demostración
+                                    <span>Acceder al Dashboard</span>
+                                    <Icon name="arrow-right" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </button>
                             </div>
+                        </motion.div>
+                    </div>
+                </section>
+
+                {/* 4. TILT 3D SHOWCASE CONSOLE (Aura-Shadow Fusion) */}
+                <section id="plataforma" className="mb-24">
+                    <motion.div
+                        style={{
+                            rotateX: rotateX,
+                            rotateY: rotateY,
+                            transformStyle: 'preserve-3d',
+                        }}
+                        onMouseMove={handleCardTilt}
+                        onMouseLeave={handleCardLeave}
+                        className="grid grid-cols-1 lg:grid-cols-12 gap-8 transition-transform duration-200 ease-out"
+                    >
+                        {/* Main Telemetry & Intelligence Console */}
+                        <div className="lg:col-span-8 bg-[#101015]/80 backdrop-blur-2xl border border-white/10 rounded-[36px] sm:rounded-[44px] p-8 sm:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.7)] relative overflow-hidden group">
+                            {/* Ambient card spotlight */}
+                            <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-purple-500/20 transition-all duration-700" />
+                            <div className="absolute top-8 right-8 text-white/[0.04] pointer-events-none group-hover:text-white/[0.08] transition-colors">
+                                <Icon name="activity" size={110} />
+                            </div>
+
+                            {/* Console Header */}
+                            <div className="flex flex-wrap justify-between items-center gap-4 mb-14 relative z-10">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                                        <h3 className="text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-white">
+                                            Inteligencia de Gestión
+                                        </h3>
+                                    </div>
+                                    <p className="text-xs font-semibold text-neutral-400">
+                                        Sincronización en tiempo real en todas las unidades residenciales
+                                    </p>
+                                </div>
+                                <div className="px-5 py-2.5 bg-black/60 border border-white/10 rounded-2xl flex items-baseline gap-2.5 shadow-inner">
+                                    <span className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">Eficiencia</span>
+                                    <span className="text-base font-black text-emerald-400 font-mono">+100%</span>
+                                </div>
+                            </div>
+
+                            {/* Live Metrics Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12 mb-14 relative z-10 border-y border-white/[0.06] py-10">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500 mb-3">
+                                        Integridad de Inventario
+                                    </p>
+                                    <h4 className="text-4xl sm:text-5xl font-black tracking-tight text-white select-none">
+                                        Cap: 4k <span className="text-2xl text-neutral-500 font-light">Unidades</span>
+                                    </h4>
+                                    <span className="text-[11px] text-emerald-400 font-mono mt-1 inline-block">● 100% Auditado</span>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500 mb-3">
+                                        Flujo Financiero
+                                    </p>
+                                    <h4 className="text-4xl sm:text-5xl font-black tracking-tight text-neutral-200 select-none">
+                                        99.2% <span className="text-2xl text-neutral-500 font-light">Pagos</span>
+                                    </h4>
+                                    <span className="text-[11px] text-blue-400 font-mono mt-1 inline-block">● Conciliación Inmediata</span>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-neutral-500 mb-3">
+                                        Lógica Elisa AI
+                                    </p>
+                                    <h4 className="text-4xl sm:text-5xl font-black tracking-tight text-purple-400 select-none">
+                                        Autónoma
+                                    </h4>
+                                    <span className="text-[11px] text-purple-400 font-mono mt-1 inline-block">● Resuelve 24/7</span>
+                                </div>
+                            </div>
+
+                            {/* Animated Visual Graph / Telemetry Bars */}
+                            <div className="relative z-10">
+                                <div className="flex justify-between items-center text-[10px] font-mono text-neutral-500 uppercase tracking-widest mb-3">
+                                    <span>Frecuencia Operativa en Vivo</span>
+                                    <span className="text-neutral-400">{activePings} Nodos Conectados</span>
+                                </div>
+                                <div className="h-36 flex items-end justify-between gap-1.5 pt-6 border-t border-white/[0.04]">
+                                    {Array.from({ length: 48 }).map((_, i) => (
+                                        <div key={i} className="flex-1 bg-white/[0.02] rounded-full relative group cursor-crosshair h-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ height: 0 }}
+                                                animate={{
+                                                    height: `${Math.sin(i * 0.25) * 35 + 55}%`,
+                                                }}
+                                                transition={{
+                                                    duration: 1.5,
+                                                    repeat: Infinity,
+                                                    repeatType: 'reverse',
+                                                    delay: i * 0.02,
+                                                }}
+                                                className="absolute bottom-0 w-full bg-gradient-to-t from-purple-600/50 via-indigo-500/30 to-white/20 rounded-full group-hover:from-purple-400 transition-all duration-300"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                    ) : (
-                        <form onSubmit={handleSubmitLead} className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1.5">
-                                        Nombre de tu Administradora *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="Ej. Wise Services SRL o Tu Nombre"
-                                        value={leadForm.companyName}
-                                        onChange={(e) => setLeadForm({ ...leadForm, companyName: e.target.value })}
-                                        className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-neutral-900 dark:text-white text-xs focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1.5">
-                                        Persona de Contacto *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="Tu nombre completo"
-                                        value={leadForm.contactName}
-                                        onChange={(e) => setLeadForm({ ...leadForm, contactName: e.target.value })}
-                                        className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-neutral-900 dark:text-white text-xs focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
-                                    />
-                                </div>
-                            </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1.5">
-                                        WhatsApp / Teléfono Móvil *
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        required
-                                        placeholder="829-000-0000"
-                                        value={leadForm.phone}
-                                        onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })}
-                                        className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-neutral-900 dark:text-white text-xs focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1.5">
-                                        Correo Electrónico *
-                                    </label>
-                                    <input
-                                        type="email"
-                                        required
-                                        placeholder="admin@tuempresa.com"
-                                        value={leadForm.email}
-                                        onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
-                                        className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-neutral-900 dark:text-white text-xs focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
-                                    />
-                                </div>
-                            </div>
+                        {/* Right Stack Cards (System Pulse & Elite Care) */}
+                        <div className="lg:col-span-4 space-y-8 flex flex-col justify-between">
+                            {/* Card: Pulso del Sistema */}
+                            <div className="bg-[#101015]/80 backdrop-blur-2xl border border-white/10 rounded-[36px] sm:rounded-[44px] p-8 sm:p-10 shadow-2xl relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent pointer-events-none" />
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <h3 className="text-xs font-black uppercase tracking-[0.25em] text-neutral-400">
+                                            Pulso del Sistema
+                                        </h3>
+                                        <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                                            OPERATIVO
+                                        </span>
+                                    </div>
 
-                            <div>
-                                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 mb-1.5">
-                                    ¿Cuántos condominios o torres administras actualmente?
-                                </label>
-                                <select
-                                    value={leadForm.currentCondos}
-                                    onChange={(e) => setLeadForm({ ...leadForm, currentCondos: e.target.value })}
-                                    className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl p-3 text-neutral-900 dark:text-white text-xs focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
+                                    <div className="space-y-6">
+                                        {[
+                                            { label: 'Seguridad de Datos', p: 100, color: 'bg-white', glow: 'shadow-[0_0_12px_rgba(255,255,255,0.4)]' },
+                                            { label: 'Resolución por AI', p: 84, color: 'bg-purple-500', glow: 'shadow-[0_0_12px_rgba(168,85,247,0.5)]' },
+                                            { label: 'Tiempo en Línea', p: 99.9, color: 'bg-blue-500', glow: 'shadow-[0_0_12px_rgba(59,130,246,0.5)]' }
+                                        ].map((row, i) => (
+                                            <div key={i}>
+                                                <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-wider mb-2.5">
+                                                    <span className="text-neutral-400">{row.label}</span>
+                                                    <span className="text-white font-mono">{row.p}%</span>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden p-0.5">
+                                                    <div
+                                                        className={`h-full ${row.color} ${row.glow} rounded-full transition-all duration-1000`}
+                                                        style={{ width: `${row.p}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Active Node Pill */}
+                                <div
+                                    onClick={() => navigate('/login')}
+                                    className="mt-10 bg-black/50 border border-white/10 rounded-2xl p-5 relative z-10 flex items-center justify-between hover:border-purple-500/40 hover:bg-black/70 transition-all cursor-pointer group/node"
                                 >
-                                    <option value="1-2">1 a 2 Condominios</option>
-                                    <option value="3-5">3 a 5 Condominios</option>
-                                    <option value="6-10">6 a 10 Condominios</option>
-                                    <option value="11+">Más de 10 Condominios</option>
-                                    <option value="iniciando">Estoy iniciando mi empresa administradora</option>
-                                </select>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 group-hover/node:text-purple-400 transition-colors">
+                                            Nodo Autónomo
+                                        </p>
+                                        <p className="text-xs font-bold text-white mt-0.5">Listo para conexión</p>
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center">
+                                        <div className="w-2.5 h-2.5 bg-purple-400 rounded-full animate-ping" />
+                                    </div>
+                                </div>
                             </div>
 
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-600/20 transition-all cursor-pointer flex items-center justify-center gap-2 mt-4"
+                            {/* Card: Cuidado de Elite Autónomo */}
+                            <div
+                                onClick={() => navigate('/login')}
+                                className="bg-gradient-to-br from-purple-900/60 via-[#121218] to-[#0a0a0e] border border-purple-500/20 hover:border-purple-400/50 rounded-[36px] sm:rounded-[44px] p-8 sm:p-10 shadow-2xl relative overflow-hidden group cursor-pointer transition-all duration-300"
                             >
-                                {isSubmitting ? (
-                                    <>
-                                        <Icon name="loader" className="w-4 h-4 animate-spin" />
-                                        <span>Procesando Solicitud...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>Solicitar Demostración y Prueba Gratis</span>
-                                        <Icon name="arrow-right" className="w-4 h-4" />
-                                    </>
-                                )}
-                            </button>
-                        </form>
-                    )}
-                </div>
-            </section>
+                                <div className="absolute top-[-30px] right-[-30px] w-48 h-48 bg-purple-500/20 blur-3xl rounded-full group-hover:scale-125 transition-transform duration-500" />
+                                <div className="relative z-10">
+                                    <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-6 text-purple-300">
+                                        <Icon name="shield-check" className="w-5 h-5" />
+                                    </div>
+                                    <h4 className="text-2xl sm:text-3xl font-black tracking-tight text-white mb-3 leading-tight">
+                                        Cuidado de Elite <br />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-300">
+                                            Autónomo.
+                                        </span>
+                                    </h4>
+                                    <p className="text-xs font-normal text-neutral-400 leading-relaxed mb-8">
+                                        Nuestra plataforma inteligente automatiza la gestión diaria de tu propiedad con precisión quirúrgica y eficiencia.
+                                    </p>
+                                    <button className="w-full py-4 rounded-xl bg-white text-black font-black text-xs uppercase tracking-widest shadow-xl group-hover:bg-neutral-100 transition-all flex items-center justify-center gap-2">
+                                        <span>Entrar al Portal</span>
+                                        <Icon name="arrow-right" className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </section>
 
-            {/* FAQ Section */}
-            <section id="faq" className="py-16 bg-white dark:bg-[#111827] border-t border-neutral-200/80 dark:border-neutral-800 transition-colors">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h2 className="text-2xl font-black text-center text-neutral-900 dark:text-white mb-10">
-                        Preguntas Frecuentes de Administradoras
-                    </h2>
+                {/* 5. ECOSYSTEM PILLARS SECTION */}
+                <section id="ecosistema" className="mb-24 pt-12 border-t border-white/[0.06]">
+                    <div className="max-w-3xl mb-14">
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-purple-400 mb-2 block">
+                            Arquitectura Distribuida
+                        </span>
+                        <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                            Tres niveles jerárquicos perfectamente sincronizados
+                        </h2>
+                    </div>
 
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {[
                             {
-                                q: '¿Puedo migrar los datos que ya tengo en Excel?',
-                                a: 'Sí. Disponemos de plantillas de importación rápida para apartamentos, propietarios y saldos iniciales. Además, nuestro equipo de soporte en República Dominicana te asiste en la carga inicial de tus torres.'
+                                tag: 'Nivel 01 • Orquestador',
+                                title: 'SuperAdmin SaaS',
+                                desc: 'Control maestro de empresas administradoras, cobro de licencias, monitoreo de infraestructura y despacho de comunicaciones globales.',
+                                icon: 'shield-check',
+                                color: 'text-purple-400'
                             },
                             {
-                                q: '¿Cómo pagan las cuotas los residentes?',
-                                a: 'Los residentes transfieren a la cuenta bancaria de cada condominio (Banco Popular, BHD, Banreservas, etc.) y suben el comprobante o número de confirmación en el portal web desde su celular. El administrador valida el pago con 1 clic.'
+                                tag: 'Nivel 02 • Operador',
+                                title: 'Panel de Administración',
+                                desc: 'Gestión multicondominio, cobranza en tiempo real, conciliación bancaria, cuentas por pagar y asambleas con quórum automático.',
+                                icon: 'building-2',
+                                color: 'text-blue-400'
                             },
                             {
-                                q: '¿Cómo funciona la facturación del software a mi empresa?',
-                                a: 'Facturamos mensualmente en pesos dominicanos (RD$) según la cantidad de condominios activos en tu panel. Emitimos comprobante fiscal válido para crédito fiscal (DGII).'
-                            },
-                            {
-                                q: '¿Cumple con la Ley 5038 de Condominios en RD?',
-                                a: 'Totalmente. El módulo de asambleas pondera los votos según las cuotas de participación oficiales y genera el acta legal en PDF lista para firma de la junta de vecinos.'
+                                tag: 'Nivel 03 • Ocupante',
+                                title: 'Portal del Residente',
+                                desc: 'Visualización de estados de cuenta, notificación de cuotas con comprobante bancario, incidentes y reservas de áreas sociales.',
+                                icon: 'user-check',
+                                color: 'text-emerald-400'
                             }
-                        ].map((item, i) => (
-                            <div key={i} className="p-5 rounded-2xl bg-neutral-50 dark:bg-[#161b26] border border-neutral-200/70 dark:border-neutral-800">
-                                <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-1.5">{item.q}</h4>
-                                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">{item.a}</p>
+                        ].map((pillar, idx) => (
+                            <div
+                                key={idx}
+                                className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.08] hover:border-white/20 transition-all duration-300 relative group"
+                            >
+                                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest mb-4 block">
+                                    {pillar.tag}
+                                </span>
+                                <div className={`w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mb-6 ${pillar.color}`}>
+                                    <Icon name={pillar.icon} className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">{pillar.title}</h3>
+                                <p className="text-xs text-neutral-400 leading-relaxed font-normal">{pillar.desc}</p>
                             </div>
                         ))}
                     </div>
-                </div>
-            </section>
+                </section>
 
-            {/* Footer */}
-            <footer className="bg-neutral-900 text-neutral-400 py-12 border-t border-neutral-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-xs">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
-                            M
+                {/* 6. CALL TO ACTION FOOTER */}
+                <footer className="pt-16 pb-8 border-t border-white/[0.08]">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-black text-sm">
+                                M
+                            </div>
+                            <span className="font-black text-white text-sm tracking-widest uppercase">MiCondo OS</span>
                         </div>
-                        <div>
-                            <p className="font-bold text-white text-sm">MICONDO OS</p>
-                            <p className="text-[10px] text-neutral-500">Plataforma SaaS para Administradoras de Condominios</p>
-                        </div>
-                    </div>
 
-                    <div className="flex items-center gap-6 text-neutral-400 font-medium">
-                        <a href="#features" className="hover:text-white transition-colors">Funcionalidades</a>
-                        <a href="#pricing" className="hover:text-white transition-colors">Planes</a>
-                        <button onClick={() => navigate('/login')} className="hover:text-white transition-colors cursor-pointer">
-                            Acceso Portal
+                        <div className="flex flex-wrap items-center justify-center gap-8 text-[11px] font-black uppercase tracking-[0.25em] text-neutral-400">
+                            <span className="hover:text-white cursor-pointer transition-colors">Institucional</span>
+                            <span className="hover:text-white cursor-pointer transition-colors">Política de Privacidad</span>
+                            <span className="hover:text-white cursor-pointer transition-colors">Seguridad de Infraestructura</span>
+                        </div>
+
+                        <button
+                            onClick={() => navigate('/login')}
+                            className="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
+                        >
+                            Acceder al Portal →
                         </button>
                     </div>
 
-                    <p className="text-neutral-500 text-[11px]">
-                        © {new Date().getFullYear()} MiCondo Ecosistema OS. Todos los derechos reservados. Santo Domingo, República Dominicana.
-                    </p>
-                </div>
-            </footer>
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] font-mono text-neutral-600 border-t border-white/[0.04] pt-6">
+                        <span>MiCondo Ecosystem OS — 2026</span>
+                        <span>Protocolo v4.2 • Cifrado de Extremo a Extremo</span>
+                    </div>
+                </footer>
+            </div>
         </div>
     );
 };
